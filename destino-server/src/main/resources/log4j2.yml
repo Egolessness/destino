@@ -1,0 +1,68 @@
+Configuration:
+  status: warn
+  shutdownHook: disable
+
+  appenders:
+    Console:
+      - name: DestinoConsole
+        PatternLayout:
+          Pattern: "[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n"
+      - name: BannerConsole
+
+    RollingFile:
+      - name: DestinoRollingFile
+        fileName: "${sys:destino.logs.location:-logs}/destino.log"
+        filePattern: "${sys:destino.logs.location:-logs}/$${date:yyyy-MM}/destino-%d{MM-dd-yyyy}-%i.log.gz"
+        PatternLayout:
+          pattern: "[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n"
+        Policies:
+          SizeBasedTriggeringPolicy:
+            size: 10MB
+        DefaultRollOverStrategy:
+          max: 10
+      - name: BannerRollingFile
+        fileName: "${sys:destino.logs.location:-logs}/destino.log"
+        filePattern: "${sys:destino.logs.location:-logs}/$${date:yyyy-MM}/destino-%d{MM-dd-yyyy}-%i.log.gz"
+        Policies:
+          SizeBasedTriggeringPolicy:
+            size: 10MB
+        DefaultRollOverStrategy:
+          max: 10
+      - name: AccessRollingFile
+        fileName: "${sys:destino.logs.location:-logs}/access.log"
+        filePattern: "${sys:destino.logs.location:-logs}/$${date:yyyy-MM}/access-%d{MM-dd-yyyy}-%i.log.gz"
+        PatternLayout:
+          pattern: "%m%n"
+        Policies:
+          SizeBasedTriggeringPolicy:
+            size: 10MB
+        DefaultRollOverStrategy:
+          max: 10
+
+  Loggers:
+    Logger:
+      - name: com.egolessness.destino
+        level: info
+        additivity: false
+        AppenderRef:
+          - ref: DestinoConsole
+          - ref: DestinoRollingFile
+      - name: com.egolessness.destino.banner
+        level: info
+        additivity: false
+        AppenderRef:
+          - ref: BannerConsole
+          - ref: BannerRollingFile
+      - name: com.linecorp.armeria.logging.access
+        level: info
+        additivity: false
+        AppenderRef:
+          - ref: AccessRollingFile
+      - name: com.alipay.sofa.jraft
+        level: info
+        additivity: false
+
+    Root:
+      level: error
+      AppenderRef:
+        ref: DestinoConsole

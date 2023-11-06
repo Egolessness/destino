@@ -1,0 +1,85 @@
+plugins {
+    id 'com.github.johnrengelman.shadow'
+}
+
+dependencies {
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation "io.grpc:grpc-netty:${grpcVersion}"
+    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-services:${grpcVersion}"
+    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    implementation "com.google.inject:guice:${guiceVersion}"
+
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-properties:${jacksonVersion}"
+    implementation "org.hibernate.validator:hibernate-validator:${hibernateValidatorVersion}"
+    implementation "com.linecorp.armeria:armeria:${armeriaVersion}"
+    implementation "com.linecorp.armeria:armeria-grpc:${armeriaVersion}"
+    implementation "commons-io:commons-io:${commonsioVersion}"
+    implementation "commons-lang:commons-lang:${commonslangVersion}"
+    implementation "org.apache.commons:commons-text:${commonstextVersion}"
+    implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
+
+    implementation project(":destino-core")
+    implementation project(":destino-common")
+    implementation project(":destino-grpc")
+    implementation project(":destino-setting")
+    implementation project(":destino-raft")
+    implementation project(":destino-registration")
+    implementation project(":destino-mandatory")
+    implementation project(":destino-authentication")
+    if (!project.hasProperty("no-scheduler")) {
+        implementation project(":destino-scheduler")
+    }
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}"
+}
+
+shadowJar {
+    zip64 true
+    archiveClassifier = null
+    mergeServiceFiles()
+    manifest {
+        attributes 'Main-Class': 'com.egolessness.destino.server.DestinoApplication'
+    }
+}
+
+processResources {
+    if (project.hasProperty("prod")) {
+        profiles = "prod"
+    }
+    if (project.hasProperty("cluster")) {
+        serverMode = "cluster"
+    }
+    inputs.property('version', version)
+    inputs.property('profiles', profiles)
+    if (project.hasProperty("no-console")) {
+        exclude("console/**")
+    }
+    filesMatching("**/application.yml") {
+        filter {
+            it.replace("#project.version#", version)
+        }
+        filter {
+            it.replace("#destino.profiles.active#", profiles)
+        }
+        filter {
+            it.replace("#server.mode#", serverMode)
+        }
+    }
+}
+
+jar {
+    enabled false
+}
+
+compileJava.dependsOn processResources
+
+test {
+    useJUnitPlatform()
+}

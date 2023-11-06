@@ -1,0 +1,160 @@
+syntax = "proto3";
+
+package proto;
+
+import "message-common.proto";
+import "message-registration.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+option java_package = "com.egolessness.destino.scheduler.message";
+option java_multiple_files = true;
+option java_outer_classname = "SchedulerProto";
+
+enum Process {
+  INIT = 0;
+  PREPARE = 1;
+  WAITING = 2;
+  REACHING = 3;
+  REACHED = 4;
+  EXECUTING = 5;
+  CANCELLING = 6;
+  CANCELLED = 7;
+  LOST = 8;
+  TERMINATED = 9;
+  SUCCEED = 10;
+  FAILED = 11;
+  TERMINATED_AND_SUCCESS = 12;
+  TERMINATED_AND_FAILED = 13;
+  TIMEOUT = 14;
+}
+
+enum AddressingStrategy {
+  SAFETY_FIRST = 0;
+  FIRST = 1;
+  LAST = 2;
+  ROUND_ROBIN = 3;
+  RANDOM = 4;
+  WEIGHT_RANDOM = 5;
+  MOST_ACTIVE = 6;
+  CONSISTENT_HASHING = 7;
+  LFU = 8;
+  LRU = 9;
+}
+
+enum SafetyStrategy {
+  FAILOVER = 0;
+  FAIL_STOP = 1;
+}
+
+message SchedulerKey {
+  string namespace = 1;
+  string groupName = 2;
+  string serviceName =3;
+  string name = 4;
+}
+
+message SchedulerSign {
+  string expression = 1;
+  string namespace = 2;
+  string groupName = 3;
+  string serviceName = 4;
+  repeated string cluster = 5;
+  int32 failedRetryTimes = 6;
+  int32 forwardTimes = 7;
+  SafetyStrategy safetyStrategy = 8;
+}
+
+message ExecutionKey {
+  int64 executionTime = 1;
+  int64 schedulerId = 2;
+}
+
+message Execution {
+  int64 schedulerId = 1;
+  ScheduledMode mode = 2;
+  string jobName = 3;
+  Scripting script = 4;
+  int64 executionTime = 5;
+  string param = 6;
+  int64 timeout = 7;
+  string schedulerSign = 8;
+  int64 schedulerUpdateTime = 9;
+  Process process = 10;
+  AddressingStrategy addressingStrategy = 11;
+  BlockedStrategy blockedStrategy = 12;
+  ExpiredStrategy expiredStrategy = 13;
+  int64 supervisorId = 14;
+  RegistrationKey dest = 15;
+  int64 actualExecutedTime = 16;
+}
+
+message ExecutionLine {
+  int64 priorityFrom = 1;
+  int64 priorityTo = 2;
+  repeated Execution priority = 3;
+  int64 consequentFrom = 4;
+  int64 consequentTo = 5;
+  repeated Execution consequent = 6;
+  int64 lastSubmitTime = 7;
+}
+
+message ExecutionMerge {
+  int64 from = 1;
+  int64 to = 2;
+  repeated Execution execution = 3;
+}
+
+message ExecutionProcess {
+  ExecutionKey executionKey = 1;
+  Process process = 2;
+  string message = 3;
+}
+
+message ExecutionProcesses {
+  repeated ExecutionProcess executionProcess = 1;
+}
+
+message ExecutionKeys {
+  repeated ExecutionKey executionKey = 1;
+}
+
+message Executions {
+  repeated Execution execution = 1;
+}
+
+message ExecutionCommand {
+  RegistrationKey registrationKey = 1;
+  repeated Execution execution = 2;
+}
+
+message LogLine {
+  int64 recordTime = 1;
+  string process = 2;
+  string message = 3;
+  string data = 4;
+}
+
+message ClearKey {
+  int32 days = 1;
+  int64 time = 2;
+  string namespace = 3;
+}
+
+message ExecutionLog {
+  repeated LogLine line = 1;
+}
+
+service SchedulerRequestAdapter {
+  rpc getExecution(ExecutionKey) returns (Execution) {};
+  rpc multiGetExecution(ExecutionKeys) returns (Executions) {};
+  rpc feedback(Request) returns (google.protobuf.BoolValue) {};
+  rpc transmit(Execution) returns (google.protobuf.BoolValue) {}
+  rpc send(ExecutionCommand) returns (Response) {}
+  rpc verify(Execution) returns (Execution) {}
+  rpc update(Execution) returns (google.protobuf.Empty) {}
+  rpc cancel(Execution) returns (google.protobuf.Empty) {}
+  rpc terminate(ExecutionKey) returns (google.protobuf.StringValue) {}
+  rpc readLog(ExecutionKey) returns (ExecutionLog) {}
+}

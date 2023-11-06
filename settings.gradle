@@ -1,0 +1,24 @@
+pluginManagement {
+    repositories {
+        maven { url 'https://repo.spring.io/milestone' }
+        gradlePluginPortal()
+    }
+    plugins {
+        id 'com.github.johnrengelman.shadow' version '8.1.1'
+        id 'com.google.protobuf' version '0.9.4'
+    }
+}
+
+rootProject.name = 'destino'
+include 'destino-core'
+include 'destino-client'
+include 'destino-setting'
+include 'destino-server'
+include 'destino-grpc'
+include 'destino-http'
+include 'destino-mandatory'
+include 'destino-raft'
+include 'destino-common'
+include 'destino-scheduler'
+include 'destino-registration'
+include 'destino-authentication'

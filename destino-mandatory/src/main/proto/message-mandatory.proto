@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package proto;
+
+import "message-core.proto";
+import "message-common.proto";
+import "google/protobuf/any.proto";
+
+option java_package = "com.egolessness.destino.mandatory.message";
+option java_multiple_files = true;
+option java_outer_classname = "MandatoryProto";
+
+message MandatoryWriteRequest {
+  string token = 1;
+  int64 timestamp = 2;
+  repeated WriteInfo data = 3;
+}
+
+message WriteInfo {
+  Cosmos cosmos = 1;
+  repeated VsData append = 2;
+  repeated VbKey remove = 3;
+}
+
+message MandatorySyncRequest {
+  string token = 1;
+  int64 timestamp = 2;
+  repeated WriteInfo data = 3;
+}
+
+message VsData {
+  bytes key = 1;
+  bytes value = 2;
+  int64 version = 3;
+  int64 source = 4;
+}
+
+message VbKey {
+  bytes key = 1;
+  int64 version = 2;
+  bool broadcast = 3;
+}
+
+message MandatoryLoadRequest {
+  string token = 1;
+  int64 timestamp = 2;
+  repeated Cosmos cosmos = 3;
+}
+
+message MandatoryLoadResponse {
+  repeated WriteInfo data = 1;
+}
+
+service MandatoryRequestAdapter {
+  rpc write (MandatoryWriteRequest) returns (Response) {
+  }
+  rpc sync (stream MandatorySyncRequest) returns (Response) {
+  }
+  rpc load (MandatoryLoadRequest) returns (Response) {
+  }
+}

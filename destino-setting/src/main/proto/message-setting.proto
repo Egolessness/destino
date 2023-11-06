@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package proto;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+option java_package = "com.egolessness.destino.setting.message";
+option java_multiple_files = true;
+option java_outer_classname = "SettingProto";
+
+message SettingKey {
+  string domain = 1;
+  string key = 2;
+}

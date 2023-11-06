@@ -1,0 +1,44 @@
+plugins {
+    id 'com.google.protobuf'
+}
+
+dependencies {
+    compileOnly "com.google.inject:guice:${guiceVersion}"
+    compileOnly "org.slf4j:slf4j-api:${slf4jVersion}"
+    compileOnly "com.linecorp.armeria:armeria:${armeriaVersion}"
+    implementation "org.hibernate.validator:hibernate-validator:${hibernateValidatorVersion}"
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation "net.openhft:affinity:${affinityVersion}"
+    implementation "com.cronutils:cron-utils:${cronutilsVersion}"
+    implementation "org.rocksdb:rocksdbjni:${rocksdbVersion}"
+    implementation "com.lmax:disruptor:${disruptorVersion}"
+
+    implementation project(":destino-registration")
+    implementation project(":destino-setting")
+    implementation project(":destino-common")
+    implementation project(":destino-core")
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}"
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${protobufVersion}"
+    }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+}

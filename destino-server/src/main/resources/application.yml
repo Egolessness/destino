@@ -1,0 +1,151 @@
+server:
+  # The commented value for `active` can be replaced with CLUSTER or STANDALONE to load.
+  # It can be overridden by `-Dserver.mode` set in `JAVA_OPTS`
+  mode: #server.mode#
+  ip:
+  port: 8200
+  context-path: mycx
+  # Internal port, if not set, it will be the same as the outer-port.
+  inner-port: 8200
+  request-timeout: 5000
+  request-maxsize: 4194304
+  idle-timeout: 600000
+  access-log: false
+
+destino:
+  profiles:
+    # The commented value for `active` can be replaced with valid profiles to load.
+    # It can be overridden by `-Ddestino.profiles.active` set in `JAVA_OPTS`
+    active: #destino.profiles.active#
+
+  home:
+
+  logging:
+    config:
+
+  config:
+    location:
+
+  data:
+    location:
+
+  logs:
+    location:
+
+  scheduler:
+    enabled: true
+    fast-channel-buffer-size: 16384
+    executor:
+      core-threads:
+      callback-threads:
+
+  registration:
+    push:
+      enabled: true
+      rpc:
+        timeout: 2000
+      udp:
+        port:
+
+    health-check:
+      rounds: 2
+      failed-delay-range: 2000-5000
+
+    expired:
+      limit: 1000000
+      millis: 180000
+
+  serialize:
+    strategy: DEFAULT
+
+  cors:
+    allowed-origins: '*'
+    allowed-methods: '*'
+    allowed-headers: '*'
+    allow-credentials: true
+    max-Age: 1800
+
+  security:
+    auth:
+      # Login without password verification.
+      # If you forget the administrator password, you can enable this to change it.
+      skip-password-verification: false
+      jwt:
+        secret: D-2023-AUTH-JWT-10201-5u&2%1s-90T#22
+        expire-seconds: 86400
+        expire-seconds-for-remember-me: 2592000
+
+  cluster:
+    nodes:
+    discovery:
+      # strategy option: CONFIG | REMOTE | MULTICAST, Can be an array
+      strategy: CONFIG
+      remote:
+        address:
+        host: localhost
+        port: 80
+    group: DEFAULT
+    multicast:
+      enabled: false
+      host: 224.10.10.2
+      port: 52161
+
+  alarm:
+    mail:
+      enabled: false
+      smtp:
+        host:
+        port:
+        from:
+        auth:
+        user:
+        pass:
+
+  core:
+    inet:
+      hostname-priority: true
+      ignored-interfaces:
+    notify:
+      mono-buffer-size: 16384
+      mixed-buffer-size: 1024
+
+  raft:
+    default-snapshot-interval-secs: 3600
+    connect-timeout: 3000
+    election-timeout: 3000
+    request-timeout: 5000
+    options:
+      read-only: readOnlyLeaseBased
+      sync:
+      sync-meta:
+      replicator-pipeline:
+      enable-log-entry-checksum:
+      disruptor-buffer-size:
+      apply-batch:
+      election-heartbeat-factor:
+      max-election-delay-millis:
+      max-append-buffer-size:
+      max-body-size:
+      max-entries-size:
+      max-byte-count-per-rpc:
+      max-replicator-inflight-msgs:
+    executor:
+      processor-threads:
+      worker-threads:
+      snapshot-threads:
+      request-threads:
+
+  storage:
+    registration:
+      rocksdb-dir:
+      snapshot-interval-secs: 3600
+    setting:
+      rocksdb-dir:
+      snapshot-interval-secs: 3600
+    authentication:
+      rocksdb-dir:
+      snapshot-interval-secs: 3600
+    scheduler:
+      rocksdb-dir:
+      h2-dir:
+      snapshot-interval-secs: 3600

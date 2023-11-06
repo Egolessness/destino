@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package proto;
+
+import "message-common.proto";
+
+option java_package = "com.egolessness.destino.core.message";
+option java_multiple_files = true;
+option java_outer_classname = "CoreProto";
+
+enum ConsistencyDomain {
+  DEFAULT = 0;
+  REGISTRATION = 1;
+  SCHEDULER = 2;
+  AUTHENTICATION = 3;
+  SETTING = 4;
+}
+
+enum WriteMode {
+  ADD = 0;
+  UPDATE = 1;
+  PATCH = 2;
+}
+
+enum DeleteMode {
+  FORCE = 0;
+  UNNECESSARY = 1;
+}
+
+message Cosmos {
+  ConsistencyDomain domain = 1;
+  string subdomain = 2;
+}
+
+message WriteData {
+  bytes key = 1;
+  bytes value = 2;
+}
+
+message SearchRequest {
+  string token = 1;
+  int64 timestamp = 2;
+  Cosmos cosmos = 3;
+  repeated bytes key = 4;
+}
+
+message WriteRequest {
+  string token = 1;
+  int64 timestamp = 2;
+  Cosmos cosmos = 3;
+  repeated WriteData data = 4;
+  optional WriteMode mode = 5;
+}
+
+message DeleteRequest {
+  string token = 1;
+  int64 timestamp = 2;
+  Cosmos cosmos = 3;
+  repeated bytes key = 4;
+  optional DeleteMode mode = 5;
+}
+
+message MemberRequest {
+  string token = 1;
+  int64 timestamp = 2;
+  ConsistencyDomain domain = 3;
+  bytes member = 4;
+}
+
+message MapInfo {
+  map<string, bytes> data = 1;
+}
+
+message BytesList {
+  repeated bytes data = 1;
+}
+
+message MulticastMemberInfo {
+  string token = 1;
+  int64 timestamp = 2;
+  string group = 3;
+  string host = 4;
+  int32 port = 5;
+  string contextPath = 6;
+}

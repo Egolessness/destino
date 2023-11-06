@@ -1,0 +1,112 @@
+syntax = "proto3";
+
+package proto;
+
+import "google/protobuf/any.proto";
+
+option java_package = "com.egolessness.destino.common.model.message";
+option java_multiple_files = true;
+option java_outer_classname = "CommonProto";
+
+message Request {
+  string focus = 1;
+  map<string, string> header = 2;
+  google.protobuf.Any data = 3;
+}
+
+message Response {
+  int32 code = 1;
+  string msg = 2;
+  map<string, string> header = 3;
+  google.protobuf.Any data = 4;
+}
+
+enum RequestChannel {
+  HTTP = 0;
+  GRPC = 1;
+  THRIFT = 2;
+}
+
+enum RegisterMode {
+  QUICKLY = 0;
+  SAFETY = 1;
+}
+
+enum BlockedStrategy {
+  SERIAL = 0;
+  PARALLEL = 1;
+  DISCARD = 2;
+  COVER = 3;
+  FORWARD = 4;
+}
+
+enum ExpiredStrategy {
+  CONTINUE = 0;
+  IMMEDIATELY = 1;
+  CANCEL = 2;
+}
+
+enum TriggerCode {
+  OK = 0;
+  NOTFOUND = 1;
+  BUSYING = 2;
+  DUPLICATE = 3;
+  DISCARDED = 4;
+  EXPIRED = 5;
+  INCOMPLETE = 6;
+  NON_EXECUTABLE = 7;
+}
+
+enum ScheduledMode {
+  STANDARD = 0;
+  SCRIPT = 1;
+}
+
+enum ScriptType {
+  GROOVY = 0;
+  JAVASCRIPT = 1;
+  SHELL = 2;
+  PYTHON = 3;
+  POWERSHELL = 4;
+}
+
+message UdpPacket {
+  string type = 1;
+  int64 nanos = 2;
+  bytes data = 3;
+}
+
+message Scripting {
+  int64 version = 1;
+  ScriptType type = 2;
+  string content = 3;
+}
+
+message ScheduledTrigger {
+  int64 schedulerId = 1;
+  int64 executionTime = 2;
+  ScheduledMode mode = 3;
+  Scripting script = 4;
+  string jobName = 5;
+  string param = 6;
+  int64 timeout = 7;
+  BlockedStrategy blockedStrategy = 8;
+  ExpiredStrategy expiredStrategy = 9;
+  int64 advanceTime = 10;
+  int64 senderId = 11;
+}
+
+message ScheduledTriggers {
+  repeated ScheduledTrigger trigger = 1;
+}
+
+message ScheduledTriggerReply {
+  int64 schedulerId = 1;
+  int64 executionTime = 2;
+  TriggerCode code = 3;
+  string msg = 4;
+}
+
+message ScheduledTriggerReplies {
+  repeated ScheduledTriggerReply reply = 1;
+}

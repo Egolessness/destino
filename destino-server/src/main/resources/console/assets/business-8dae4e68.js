@@ -1,0 +1,1 @@
+const e={"pwd-login":"账密登录","code-login":"手机验证码登录",register:"注册","reset-pwd":"重置密码","bind-wechat":"微信绑定"},o=[{key:"READ",desc:"Readable",icon:"search-rounded"},{key:"WRITE",desc:"Writeable",icon:"edit-outline"},{key:"DELETE",desc:"Removable",icon:"delete-outline"}];export{o as a,e as l};

@@ -1,0 +1,15 @@
+Build Instructions for Destino
+
+================================================================
+
+(1) Prerequisites
+
+    JDK 1.8+ is required in order to compile and run Destino.
+
+(2) Build jar packages
+
+    $ gradlew -P prod -P cluster shadowJar
+
+    without scheduler and console
+
+    $ gradlew -P no-scheduler -P no-console shadowJar

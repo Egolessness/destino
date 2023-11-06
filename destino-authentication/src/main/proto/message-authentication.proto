@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package proto;
+
+import "message-core.proto";
+
+option java_package = "com.egolessness.destino.authentication.message";
+option java_multiple_files = true;
+option java_outer_classname = "AuthenticationProto";
+
+message AccessKey {
+  ConsistencyDomain domain = 1;
+  repeated string resource = 2;
+}

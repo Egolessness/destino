@@ -1,0 +1,48 @@
+plugins {
+    id 'com.google.protobuf'
+}
+
+dependencies {
+    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
+    implementation "org.hibernate.validator:hibernate-validator:${hibernateValidatorVersion}"
+    implementation "commons-io:commons-io:${commonsioVersion}"
+    implementation "commons-lang:commons-lang:${commonslangVersion}"
+    implementation "org.rocksdb:rocksdbjni:${rocksdbVersion}"
+    implementation "com.h2database:h2:${h2Version}"
+    implementation "com.google.inject:guice:${guiceVersion}"
+    implementation "de.ruedigermoeller:fst:${fstVersion}"
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "com.lmax:disruptor:${disruptorVersion}"
+    implementation "com.alipay.sofa:hessian:${hessianVersion}"
+    implementation "com.sun.mail:jakarta.mail:${jakartamailVersion}"
+    implementation "com.linecorp.armeria:armeria:${armeriaVersion}"
+    implementation "com.linecorp.armeria:armeria-grpc:${armeriaVersion}"
+
+    implementation project(":destino-common")
+    implementation project(":destino-grpc")
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}"
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${protobufVersion}"
+    }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+}

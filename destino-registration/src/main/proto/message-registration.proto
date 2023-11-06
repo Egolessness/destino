@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package proto;
+
+import "message-common.proto";
+
+option java_package = "com.egolessness.destino.registration.message";
+option java_multiple_files = true;
+option java_outer_classname = "RegistrationProto";
+
+message RegistrationKey {
+  string namespace = 1;
+  string serviceName = 2;
+  string groupName = 3;
+  InstanceKey instanceKey = 4;
+}
+
+message ServiceKey {
+  string namespace = 1;
+  string groupName = 2;
+  string serviceName = 3;
+}
+
+message InstanceKey {
+  string ip = 1;
+  int32 port = 2;
+  string cluster = 3;
+  optional RegisterMode mode = 4;
+}

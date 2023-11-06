@@ -1,0 +1,12 @@
+
+ ${AnsiColor.BRIGHT_RED}██████╗ ${AnsiColor.BRIGHT_BLUE} ███████╗ ███████╗ ████████╗ ██╗ ███╗   ██╗  ██████╗
+ ${AnsiColor.BRIGHT_RED}██╔══██╗${AnsiColor.BRIGHT_BLUE} ██╔════╝ ██╔════╝ ╚══██╔══╝ ██║ ████╗  ██║ ██╔═══██╗
+ ${AnsiColor.BRIGHT_RED}██║  ██║${AnsiColor.BRIGHT_BLUE} █████╗   ███████╗    ██║    ██║ ██╔██╗ ██║ ██║   ██║
+ ${AnsiColor.BRIGHT_RED}██║  ██║${AnsiColor.BRIGHT_BLUE} ██╔══╝   ╚════██║    ██║    ██║ ██║╚██╗██║ ██║   ██║
+ ${AnsiColor.BRIGHT_RED}██████╔╝${AnsiColor.BRIGHT_BLUE} ███████╗ ███████║    ██║    ██║ ██║ ╚████║ ╚██████╔╝
+ ${AnsiColor.BRIGHT_RED}╚═════╝ ${AnsiColor.BRIGHT_BLUE} ╚══════╝ ╚══════╝    ╚═╝    ╚═╝ ╚═╝  ╚═══╝  ╚═════╝
+
+ ${AnsiColor.BRIGHT_MAGENTA}:: Destino ${project.version} :: Running in ${server.mode} mode
+ ${AnsiColor.BRIGHT_MAGENTA}:: Console - http://${server.ip}:${server.port}${server.contextPath}/index.html
+ ${AnsiColor.DEFAULT}
+

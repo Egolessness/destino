@@ -1,0 +1,37 @@
+plugins {
+    id 'com.google.protobuf'
+}
+
+dependencies {
+    compileOnly "com.google.inject:guice:${guiceVersion}"
+    compileOnly "com.linecorp.armeria:armeria:${armeriaVersion}"
+    compileOnly "org.hibernate.validator:hibernate-validator:${hibernateValidatorVersion}"
+    implementation "com.google.protobuf:protobuf-java:${protobufVersion}"
+    implementation "commons-lang:commons-lang:${commonslangVersion}"
+
+    implementation project(":destino-core")
+    implementation project(":destino-common")
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}"
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${protobufVersion}"
+    }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+}

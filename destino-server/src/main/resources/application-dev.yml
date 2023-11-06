@@ -1,0 +1,5 @@
+server:
+  mode: cluster
+  port: 8200
+
+destino:
