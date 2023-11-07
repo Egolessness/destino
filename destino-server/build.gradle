@@ -45,7 +45,7 @@ shadowJar {
     archiveClassifier = null
     mergeServiceFiles()
     manifest {
-        attributes 'Main-Class': 'com.egolessness.destino.server.DestinoApplication'
+        attributes 'Main-Class': 'org.egolessness.destino.server.DestinoApplication'
     }
 }
 

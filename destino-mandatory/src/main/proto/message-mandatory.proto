@@ -6,7 +6,7 @@ import "message-core.proto";
 import "message-common.proto";
 import "google/protobuf/any.proto";
 
-option java_package = "com.egolessness.destino.mandatory.message";
+option java_package = "org.egolessness.destino.mandatory.message";
 option java_multiple_files = true;
 option java_outer_classname = "MandatoryProto";
 

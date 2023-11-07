@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-com.egolessness.destino.authentication.security.JacksonDeserializer
+org.egolessness.destino.authentication.security.JacksonDeserializer

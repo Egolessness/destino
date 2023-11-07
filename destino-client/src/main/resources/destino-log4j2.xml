@@ -62,16 +62,16 @@
     </Appenders>
     
     <Loggers>
-        <Logger name="com.egolessness.destino" level="${sys:com.egolessness.destino.log.level:-info}" additivity="false">
+        <Logger name="org.egolessness.destino" level="${sys:org.egolessness.destino.log.level:-info}" additivity="false">
             <AppenderRef ref="DEFAULT_LOG_FILE"/>
         </Logger>
     
-        <Logger name="com.egolessness.destino.common.remote" level="${sys:com.egolessness.destino.remote.log.level:-info}"
+        <Logger name="org.egolessness.destino.common.remote" level="${sys:org.egolessness.destino.remote.log.level:-info}"
             additivity="false">
             <AppenderRef ref="REMOTE_LOG_FILE"/>
         </Logger>
         
-        <Logger name="com.egolessness.destino.client.registration" level="${sys:com.egolessness.destino.registration.log.level:-info}"
+        <Logger name="org.egolessness.destino.client.registration" level="${sys:org.egolessness.destino.registration.log.level:-info}"
                 additivity="false">
             <AppenderRef ref="REGISTRATION_LOG_FILE"/>
         </Logger>

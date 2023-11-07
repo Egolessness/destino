@@ -41,13 +41,13 @@ Configuration:
 
   Loggers:
     Logger:
-      - name: com.egolessness.destino
+      - name: org.egolessness.destino
         level: info
         additivity: false
         AppenderRef:
           - ref: DestinoConsole
           - ref: DestinoRollingFile
-      - name: com.egolessness.destino.banner
+      - name: org.egolessness.destino.banner
         level: info
         additivity: false
         AppenderRef:

@@ -4,7 +4,7 @@ package proto;
 
 import "message-common.proto";
 
-option java_package = "com.egolessness.destino.registration.message";
+option java_package = "org.egolessness.destino.registration.message";
 option java_multiple_files = true;
 option java_outer_classname = "RegistrationProto";
 
