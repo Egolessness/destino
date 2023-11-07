@@ -45,7 +45,7 @@ Download the package from the [latest stable release](https://github.com/Egoless
 
 **Start server**
 
-> sh startup.sh -m standalone
+> sh startup.sh -m cluster
 
 ## Philosophy
 
