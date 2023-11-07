@@ -41,16 +41,16 @@ Destino是一个高可用的服务发现、服务管理和任务调度平台，�
 
 **使用源码构建JAR**
 
-- 将该项目clone至本地后，使用Gradle进行构建，执行以下命令：
-- > gradlew -P prod -P cluster shadowJar
+将该项目clone至本地后，使用Gradle进行构建，执行以下命令：
+> gradlew -P prod -P cluster shadowJar
 
 **直接下载安装**
 
-- 下载最新稳定版本的[安装包](https://github.com/Egolessness/destino/releases)
+下载最新稳定版本的[安装包](https://github.com/Egolessness/destino/releases)
 
 **启动服务**
 
-- > sh startup.sh -m cluster
+> sh startup.sh -m cluster
 
 ## 理念
 

@@ -41,11 +41,11 @@ Destino is a distributed system for service discovery, service management and jo
 
 **Download the binary package**
 
-- Download the package from the [latest stable release](https://github.com/Egolessness/destino/releases).
+Download the package from the [latest stable release](https://github.com/Egolessness/destino/releases).
 
 **Start server**
 
-- > sh startup.sh -m standalone
+> sh startup.sh -m standalone
 
 ## Philosophy
 
