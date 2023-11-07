@@ -16,11 +16,13 @@
 
 package com.egolessness.destino.core.support;
 
+import com.egolessness.destino.common.utils.PredicateUtils;
 import com.google.protobuf.*;
 import com.egolessness.destino.core.message.BytesList;
 import com.egolessness.destino.core.message.MapInfo;
 import com.egolessness.destino.core.message.WriteData;
 import com.egolessness.destino.core.storage.specifier.LongSpecifier;
+import io.grpc.MethodDescriptor;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -91,5 +93,13 @@ public class MessageSupport {
         map.forEach((key, value) -> result.put(key, ByteString.copyFrom(value)));
         return result;
     }
+
+    public static <R, T> MethodDescriptor<R, T> getMethodDescriptor(MethodDescriptor<R, T> methodDescriptor, String context) {
+        if (PredicateUtils.isBlank(context)) {
+            return methodDescriptor;
+        }
+        return methodDescriptor.toBuilder().setFullMethodName(context + "/" + methodDescriptor.getFullMethodName()).build();
+    }
+
 
 }

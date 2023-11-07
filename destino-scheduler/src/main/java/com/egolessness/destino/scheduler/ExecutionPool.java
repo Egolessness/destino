@@ -716,7 +716,7 @@ public class ExecutionPool implements Runnable, Lucermaire {
                 return;
             }
             Member member = members.removeFirst();
-            ListenableFuture<BoolValue> future = clientFactory.getClient(member.getAddress()).transmit(executionInfo.getExecution());
+            ListenableFuture<BoolValue> future = clientFactory.getClient(member).transmit(executionInfo.getExecution());
             Futures.addCallback(future, new FutureCallback<BoolValue>() {
                 @Override
                 public void onSuccess(BoolValue result) {

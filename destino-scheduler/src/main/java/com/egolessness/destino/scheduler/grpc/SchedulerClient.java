@@ -16,6 +16,8 @@
 
 package com.egolessness.destino.scheduler.grpc;
 
+import com.egolessness.destino.common.utils.PredicateUtils;
+import com.egolessness.destino.core.support.MessageSupport;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.Empty;
@@ -26,6 +28,7 @@ import com.egolessness.destino.scheduler.message.*;
 import com.google.protobuf.StringValue;
 import io.grpc.CallOptions;
 import io.grpc.ManagedChannel;
+import io.grpc.MethodDescriptor;
 import io.grpc.stub.ClientCalls;
 
 /**
@@ -37,48 +40,200 @@ public class SchedulerClient implements Lucermaire {
 
     private final ManagedChannel channel;
 
-    private final SchedulerRequestAdapterGrpc.SchedulerRequestAdapterFutureStub futureStub;
+    private final String contextPath;
 
-    public SchedulerClient(final ManagedChannel channel) {
+    private MethodDescriptor<ExecutionKey, Execution> getExecutionMethod;
+
+    private MethodDescriptor<ExecutionKeys, Executions> multiGetExecutionMethod;
+
+    private MethodDescriptor<Request, BoolValue> feedbackMethod;
+
+    private MethodDescriptor<ExecutionCommand, Response> sendMethod;
+
+    private MethodDescriptor<Execution, BoolValue> transmitMethod;
+
+    private MethodDescriptor<Execution, Empty> cancelMethod;
+
+    private MethodDescriptor<ExecutionKey, StringValue> terminateMethod;
+
+    private MethodDescriptor<Execution, Empty> updateMethod;
+
+    private MethodDescriptor<ExecutionKey, ExecutionLog> readLogMethod;
+
+    public SchedulerClient(final ManagedChannel channel, final String contextPath) {
         this.channel = channel;
-        this.futureStub = SchedulerRequestAdapterGrpc.newFutureStub(channel);
+        this.contextPath = contextPath;
     }
 
     public ListenableFuture<Execution> getExecution(ExecutionKey executionKey) {
-        return ClientCalls.futureUnaryCall(
-                channel.newCall(SchedulerRequestAdapterGrpc.getGetExecutionMethod(), CallOptions.DEFAULT), executionKey);
+        return ClientCalls.futureUnaryCall(channel.newCall(this.getGetExecutionMethod(), CallOptions.DEFAULT), executionKey);
     }
 
     public ListenableFuture<Executions> multiGetExecution(ExecutionKeys executionKeys) {
-        return futureStub.multiGetExecution(executionKeys);
+        return ClientCalls.futureUnaryCall(channel.newCall(this.getMultiGetExecutionMethod(), CallOptions.DEFAULT), executionKeys);
     }
 
     public ListenableFuture<BoolValue> feedback(Request request) {
-        return futureStub.feedback(request);
+        return ClientCalls.futureUnaryCall(channel.newCall(this.getFeedbackMethod(), CallOptions.DEFAULT), request);
     }
 
     public ListenableFuture<Response> send(ExecutionCommand executionCommand) {
-        return futureStub.send(executionCommand);
+        return ClientCalls.futureUnaryCall(channel.newCall(this.getSendMethod(), CallOptions.DEFAULT), executionCommand);
     }
 
     public ListenableFuture<BoolValue> transmit(Execution execution) {
-        return futureStub.transmit(execution);
+        return ClientCalls.futureUnaryCall(channel.newCall(this.getTransmitMethod(), CallOptions.DEFAULT), execution);
     }
 
     public ListenableFuture<Empty> cancel(Execution execution) {
-        return futureStub.cancel(execution);
+        return ClientCalls.futureUnaryCall(channel.newCall(this.getCancelMethod(), CallOptions.DEFAULT), execution);
     }
 
     public ListenableFuture<StringValue> terminate(ExecutionKey executionKey) {
-        return futureStub.terminate(executionKey);
+        return ClientCalls.futureUnaryCall(channel.newCall(this.getTerminateMethod(), CallOptions.DEFAULT), executionKey);
     }
 
     public ListenableFuture<Empty> update(Execution execution) {
-        return futureStub.update(execution);
+        return ClientCalls.futureUnaryCall(channel.newCall(this.getUpdateMethod(), CallOptions.DEFAULT), execution);
     }
 
     public ListenableFuture<ExecutionLog> readLog(ExecutionKey executionKey) {
-        return futureStub.readLog(executionKey);
+        return ClientCalls.futureUnaryCall(channel.newCall(this.getReadLogMethod(), CallOptions.DEFAULT), executionKey);
+    }
+
+    public MethodDescriptor<ExecutionKey, Execution> getGetExecutionMethod() {
+        if (getExecutionMethod == null) {
+            if (PredicateUtils.isBlank(contextPath)) {
+                return SchedulerRequestAdapterGrpc.getGetExecutionMethod();
+            }
+            synchronized (this) {
+                if (getExecutionMethod == null) {
+                    getExecutionMethod = MessageSupport.getMethodDescriptor(
+                            SchedulerRequestAdapterGrpc.getGetExecutionMethod(), contextPath);
+                }
+            }
+        }
+        return getExecutionMethod;
+    }
+
+    public MethodDescriptor<ExecutionKeys, Executions> getMultiGetExecutionMethod() {
+        if (multiGetExecutionMethod == null) {
+            if (PredicateUtils.isBlank(contextPath)) {
+                return SchedulerRequestAdapterGrpc.getMultiGetExecutionMethod();
+            }
+            synchronized (this) {
+                if (multiGetExecutionMethod == null) {
+                    multiGetExecutionMethod = MessageSupport.getMethodDescriptor(
+                            SchedulerRequestAdapterGrpc.getMultiGetExecutionMethod(), contextPath);
+                }
+            }
+        }
+        return multiGetExecutionMethod;
+    }
+
+    public MethodDescriptor<Request, BoolValue> getFeedbackMethod() {
+        if (feedbackMethod == null) {
+            if (PredicateUtils.isBlank(contextPath)) {
+                return SchedulerRequestAdapterGrpc.getFeedbackMethod();
+            }
+            synchronized (this) {
+                if (feedbackMethod == null) {
+                    feedbackMethod = MessageSupport.getMethodDescriptor(
+                            SchedulerRequestAdapterGrpc.getFeedbackMethod(), contextPath);
+                }
+            }
+        }
+        return feedbackMethod;
+    }
+
+    public MethodDescriptor<ExecutionCommand, Response> getSendMethod() {
+        if (sendMethod == null) {
+            if (PredicateUtils.isBlank(contextPath)) {
+                return SchedulerRequestAdapterGrpc.getSendMethod();
+            }
+            synchronized (this) {
+                if (sendMethod == null) {
+                    sendMethod = MessageSupport.getMethodDescriptor(
+                            SchedulerRequestAdapterGrpc.getSendMethod(), contextPath);
+                }
+            }
+        }
+        return sendMethod;
+    }
+
+    public MethodDescriptor<Execution, BoolValue> getTransmitMethod() {
+        if (transmitMethod == null) {
+            if (PredicateUtils.isBlank(contextPath)) {
+                return SchedulerRequestAdapterGrpc.getTransmitMethod();
+            }
+            synchronized (this) {
+                if (transmitMethod == null) {
+                    transmitMethod = MessageSupport.getMethodDescriptor(
+                            SchedulerRequestAdapterGrpc.getTransmitMethod(), contextPath);
+                }
+            }
+        }
+        return transmitMethod;
+    }
+
+    public MethodDescriptor<Execution, Empty> getCancelMethod() {
+        if (cancelMethod == null) {
+            if (PredicateUtils.isBlank(contextPath)) {
+                return SchedulerRequestAdapterGrpc.getCancelMethod();
+            }
+            synchronized (this) {
+                if (cancelMethod == null) {
+                    cancelMethod = MessageSupport.getMethodDescriptor(
+                            SchedulerRequestAdapterGrpc.getCancelMethod(), contextPath);
+                }
+            }
+        }
+        return cancelMethod;
+    }
+
+    public MethodDescriptor<ExecutionKey, StringValue> getTerminateMethod() {
+        if (terminateMethod == null) {
+            if (PredicateUtils.isBlank(contextPath)) {
+                return SchedulerRequestAdapterGrpc.getTerminateMethod();
+            }
+            synchronized (this) {
+                if (terminateMethod == null) {
+                    terminateMethod = MessageSupport.getMethodDescriptor(
+                            SchedulerRequestAdapterGrpc.getTerminateMethod(), contextPath);
+                }
+            }
+        }
+        return terminateMethod;
+    }
+
+    public MethodDescriptor<Execution, Empty> getUpdateMethod() {
+        if (updateMethod == null) {
+            if (PredicateUtils.isBlank(contextPath)) {
+                return SchedulerRequestAdapterGrpc.getUpdateMethod();
+            }
+            synchronized (this) {
+                if (updateMethod == null) {
+                    updateMethod = MessageSupport.getMethodDescriptor(
+                            SchedulerRequestAdapterGrpc.getUpdateMethod(), contextPath);
+                }
+            }
+        }
+        return updateMethod;
+    }
+
+    public MethodDescriptor<ExecutionKey, ExecutionLog> getReadLogMethod() {
+        if (readLogMethod == null) {
+            if (PredicateUtils.isBlank(contextPath)) {
+                return SchedulerRequestAdapterGrpc.getReadLogMethod();
+            }
+            synchronized (this) {
+                if (readLogMethod == null) {
+                    readLogMethod = MessageSupport.getMethodDescriptor(
+                            SchedulerRequestAdapterGrpc.getReadLogMethod(), contextPath);
+                }
+            }
+        }
+        return readLogMethod;
     }
 
     @Override

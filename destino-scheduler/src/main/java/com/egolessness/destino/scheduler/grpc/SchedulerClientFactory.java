@@ -16,10 +16,10 @@
 
 package com.egolessness.destino.scheduler.grpc;
 
+import com.egolessness.destino.core.support.MemberSupport;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.egolessness.destino.common.fixedness.Lucermaire;
-import com.egolessness.destino.common.model.Address;
 import com.egolessness.destino.core.container.ChannelContainer;
 import com.egolessness.destino.core.container.ContainerFactory;
 import com.egolessness.destino.core.container.MemberContainer;
@@ -43,7 +43,7 @@ public class SchedulerClientFactory implements Lucermaire {
 
     private final MemberContainer memberContainer;
 
-    private final Map<Address, SchedulerClient> clients = new ConcurrentHashMap<>();
+    private final Map<String, SchedulerClient> clients = new ConcurrentHashMap<>();
 
     @Inject
     public SchedulerClientFactory(ContainerFactory containerFactory) {
@@ -53,19 +53,17 @@ public class SchedulerClientFactory implements Lucermaire {
 
     public Optional<SchedulerClient> getClient(long memberId) {
         Optional<Member> memberOptional = memberContainer.find(memberId);
-        return memberOptional.map(Member::getAddress).map(this::getClient);
+        return memberOptional.map(this::getClient);
     }
 
-    public SchedulerClient getClient(final Address address) {
-        return clients.computeIfAbsent(address, ad -> {
-            ManagedChannel managedChannel = channelContainer.get(address.getHost(), address.getPort());
-            managedChannel.notifyWhenStateChanged(ConnectivityState.SHUTDOWN, () -> clients.remove(address));
-            return new SchedulerClient(managedChannel);
+    public SchedulerClient getClient(final Member member) {
+        String contextPath = MemberSupport.getContextPath(member);
+        String uri = member.getAddress() + contextPath;
+        return clients.computeIfAbsent(uri, ad -> {
+            ManagedChannel managedChannel = channelContainer.get(member.getIp(), member.getPort());
+            managedChannel.notifyWhenStateChanged(ConnectivityState.SHUTDOWN, () -> clients.remove(uri));
+            return new SchedulerClient(managedChannel, contextPath);
         });
-    }
-
-    public SchedulerClient getClient(final String address) {
-        return getClient(Address.of(address));
     }
 
     public Collection<SchedulerClient> getClients() {

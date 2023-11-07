@@ -67,6 +67,14 @@ public class MemberSupport {
         return address + contextPath;
     }
 
+    public static String getContextPath(Member member) {
+        String contextPath = member.getExtendVal(MemberMetadata.CONTEXT_PATH.getPropertyKey());
+        if (PredicateUtils.isNotBlank(contextPath)) {
+            return contextPath;
+        }
+        return PredicateUtils.emptyString();
+    }
+
     public static List<ConsistencyDomain> getAvailableDomains(Collection<ConsistencyDomain> excludes) {
         List<ConsistencyDomain> availableDomains = getAvailableDomains();
         if (PredicateUtils.isNotEmpty(excludes)) {

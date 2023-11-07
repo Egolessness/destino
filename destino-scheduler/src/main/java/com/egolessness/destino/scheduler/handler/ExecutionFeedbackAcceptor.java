@@ -190,7 +190,7 @@ public class ExecutionFeedbackAcceptor implements Runnable {
                                     tmpStorage.del(key);
                                     continue;
                                 }
-                                client = clientFactory.getClient(member.getAddress());
+                                client = clientFactory.getClient(member);
                             }
                             ListenableFuture<BoolValue> future = client.feedback(buildFeedbackRequest(senderId, feedbacks));
                             BoolValue boolValue = future.get(5, TimeUnit.SECONDS);

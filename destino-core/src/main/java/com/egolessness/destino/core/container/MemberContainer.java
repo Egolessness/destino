@@ -17,7 +17,6 @@
 package com.egolessness.destino.core.container;
 
 import com.egolessness.destino.core.enumration.ElementOperation;
-import com.egolessness.destino.core.enumration.MemberMetadata;
 import com.egolessness.destino.core.enumration.NodeState;
 import com.egolessness.destino.core.exception.DuplicateIdException;
 import com.egolessness.destino.core.exception.OverLimitException;
@@ -156,7 +155,7 @@ public class MemberContainer extends MemberIdAssigner implements Container {
     }
 
     private void updateContextPathIndex(Member member) {
-        String val = member.getExtendVal(MemberMetadata.CONTEXT_PATH.getPropertyKey());
+        String val = MemberSupport.getContextPath(member);
         if (PredicateUtils.isNotBlank(val)) {
             CONTEXT_PATH_INDEXER.put(member.getAddress().toString(), val);
         } else {
