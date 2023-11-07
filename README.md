@@ -34,10 +34,18 @@ Destino is a distributed system for service discovery, service management and jo
 
 ## How to install
 
-**requirements**
+**Requirements**
 
 - Install requirement: *JDK 1.8+*
 - Compile requirement: *JDK 1.8+* and Gradle *8.0+*
+
+**Download the binary package**
+
+- Download the package from the [latest stable release](https://github.com/Egolessness/destino/releases).
+
+**Start server**
+
+- > sh startup.sh -m standalone
 
 ## Philosophy
 

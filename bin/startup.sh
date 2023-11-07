@@ -65,7 +65,10 @@ export JVM_OPTS="-server -jar ${BASE_DIR}/target/${SERVER}.jar -Xms4g -Xmx4g -Xm
 export DESTINO_OPTS="-Ddestino.home=${BASE_DIR} -Dserver.mode=${MODE} -Ddestino.cluster.nodes=${CLUSTER_MEMBERS}"
 
 if [[ "${MODE}" == "standalone" ]] || [[ "${MODE}" == "monolithic" ]] || [[ "${MODE}" == "mono" ]] ; then
-    JVM_OPTS="-Xms512m -Xmx512m -Xmn256m"
+  JVM_OPTS="-Xms512m -Xmx512m -Xmn256m"
+  echo "destino is starting in ${MODE} mode"
+else
+  echo "destino is starting in cluster mode"
 fi
 
 JAVA_MAJOR_VERSION=$($JAVA -version 2>&1 | sed -E -n 's/.* version "([0-9]*).*$/\1/p')
