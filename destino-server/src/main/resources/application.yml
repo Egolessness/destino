@@ -4,7 +4,7 @@ server:
   mode: #server.mode#
   ip:
   port: 8200
-  context-path: mycx
+  context-path:
   # Internal port, if not set, it will be the same as the outer-port.
   inner-port: 8200
   request-timeout: 5000
