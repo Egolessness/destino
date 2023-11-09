@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'maven-publish'
+    id 'signing'
 }
 
 repositories {
@@ -40,6 +42,67 @@ subprojects {
 
 jar {
     enabled false
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+javadoc {
+    options.addStringOption("charset", "UTF-8")
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
+}
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'destino-all'
+            from components.java
+            pom {
+                name = 'Destino'
+                description = 'Egolessness Destino'
+                url = 'http://egolessness.org'
+                licenses {
+                    license {
+                        name = 'Apache License, Version 2.0'
+                        url = 'https://www.apache.org/licenses/LICENSE-2.0'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'Egolessness'
+                        name = 'Kang Wang'
+                        email = 'zsmjwk@outlook.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/Egolessness/destino.git'
+                    developerConnection = 'scm:git:ssh://github.com/Egolessness/destino.git'
+                    url = 'https://github.com/Egolessness/destino'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "OSSRH"
+            if (project.version.toString().endsWith("-SNAPSHOT")) {
+                url = "https://s01.oss.sonatype.org/content/repositories/snapshots"
+            } else {
+                url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            }
+            credentials {
+                username = findProperty("ossrhUsername") ?: System.getenv("OSSRH_USERNAME")
+                password = findProperty("ossrhPassword") ?: System.getenv("OSSRH_PASSWORD")
+            }
+        }
+    }
+}
+
+signing {
+    sign(publishing.publications.mavenJava)
 }
 
 test {
