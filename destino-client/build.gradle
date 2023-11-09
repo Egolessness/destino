@@ -1,7 +1,3 @@
-apply {
-    'maven'
-}
-
 dependencies {
     compileOnly "org.slf4j:slf4j-api:${slf4jVersion}"
     compileOnly "org.apache.logging.log4j:log4j-core:${log4jVersion}"
