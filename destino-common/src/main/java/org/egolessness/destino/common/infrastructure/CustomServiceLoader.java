@@ -31,7 +31,7 @@ import java.security.PrivilegedAction;
 import java.util.*;
 
 /**
- * copy from {@link ServiceLoader}， and add class instantiate function
+ * copy from {@link ServiceLoader}, and add class instantiate function
  */
 public class CustomServiceLoader<S> implements Iterable<S> {
 
