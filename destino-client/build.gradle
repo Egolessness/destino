@@ -18,13 +18,6 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}"
 }
 
-jar {
-    from {
-        duplicatesStrategy DuplicatesStrategy.EXCLUDE
-        configurations.compileClasspath.files.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-}
-
 test {
     useJUnitPlatform()
 }
