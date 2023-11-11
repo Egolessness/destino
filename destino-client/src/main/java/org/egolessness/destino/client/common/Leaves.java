@@ -16,7 +16,7 @@
 
 package org.egolessness.destino.client.common;
 
-import org.egolessness.destino.client.logging.Loggers;
+import org.egolessness.destino.client.logging.DestinoLoggers;
 import org.slf4j.Logger;
 
 /**
@@ -26,8 +26,8 @@ import org.slf4j.Logger;
  */
 public enum Leaves {
 
-    REGISTER("[SERVICE REGISTER]", Loggers.REGISTRATION),
-    SUBSCRIBE("[SERVICE SUBSCRIBE]", Loggers.REGISTRATION);
+    REGISTER("[SERVICE REGISTER]", DestinoLoggers.REGISTRATION),
+    SUBSCRIBE("[SERVICE SUBSCRIBE]", DestinoLoggers.REGISTRATION);
 
     private final String desc;
 

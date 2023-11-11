@@ -16,7 +16,7 @@
 
 package org.egolessness.destino.client.infrastructure;
 
-import org.egolessness.destino.client.logging.Loggers;
+import org.egolessness.destino.client.logging.DestinoLoggers;
 import org.egolessness.destino.client.properties.ReceiverProperties;
 import org.egolessness.destino.common.fixedness.Handler;
 import org.egolessness.destino.common.fixedness.Lucermaire;
@@ -61,7 +61,7 @@ public class UdpReceiver implements Lucermaire {
         try {
             init(requestClient, properties);
         } catch (Exception e) {
-            Loggers.REGISTRATION.error("[SERVICE RECEIVER] build udp socket has error", e);
+            DestinoLoggers.REGISTRATION.error("[SERVICE RECEIVER] build udp socket has error", e);
         }
     }
 
@@ -114,7 +114,7 @@ public class UdpReceiver implements Lucermaire {
                 byte[] ackBytes = ack.toByteArray();
                 datagramSocket.send(new DatagramPacket(ackBytes, ackBytes.length, packet.getSocketAddress()));
             } catch (Throwable e) {
-                Loggers.UDP.error("[UDP-RECEIVER] udp socket has error", e);
+                DestinoLoggers.UDP.error("[UDP-RECEIVER] udp socket has error", e);
             }
         }
     }

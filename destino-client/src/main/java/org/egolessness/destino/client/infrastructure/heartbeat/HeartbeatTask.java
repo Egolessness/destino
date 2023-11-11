@@ -16,7 +16,7 @@
 
 package org.egolessness.destino.client.infrastructure.heartbeat;
 
-import org.egolessness.destino.client.logging.Loggers;
+import org.egolessness.destino.client.logging.DestinoLoggers;
 import org.egolessness.destino.client.infrastructure.Requester;
 import org.egolessness.destino.common.exception.DestinoException;
 import org.egolessness.destino.common.model.message.Response;
@@ -79,10 +79,10 @@ public class HeartbeatTask implements Runnable {
             }
         } catch (DestinoException e) {
             if (!registerAgainWhenUnexpected(e.getErrCode())) {
-                Loggers.REGISTRATION.warn("[HEARTBEAT] Failed to send heartbeat with {}", heartbeatPlan.getInstance());
+                DestinoLoggers.REGISTRATION.warn("[HEARTBEAT] Failed to send heartbeat with {}", heartbeatPlan.getInstance());
             }
         } catch (Exception e) {
-            Loggers.REGISTRATION.error("[HEARTBEAT] Send heartbeat has error with {}", heartbeatPlan.getInstance(), e);
+            DestinoLoggers.REGISTRATION.error("[HEARTBEAT] Send heartbeat has error with {}", heartbeatPlan.getInstance(), e);
         } finally {
             execute(interval);
         }

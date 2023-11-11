@@ -18,6 +18,7 @@ package org.egolessness.destino.client.logging;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.util.ContextInitializer;
+import org.egolessness.destino.client.logging.AbstractLoggingLoader;
 import org.egolessness.destino.client.properties.DestinoProperties;
 import org.egolessness.destino.common.enumeration.LoggingType;
 import org.egolessness.destino.common.utils.PredicateUtils;
@@ -45,6 +46,7 @@ public class LogbackLoader extends AbstractLoggingLoader {
         
         try {
             LoggerContext loggerContext = (LoggerContext) StaticLoggerBinder.getSingleton().getLoggerFactory();
+            getContextProperties().forEach(loggerContext::putProperty);
             new ContextInitializer(loggerContext).configureByResource(getResource(path));
         } catch (Exception e) {
             throw new IllegalStateException("Failed to load logback configuration file for the path " + path, e);

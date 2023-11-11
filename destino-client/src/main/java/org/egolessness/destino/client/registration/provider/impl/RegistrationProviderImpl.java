@@ -17,7 +17,7 @@
 package org.egolessness.destino.client.registration.provider.impl;
 
 import org.egolessness.destino.client.common.Leaves;
-import org.egolessness.destino.client.logging.Loggers;
+import org.egolessness.destino.client.logging.DestinoLoggers;
 import org.egolessness.destino.client.infrastructure.Requester;
 import org.egolessness.destino.client.infrastructure.heartbeat.HeartbeatLauncher;
 import org.egolessness.destino.client.infrastructure.repeater.RequestRepeater;
@@ -58,7 +58,7 @@ public class RegistrationProviderImpl implements RegistrationProvider {
     public void registerInstance(String namespace, String groupName, String serviceName, ServiceInstance instance)
             throws DestinoException
     {
-        Loggers.REGISTRATION.info("[SERVICE REGISTER] {} is registering service {} of group {} with instance {}.",
+        DestinoLoggers.REGISTRATION.info("[SERVICE REGISTER] {} is registering service {} of group {} with instance {}.",
                 namespace, serviceName, groupName, Address.of(instance.getIp(), instance.getPort()));
 
         InstanceRegisterRequest registerRequest = new InstanceRegisterRequest(namespace, groupName, serviceName, instance);
@@ -83,7 +83,7 @@ public class RegistrationProviderImpl implements RegistrationProvider {
     public void deregisterInstance(String namespace, String groupName, String serviceName, ServiceInstance instance)
             throws DestinoException
     {
-        Loggers.REGISTRATION.info("[SERVICE DEREGISTER] {} is unregistering service {} of group {} with instance {}.",
+        DestinoLoggers.REGISTRATION.info("[SERVICE DEREGISTER] {} is unregistering service {} of group {} with instance {}.",
                 namespace, serviceName, groupName, Address.of(instance.getIp(), instance.getPort()));
 
         InstanceDeregisterRequest request = new InstanceDeregisterRequest(namespace, groupName, serviceName, instance);

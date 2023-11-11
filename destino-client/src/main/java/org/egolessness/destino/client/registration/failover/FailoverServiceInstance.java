@@ -16,7 +16,7 @@
 
 package org.egolessness.destino.client.registration.failover;
 
-import org.egolessness.destino.client.logging.Loggers;
+import org.egolessness.destino.client.logging.DestinoLoggers;
 import org.egolessness.destino.common.utils.PredicateUtils;
 
 import java.util.Arrays;
@@ -106,7 +106,7 @@ public class FailoverServiceInstance {
                 PredicateUtils.isNotEmpty(ip) && port > 0 && port < 0xFFFF;
 
         if (!isValid) {
-            Loggers.REGISTRATION.warn("Failover service instance is invalid: {}", this);
+            DestinoLoggers.REGISTRATION.warn("Failover service instance is invalid: {}", this);
         }
 
         return isValid;

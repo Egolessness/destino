@@ -16,7 +16,7 @@
 
 package org.egolessness.destino.client.infrastructure;
 
-import org.egolessness.destino.client.logging.Loggers;
+import org.egolessness.destino.client.logging.DestinoLoggers;
 import org.egolessness.destino.client.properties.DestinoProperties;
 import org.egolessness.destino.common.constant.CommonConstants;
 import org.egolessness.destino.common.model.message.Response;
@@ -101,7 +101,7 @@ public class AuthenticationMaintainer {
                 requestClient.connectNext();
             }
         } catch (Throwable throwable) {
-            Loggers.AUTHENTICATION.error("Login failed.", throwable);
+            DestinoLoggers.AUTHENTICATION.error("Login failed.", throwable);
         }
 
         return false;
@@ -124,7 +124,7 @@ public class AuthenticationMaintainer {
                 return true;
             }
         } catch (Exception e) {
-            Loggers.AUTHENTICATION.warn("Login failed with username {}", properties.getUsername(), e);
+            DestinoLoggers.AUTHENTICATION.warn("Login failed with username {}", properties.getUsername(), e);
         }
 
         return false;

@@ -17,7 +17,7 @@
 package org.egolessness.destino.client.scheduling.reactor;
 
 import org.egolessness.destino.client.scheduling.script.ScriptConverter;
-import org.egolessness.destino.client.logging.Loggers;
+import org.egolessness.destino.client.logging.DestinoLoggers;
 import org.egolessness.destino.client.infrastructure.ScriptFactory;
 import org.egolessness.destino.client.properties.SchedulingProperties;
 import org.egolessness.destino.client.infrastructure.ExecutorCreator;
@@ -94,7 +94,7 @@ public class SchedulingReactor implements Lucermaire {
     public void addJob(final Scheduled<String, String> scheduled) {
         Scheduled<String, String> oldScheduled = this.jobs.putIfAbsent(scheduled.name(), scheduled);
         if (oldScheduled != null && oldScheduled != scheduled) {
-            Loggers.SCHEDULED.warn("Job already exists for name '{}'.", scheduled.name());
+            DestinoLoggers.SCHEDULING.warn("Job already exists for name '{}'.", scheduled.name());
         }
     }
 
@@ -261,7 +261,7 @@ public class SchedulingReactor implements Lucermaire {
                 try {
                     requester.executeRequest(new ExecutionFeedbackRequest(feedbacks));
                 } catch (Exception e) {
-                    Loggers.SCHEDULED.warn("[SCHEDULED] Feedback submit failed.", e);
+                    DestinoLoggers.SCHEDULING.warn("[SCHEDULED] Feedback submit failed.", e);
                     this.feedbackQueue.addAll(feedbacks);
                 }
             }

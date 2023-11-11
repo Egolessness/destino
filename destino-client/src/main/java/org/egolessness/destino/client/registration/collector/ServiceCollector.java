@@ -18,7 +18,7 @@ package org.egolessness.destino.client.registration.collector;
 
 import org.egolessness.destino.client.common.Leaves;
 import org.egolessness.destino.client.common.Reporters;
-import org.egolessness.destino.client.logging.Loggers;
+import org.egolessness.destino.client.logging.DestinoLoggers;
 import org.egolessness.destino.client.infrastructure.ExecutorCreator;
 import org.egolessness.destino.client.infrastructure.backup.BackupDataConverter;
 import org.egolessness.destino.client.infrastructure.backup.DataBackup;
@@ -122,7 +122,7 @@ public class ServiceCollector implements Lucermaire {
                             service.getServiceName());
                     return URLEncoder.encode(serviceKey, StandardCharsets.UTF_8.name());
                 } catch (Exception e) {
-                    Loggers.REGISTRATION.error("[SERVICE BACKUP] build filename failed with service: {}", service, e);
+                    DestinoLoggers.REGISTRATION.error("[SERVICE BACKUP] build filename failed with service: {}", service, e);
                     return null;
                 }
             }
@@ -236,7 +236,7 @@ public class ServiceCollector implements Lucermaire {
     private boolean compareService(Service origin, Service current)
     {
         if (Objects.isNull(origin)) {
-            Loggers.REGISTRATION.info("[SERVICE COLLECTOR] service:{} init ({}) new instances:{}",
+            DestinoLoggers.REGISTRATION.info("[SERVICE COLLECTOR] service:{} init ({}) new instances:{}",
                     buildServiceInfo(current), current.getInstances().size(), current.getInstances());
             return true;
         }
@@ -276,7 +276,7 @@ public class ServiceCollector implements Lucermaire {
                     "update " + updateInstances.size() + " service instances: " + updateInstances + "\n";
             String removeInstancesMsg = removeInstances.isEmpty() ? "" :
                     "remove " + removeInstances.size() + " service instances: " + removeInstances + "\n";
-            Loggers.REGISTRATION.info("[SERVICE COLLECTOR] service:{} has changed {\n{}}", buildServiceInfo(current),
+            DestinoLoggers.REGISTRATION.info("[SERVICE COLLECTOR] service:{} has changed {\n{}}", buildServiceInfo(current),
                     addInstancesMsg + updateInstancesMsg + removeInstancesMsg);
         }
 

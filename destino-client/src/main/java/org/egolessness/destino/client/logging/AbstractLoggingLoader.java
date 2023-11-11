@@ -17,7 +17,9 @@
 package org.egolessness.destino.client.logging;
 
 import org.egolessness.destino.client.properties.DestinoProperties;
+import org.egolessness.destino.client.properties.LoggingProperties;
 import org.egolessness.destino.common.enumeration.LoggingType;
+import org.egolessness.destino.common.enumeration.SystemProperties;
 import org.egolessness.destino.common.utils.PredicateUtils;
 
 import java.io.File;
@@ -25,6 +27,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -41,11 +45,12 @@ public abstract class AbstractLoggingLoader {
     }
 
     protected String getConfigPath(final String defaultPath) {
-        if (Objects.nonNull(properties) && PredicateUtils.isNotBlank(properties.getLoggingConfigPath())) {
-            return properties.getLoggingConfigPath();
+        String configPath = properties.getLoggingProperties().getConfigDir();
+        if (PredicateUtils.isNotBlank(configPath)) {
+            return configPath;
         }
-        Boolean loggingDefaultConfigEnabled = properties.getLoggingDefaultConfigEnabled();
-        if (loggingDefaultConfigEnabled == null || loggingDefaultConfigEnabled) {
+        Boolean defaultConfigEnabled = properties.getLoggingProperties().getDefaultConfigEnabled();
+        if (defaultConfigEnabled == null || defaultConfigEnabled) {
             return defaultPath;
         }
         return null;
@@ -58,7 +63,7 @@ public abstract class AbstractLoggingLoader {
             ClassLoader classLoader = AbstractLoggingLoader.class.getClassLoader();
             URL url = Objects.nonNull(classLoader) ? classLoader.getResource(realPath) : ClassLoader.getSystemResource(realPath);
             if (Objects.isNull(url)) {
-                throw new FileNotFoundException("could not find resource with path:" + realPath);
+                throw new FileNotFoundException("Could not find resource with path: " + realPath);
             }
 
             return url;
@@ -68,6 +73,38 @@ public abstract class AbstractLoggingLoader {
         } catch (MalformedURLException ex) {
             return new File(path).toURI().toURL();
         }
+    }
+
+    public Map<String, String> getContextProperties() {
+        Map<String, String> props = new HashMap<>();
+        LoggingProperties loggingProperties = properties.getLoggingProperties();
+        if (null == loggingProperties) {
+            return props;
+        }
+        SystemProperties userHome = SystemProperties.USER_HOME;
+        props.put(userHome.getKey(), userHome.get());
+        if (PredicateUtils.isNotBlank(loggingProperties.getLogPath())) {
+            props.put("DESTINO.LOG.PATH", loggingProperties.getLogPath());
+        }
+        if (PredicateUtils.isNotBlank(loggingProperties.getFileSize())) {
+            props.put("DESTINO.LOG.FILE.SIZE", loggingProperties.getFileSize());
+        }
+        if (Objects.nonNull(loggingProperties.getMaxCount())) {
+            props.put("DESTINO.LOG.MAX.COUNT", Integer.toString(loggingProperties.getMaxCount()));
+        }
+        if (PredicateUtils.isNotBlank(loggingProperties.getDefaultLogLevel())) {
+            props.put("DESTINO.DEFAULT.LOG.LEVEL", loggingProperties.getDefaultLogLevel());
+        }
+        if (PredicateUtils.isNotBlank(loggingProperties.getRemoteLogLevel())) {
+            props.put("DESTINO.REMOTE.LOG.LEVEL", loggingProperties.getRemoteLogLevel());
+        }
+        if (PredicateUtils.isNotBlank(loggingProperties.getRegistrationLogLevel())) {
+            props.put("DESTINO.REGISTRATION.LOG.LEVEL", loggingProperties.getRegistrationLogLevel());
+        }
+        if (PredicateUtils.isNotBlank(loggingProperties.getSchedulingLogLevel())) {
+            props.put("DESTINO.SCHEDULING.LOG.LEVEL", loggingProperties.getSchedulingLogLevel());
+        }
+        return props;
     }
 
     protected abstract void load();

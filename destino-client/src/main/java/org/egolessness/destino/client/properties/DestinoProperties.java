@@ -47,13 +47,6 @@ public class DestinoProperties {
     private BalancerStrategy registryAddressesSwitchStrategy;
 
     /**
-     * default value is true
-     */
-    private Boolean loggingDefaultConfigEnabled;
-
-    private String loggingConfigPath;
-
-    /**
      * udp receiver start on port when request type is http
      */
     private ReceiverProperties receiverProperties;
@@ -69,6 +62,8 @@ public class DestinoProperties {
     private BackupProperties backupProperties;
 
     private FailoverProperties failoverProperties;
+
+    private LoggingProperties loggingProperties;
 
     public ListenableArrayList<String> getAddresses() {
         return addresses;
@@ -138,22 +133,6 @@ public class DestinoProperties {
         this.registryAddressesSwitchStrategy = registryAddressesSwitchStrategy;
     }
 
-    public Boolean getLoggingDefaultConfigEnabled() {
-        return loggingDefaultConfigEnabled;
-    }
-
-    public void setLoggingDefaultConfigEnabled(Boolean loggingDefaultConfigEnabled) {
-        this.loggingDefaultConfigEnabled = loggingDefaultConfigEnabled;
-    }
-
-    public String getLoggingConfigPath() {
-        return loggingConfigPath;
-    }
-
-    public void setLoggingConfigPath(String loggingConfigPath) {
-        this.loggingConfigPath = loggingConfigPath;
-    }
-
     public ReceiverProperties getReceiverProperties() {
         return receiverProperties;
     }
@@ -210,4 +189,11 @@ public class DestinoProperties {
         this.failoverProperties = failoverProperties;
     }
 
+    public LoggingProperties getLoggingProperties() {
+        return loggingProperties;
+    }
+
+    public void setLoggingProperties(LoggingProperties loggingProperties) {
+        this.loggingProperties = loggingProperties;
+    }
 }

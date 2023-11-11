@@ -16,13 +16,12 @@
 
 package org.egolessness.destino.client.infrastructure;
 
-import org.egolessness.destino.client.logging.Loggers;
+import org.egolessness.destino.client.logging.DestinoLoggers;
 import org.egolessness.destino.client.properties.*;
 import org.egolessness.destino.common.infrastructure.ListenableArrayList;
 import org.egolessness.destino.common.properties.HttpProperties;
 import org.egolessness.destino.common.properties.RequestProperties;
 import org.egolessness.destino.common.properties.TlsProperties;
-import org.egolessness.destino.client.properties.*;
 
 /**
  * destino configuration initialize
@@ -32,6 +31,9 @@ import org.egolessness.destino.client.properties.*;
 public class PropertiesInitializer {
 
     public static DestinoProperties init(DestinoProperties properties) {
+        if (properties.getLoggingProperties() == null) {
+            properties.setLoggingProperties(new LoggingProperties());
+        }
         if (properties.getAddresses() == null) {
             properties.setAddresses(new ListenableArrayList<>());
         }
@@ -64,7 +66,7 @@ public class PropertiesInitializer {
             requestProperties.setTlsProperties(new TlsProperties());
         }
 
-        Loggers.load(properties);
+        DestinoLoggers.load(properties);
         return properties;
     }
 

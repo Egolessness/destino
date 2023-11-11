@@ -17,7 +17,7 @@
 package org.egolessness.destino.client.infrastructure.heartbeat;
 
 import org.egolessness.destino.client.common.Reporters;
-import org.egolessness.destino.client.logging.Loggers;
+import org.egolessness.destino.client.logging.DestinoLoggers;
 import org.egolessness.destino.client.properties.HeartbeatProperties;
 import org.egolessness.destino.client.infrastructure.Requester;
 import org.egolessness.destino.common.enumeration.Mark;
@@ -101,7 +101,7 @@ public class HeartbeatLauncher implements Lucermaire {
 
         String key = buildHeartbeatKey(namespace, groupName, serviceName, instance);
 
-        Loggers.REGISTRATION.info("[HEARTBEAT] adding heartbeat plan with {}", key);
+        DestinoLoggers.REGISTRATION.info("[HEARTBEAT] adding heartbeat plan with {}", key);
         HeartbeatPlan plan = HEARTBEAT_PLAN_CACHE.compute(key, (beatKey, beatPlan) -> {
             if (beatPlan != null) {
                 beatPlan.setCancelled(true);
@@ -131,7 +131,7 @@ public class HeartbeatLauncher implements Lucermaire {
     private void removeHeartbeatPlan(String key) {
         HeartbeatPlan plan = HEARTBEAT_PLAN_CACHE.remove(key);
         if (Objects.nonNull(plan)) {
-            Loggers.REGISTRATION.info("[HEARTBEAT] removing heartbeat with {}", key);
+            DestinoLoggers.REGISTRATION.info("[HEARTBEAT] removing heartbeat with {}", key);
             plan.setCancelled(true);
             Reporters.HEARTBEAT_PLAN_COUNT_COLLECT.set(HEARTBEAT_PLAN_CACHE.size());
         }
@@ -150,7 +150,7 @@ public class HeartbeatLauncher implements Lucermaire {
 
         String key = buildHeartbeatKey(namespace, groupName, serviceName, instance);
 
-        Loggers.REGISTRATION.info("[HEARTBEAT] updating heartbeat plan with {}", key);
+        DestinoLoggers.REGISTRATION.info("[HEARTBEAT] updating heartbeat plan with {}", key);
         HeartbeatPlan plan = HEARTBEAT_PLAN_CACHE.computeIfPresent(key, (beatKey, beatPlan) -> {
             beatPlan.setCancelled(true);
             return buildHeartbeatPlan(namespace, groupName, serviceName, instance);
@@ -166,13 +166,13 @@ public class HeartbeatLauncher implements Lucermaire {
     
     @Override
     public void shutdown() {
-        Loggers.REGISTRATION.info("[HEARTBEAT] launcher is being shutdown...");
+        DestinoLoggers.REGISTRATION.info("[HEARTBEAT] launcher is being shutdown...");
         for (HeartbeatPlan plan : HEARTBEAT_PLAN_CACHE.values()) {
             plan.setCancelled(true);
         }
         HEARTBEAT_PLAN_CACHE.clear();
         ThreadUtils.shutdownThreadPool(executorService);
-        Loggers.REGISTRATION.info("[HEARTBEAT] launcher has been shutdown");
+        DestinoLoggers.REGISTRATION.info("[HEARTBEAT] launcher has been shutdown");
     }
     
 

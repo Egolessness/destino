@@ -16,7 +16,7 @@
 
 package org.egolessness.destino.client.infrastructure;
 
-import org.egolessness.destino.client.logging.Loggers;
+import org.egolessness.destino.client.logging.DestinoLoggers;
 import org.egolessness.destino.client.properties.DestinoProperties;
 import org.egolessness.destino.common.balancer.RoundRobinBalancer;
 import org.egolessness.destino.common.constant.HttpScheme;
@@ -110,7 +110,7 @@ public class ServerAddressesReader {
                 }
             }
         } catch (Exception e) {
-            Loggers.REGISTRATION.warn("Failed to read server addresses from provider url: {}",
+            DestinoLoggers.REGISTRATION.warn("Failed to read server addresses from provider url: {}",
                     properties.getAddressesProviderUrl(), e);
         } finally {
             executor.schedule(this::read, readInterval.toMillis(), TimeUnit.MILLISECONDS);

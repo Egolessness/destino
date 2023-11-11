@@ -25,7 +25,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author zsmjwk@outlook.com (wangkang)
  */
-public class Loggers {
+@SuppressWarnings("ALL")
+public class DestinoLoggers {
 
     public static void load(DestinoProperties properties) {
         try {
@@ -34,7 +35,8 @@ public class Loggers {
         } catch (ClassNotFoundException ignored) {
         }
         try {
-            Class.forName("org.apache.logging.log4j.Logger");
+            Class.forName("org.apache.logging.log4j.LogManager");
+            Class.forName("org.apache.logging.log4j.core.LoggerContext");
             new Log4J2Loader(properties).load();
         } catch (ClassNotFoundException ignored) {
         }
@@ -44,7 +46,7 @@ public class Loggers {
 
     public static final Logger REGISTRATION = getLogger("org.egolessness.destino.client.registration");
 
-    public static final Logger SCHEDULED = getLogger("org.egolessness.destino.client.scheduled");
+    public static final Logger SCHEDULING = getLogger("org.egolessness.destino.client.scheduling");
 
     public static final Logger AUTHENTICATION = getLogger("org.egolessness.destino.client.authentication");
     

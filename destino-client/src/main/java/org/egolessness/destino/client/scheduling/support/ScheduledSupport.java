@@ -17,13 +17,12 @@
 package org.egolessness.destino.client.scheduling.support;
 
 import org.egolessness.destino.client.scheduling.functional.*;
-import org.egolessness.destino.client.logging.Loggers;
+import org.egolessness.destino.client.logging.DestinoLoggers;
 import org.egolessness.destino.common.enumeration.PrimitiveTypes;
 import org.egolessness.destino.common.exception.DestinoRuntimeException;
 import org.egolessness.destino.common.model.Result;
 import org.egolessness.destino.common.utils.PredicateUtils;
 import org.egolessness.destino.common.utils.JsonUtils;
-import org.egolessness.destino.client.scheduling.functional.*;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
@@ -176,7 +175,7 @@ public class ScheduledSupport {
         try {
             return JsonUtils.toObj(param, paramType);
         } catch (Throwable throwable) {
-            Loggers.SCHEDULED.error("Trigger param deserialize failed, param = {}", param, throwable);
+            DestinoLoggers.SCHEDULING.error("Trigger param deserialize failed, param = {}", param, throwable);
             return paramType.isPrimitive() ? paramType.cast(PrimitiveTypes.getInitValue(paramType)) : null;
         }
     }

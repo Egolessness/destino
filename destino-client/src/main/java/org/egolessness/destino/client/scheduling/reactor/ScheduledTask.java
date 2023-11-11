@@ -16,7 +16,7 @@
 
 package org.egolessness.destino.client.scheduling.reactor;
 
-import org.egolessness.destino.client.logging.Loggers;
+import org.egolessness.destino.client.logging.DestinoLoggers;
 import org.egolessness.destino.client.scheduling.functional.Scheduled;
 import org.egolessness.destino.client.scheduling.context.ScheduledContext;
 import org.egolessness.destino.client.scheduling.context.ScheduledContextHolder;
@@ -176,7 +176,7 @@ public class ScheduledTask {
 
             return new Result<>(ExecutedCode.TERMINATED_AND_FAILED, "Scheduled terminate failed and execute failed.");
         } catch (Throwable e) {
-            Loggers.SCHEDULED.error("[SCHEDULER] schedule-{} execute failed.", scheduled.name());
+            DestinoLoggers.SCHEDULING.error("[SCHEDULER] schedule-{} execute failed.", scheduled.name());
             if (isTerminated()) {
                 return new Result<>(ExecutedCode.TERMINATED_AND_FAILED, e.getMessage());
             }

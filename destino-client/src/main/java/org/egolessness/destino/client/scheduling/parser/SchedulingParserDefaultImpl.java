@@ -18,7 +18,7 @@ package org.egolessness.destino.client.scheduling.parser;
 
 import org.egolessness.destino.client.annotation.GlobalScheduled;
 import org.egolessness.destino.client.annotation.DestinoJob;
-import org.egolessness.destino.client.logging.Loggers;
+import org.egolessness.destino.client.logging.DestinoLoggers;
 import org.egolessness.destino.client.scheduling.functional.Scheduled;
 import org.egolessness.destino.client.scheduling.support.ScheduledSupport;
 import org.egolessness.destino.client.spi.ScheduledConverter;
@@ -57,7 +57,7 @@ public class SchedulingParserDefaultImpl implements SchedulingParser {
             if (Objects.nonNull(scheduled)) {
                 Scheduled<String, String> origin = jobs.put(scheduled.name(), scheduled);
                 if (Objects.nonNull(origin)) {
-                    Loggers.SCHEDULED.error("Duplicate scheduled name: {}, and ignored latter.",
+                    DestinoLoggers.SCHEDULING.error("Duplicate scheduled name: {}, and ignored latter.",
                             instance.getClass().getName());
                 }
             }
@@ -84,7 +84,7 @@ public class SchedulingParserDefaultImpl implements SchedulingParser {
                 }
 
                 if (jobs.containsKey(name)) {
-                    Loggers.SCHEDULED.error("Duplicate scheduled name:{}, and ignore latter.",
+                    DestinoLoggers.SCHEDULING.error("Duplicate scheduled name:{}, and ignore latter.",
                             Mark.DOT.join(taskClass.getName(), method.getName()));
                     continue;
                 }
@@ -115,7 +115,7 @@ public class SchedulingParserDefaultImpl implements SchedulingParser {
                 try {
                     return convertEntry.getValue().convert(instance);
                 } catch (Exception e) {
-                    Loggers.SCHEDULED.error(e.getMessage(), e);
+                    DestinoLoggers.SCHEDULING.error(e.getMessage(), e);
                 }
             }
         }

@@ -59,6 +59,8 @@ public class Log4J2Loader extends AbstractLoggingLoader {
         }
         
         LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
+        getContextProperties().forEach(loggerContext::putObject);
+
         Configuration contextConfiguration = loggerContext.getConfiguration();
         Configuration configuration = getConfiguration(loggerContext, configPath);
         configuration.start();
