@@ -22,7 +22,7 @@ import org.egolessness.destino.common.properties.RequestProperties;
 import org.egolessness.destino.common.remote.http.DefaultClientFactory;
 import org.egolessness.destino.common.spi.RequestClientFactory;
 import org.egolessness.destino.common.utils.PredicateUtils;
-import org.egolessness.destino.common.model.message.RequestChannel;
+import org.egolessness.destino.common.enumeration.RequestChannel;
 
 import java.util.*;
 

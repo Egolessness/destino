@@ -17,17 +17,18 @@
 package org.egolessness.destino.registration.support;
 
 import org.egolessness.destino.common.model.request.InstanceHeartbeatRequest;
+import org.egolessness.destino.registration.message.InstanceMode;
 import org.egolessness.destino.registration.model.*;
 import com.linecorp.armeria.server.ServiceRequestContext;
 import org.egolessness.destino.common.constant.DefaultConstants;
 import org.egolessness.destino.common.enumeration.Mark;
 import org.egolessness.destino.common.model.ServiceBaseInfo;
-import org.egolessness.destino.common.model.message.RequestChannel;
+import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.common.model.request.InstanceRequest;
 import org.egolessness.destino.core.Loggers;
 import org.egolessness.destino.core.model.Member;
 import org.egolessness.destino.registration.message.ServiceKey;
-import org.egolessness.destino.common.model.message.RegisterMode;
+import org.egolessness.destino.common.enumeration.RegisterMode;
 import org.egolessness.destino.common.model.Address;
 import org.egolessness.destino.common.model.ServiceInstance;
 import org.egolessness.destino.common.model.ServiceMercury;
@@ -100,8 +101,16 @@ public class RegistrationSupport {
     }
 
     public static InstanceKey buildInstanceKey(final String cluster, final RegisterMode mode, final String ip, final int port) {
-        return InstanceKey.newBuilder().setCluster(cluster).setMode(mode).setIp(ip).setPort(port).build();
+        return InstanceKey.newBuilder().setCluster(cluster).setMode(toInstanceMode(mode)).setIp(ip).setPort(port).build();
     }
+
+    public static InstanceMode toInstanceMode(final RegisterMode mode) {
+        if (mode == RegisterMode.SAFETY) {
+            return InstanceMode.SAFETY;
+        }
+        return InstanceMode.QUICKLY;
+    }
+
 
     public static Address getAddress(final ServiceInstance instance) {
         return Address.of(instance.getIp(), instance.getPort());

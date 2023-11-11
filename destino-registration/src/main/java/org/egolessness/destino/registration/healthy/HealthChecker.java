@@ -30,7 +30,7 @@ import org.egolessness.destino.common.exception.DestinoException;
 import org.egolessness.destino.common.executor.SimpleThreadFactory;
 import org.egolessness.destino.common.infrastructure.ConcurrentHashSet;
 import org.egolessness.destino.common.model.ServiceInstance;
-import org.egolessness.destino.common.model.message.RequestChannel;
+import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.common.support.InstanceSupport;
 import org.egolessness.destino.common.support.RequestSupport;
 import org.egolessness.destino.core.container.ConnectionContainer;
@@ -121,14 +121,14 @@ public class HealthChecker implements Lucermaire, DomainLinker {
     private Function<RequestChannel, HealthCheck> buildHealthCheckGetter(Injector injector) {
         HealthCheck[] checks = new HealthCheck[RequestChannel.values().length];
         return channel -> {
-            HealthCheck check = checks[channel.getNumber()];
+            HealthCheck check = checks[channel.ordinal()];
             if (check == null) {
                 synchronized (checks) {
-                    if ((check = checks[channel.getNumber()]) == null) {
+                    if ((check = checks[channel.ordinal()]) == null) {
                         if (channel == RequestChannel.GRPC) {
-                            return checks[channel.getNumber()] = injector.getInstance(RpcHealthCheck.class);
+                            return checks[channel.ordinal()] = injector.getInstance(RpcHealthCheck.class);
                         }
-                        return checks[channel.getNumber()] = injector.getInstance(TcpHealthCheck.class);
+                        return checks[channel.ordinal()] = injector.getInstance(TcpHealthCheck.class);
                     }
                 }
             }

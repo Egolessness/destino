@@ -20,7 +20,7 @@ import org.egolessness.destino.common.annotation.Body;
 import org.egolessness.destino.common.annotation.Http;
 import org.egolessness.destino.common.enumeration.HttpMethod;
 import org.egolessness.destino.common.model.ServiceBaseInfo;
-import org.egolessness.destino.common.model.message.RegisterMode;
+import org.egolessness.destino.common.enumeration.RegisterMode;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

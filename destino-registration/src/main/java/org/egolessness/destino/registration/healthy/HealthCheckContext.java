@@ -16,7 +16,7 @@
 
 package org.egolessness.destino.registration.healthy;
 
-import org.egolessness.destino.common.model.message.RequestChannel;
+import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.registration.message.RegistrationKey;
 import org.egolessness.destino.registration.model.BeatInfo;
 import org.egolessness.destino.registration.model.Registration;

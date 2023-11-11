@@ -16,8 +16,9 @@
 
 package org.egolessness.destino.registration.model;
 
+import org.egolessness.destino.registration.message.InstanceMode;
 import org.egolessness.destino.registration.support.RegistrationSupport;
-import org.egolessness.destino.common.model.message.RegisterMode;
+import org.egolessness.destino.common.enumeration.RegisterMode;
 import org.egolessness.destino.common.model.ServiceInstance;
 import org.egolessness.destino.registration.message.InstanceKey;
 
@@ -45,11 +46,11 @@ public class ServiceCluster extends ServiceClusterFate {
         this.setName(name);
     }
 
-    public Map<InstanceKey, ServiceInstance> locationIfPresent(RegisterMode mode) {
+    public Map<InstanceKey, ServiceInstance> locationIfPresent(InstanceMode mode) {
         return modes[mode.getNumber()];
     }
 
-    public Map<InstanceKey, ServiceInstance> location(RegisterMode mode) {
+    public Map<InstanceKey, ServiceInstance> location(InstanceMode mode) {
         int modeIndex = mode.getNumber();
         Map<InstanceKey, ServiceInstance> instances = modes[modeIndex];
         if (Objects.isNull(instances)) {
@@ -83,7 +84,7 @@ public class ServiceCluster extends ServiceClusterFate {
         return Objects.nonNull(instanceMap) && instanceMap.containsKey(instanceKey);
     }
 
-    public void replaceInstances(RegisterMode mode, Collection<ServiceInstance> instances) {
+    public void replaceInstances(InstanceMode mode, Collection<ServiceInstance> instances) {
         Map<InstanceKey, ServiceInstance> instanceMap = (modes[mode.getNumber()] = new ConcurrentHashMap<>());
         for (ServiceInstance instance : instances) {
             instanceMap.put(RegistrationSupport.buildInstanceKey(instance), instance);
@@ -91,7 +92,7 @@ public class ServiceCluster extends ServiceClusterFate {
     }
 
     public ServiceInstance addInstance(InstanceKey instanceKey, ServiceInstance instance) {
-        return location(instance.getMode()).put(instanceKey, instance);
+        return location(RegistrationSupport.toInstanceMode(instance.getMode())).put(instanceKey, instance);
     }
 
     public Optional<ServiceInstance> removeInstance(InstanceKey instanceKey) {
@@ -108,7 +109,8 @@ public class ServiceCluster extends ServiceClusterFate {
 
     public ServiceInstance getInstanceOrNull(String ip, int port) {
         for (RegisterMode mode : RegistrationSupport.getAvailableModes()) {
-            Map<InstanceKey, ServiceInstance> instanceMap = locationIfPresent(mode);
+            InstanceMode instanceMode = RegistrationSupport.toInstanceMode(mode);
+            Map<InstanceKey, ServiceInstance> instanceMap = locationIfPresent(instanceMode);
             if (Objects.isNull(instanceMap)) {
                 continue;
             }

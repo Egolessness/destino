@@ -19,7 +19,7 @@ package org.egolessness.destino.registration.storage;
 import org.egolessness.destino.registration.container.RegistrationContainer;
 import org.egolessness.destino.registration.storage.specifier.RegistrationKeySpecifier;
 import org.egolessness.destino.registration.support.RegistrationSupport;
-import org.egolessness.destino.common.model.message.RequestChannel;
+import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.common.model.ServiceInstance;
 import org.egolessness.destino.common.support.BeanValidator;
 import org.egolessness.destino.common.utils.PredicateUtils;
@@ -180,7 +180,7 @@ public abstract class AbstractRegistrationStorage implements DomainKvStorage<Reg
         ByteBuffer compaction = ByteBuffer.allocate(byteBuffer.capacity() + 4 + data.length);
         compaction.put(byteBuffer.array());
         if (registration.getChannel() != null) {
-            compaction.putInt(registration.getChannel().getNumber());
+            compaction.putInt(registration.getChannel().ordinal());
         } else {
             compaction.putInt(-1);
         }
@@ -197,7 +197,7 @@ public abstract class AbstractRegistrationStorage implements DomainKvStorage<Reg
         Registration registration = new Registration(meta.getSource(), meta.getVersion());
         int channelNumber = byteBuffer.getInt(16);
         if (channelNumber > -1) {
-            RequestChannel requestChannel = RequestChannel.forNumber(channelNumber);
+            RequestChannel requestChannel = RequestChannel.values()[channelNumber];
             registration.setChannel(requestChannel);
         }
         byte[] data = new byte[bytes.length - 20];

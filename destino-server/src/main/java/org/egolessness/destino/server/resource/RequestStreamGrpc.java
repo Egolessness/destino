@@ -20,7 +20,7 @@ import org.egolessness.destino.common.model.request.ServerCheckRequest;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.linecorp.armeria.server.ServiceRequestContext;
-import org.egolessness.destino.common.model.message.RequestChannel;
+import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.common.model.Address;
 import org.egolessness.destino.common.model.message.Request;
 import org.egolessness.destino.common.model.message.Response;

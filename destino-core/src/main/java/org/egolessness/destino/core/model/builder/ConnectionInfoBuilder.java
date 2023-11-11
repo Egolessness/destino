@@ -18,7 +18,7 @@ package org.egolessness.destino.core.model.builder;
 
 import org.egolessness.destino.common.enumeration.ClientAttribute;
 import org.egolessness.destino.common.enumeration.ConnectionSource;
-import org.egolessness.destino.common.model.message.RequestChannel;
+import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.common.model.Address;
 import org.egolessness.destino.core.model.ConnectionInfo;
 

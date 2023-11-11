@@ -20,7 +20,7 @@ import org.egolessness.destino.client.infrastructure.ExecutorCreator;
 import org.egolessness.destino.client.registration.collector.Service;
 import org.egolessness.destino.client.registration.failover.reduce.ServiceReduce;
 import org.egolessness.destino.client.properties.FailoverProperties;
-import org.egolessness.destino.common.model.message.RegisterMode;
+import org.egolessness.destino.common.enumeration.RegisterMode;
 import org.egolessness.destino.common.model.ServiceBaseInfo;
 import org.egolessness.destino.common.model.ServiceInstance;
 import org.egolessness.destino.common.utils.PredicateUtils;

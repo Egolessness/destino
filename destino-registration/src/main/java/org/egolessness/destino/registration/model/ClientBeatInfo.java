@@ -16,7 +16,7 @@
 
 package org.egolessness.destino.registration.model;
 
-import org.egolessness.destino.common.model.message.RegisterMode;
+import org.egolessness.destino.common.enumeration.RegisterMode;
 
 import java.io.Serializable;
 import java.util.Map;

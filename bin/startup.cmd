@@ -9,7 +9,7 @@ set BASE_DIR=%~dp0
 set BASE_DIR="%BASE_DIR:~0,-5%"
 set CONFIG_LOCATION=%BASE_DIR%/conf
 set MODE="cluster"
-set VERSION="1.0.0"
+set VERSION="1.0.1"
 set SERVER=destino-server-%VERSION%
 set DESTINO_OPTS=-jar -Ddestino.home=%BASE_DIR%
 set MODE_INDEX=-1

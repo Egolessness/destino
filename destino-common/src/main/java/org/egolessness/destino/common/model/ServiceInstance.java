@@ -16,7 +16,7 @@
 
 package org.egolessness.destino.common.model;
 
-import org.egolessness.destino.common.model.message.RegisterMode;
+import org.egolessness.destino.common.enumeration.RegisterMode;
 import jakarta.validation.constraints.*;
 
 import java.io.Serializable;

@@ -27,7 +27,7 @@ import org.egolessness.destino.common.constant.DefaultConstants;
 import org.egolessness.destino.common.exception.DestinoException;
 import org.egolessness.destino.common.fixedness.Lucermaire;
 import org.egolessness.destino.common.model.ServiceInstance;
-import org.egolessness.destino.common.model.message.RegisterMode;
+import org.egolessness.destino.common.enumeration.RegisterMode;
 import org.egolessness.destino.common.support.InstanceSupport;
 import org.egolessness.destino.common.utils.PredicateUtils;
 

@@ -89,7 +89,7 @@ public class RegistrationProviderImpl implements RegistrationProvider {
     private void delInstance(String namespace, String groupName, String serviceName, ServiceInstance instance) throws DestinoException {
         RegistrationKey registrationKey = RegistrationSupport.buildRegistrationKey(namespace, groupName, serviceName, instance);
         try {
-            repositorySelector.select(registrationKey.getInstanceKey().getMode()).del(specifier.transfer(registrationKey), writeTimeout);
+            repositorySelector.select(instance.getMode()).del(specifier.transfer(registrationKey), writeTimeout);
             connectionContainer.removeIndex(registrationKey);
         } catch (TimeoutException e) {
             throw new DestinoException(Errors.WRITE_TIMEOUT, "Deregister timeout.");

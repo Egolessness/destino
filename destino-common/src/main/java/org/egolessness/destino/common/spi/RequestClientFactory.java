@@ -16,7 +16,7 @@
 
 package org.egolessness.destino.common.spi;
 
-import org.egolessness.destino.common.model.message.RequestChannel;
+import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.common.remote.RequestHighLevelClient;
 import org.egolessness.destino.common.remote.RequestSimpleClient;
 

@@ -19,7 +19,7 @@ package org.egolessness.destino.common.remote;
 import org.egolessness.destino.common.exception.DestinoException;
 import org.egolessness.destino.common.fixedness.Callback;
 import org.egolessness.destino.common.fixedness.Lucermaire;
-import org.egolessness.destino.common.model.message.RequestChannel;
+import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.common.model.message.Response;
 
 import java.io.Serializable;

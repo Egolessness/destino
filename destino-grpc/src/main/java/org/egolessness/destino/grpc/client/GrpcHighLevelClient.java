@@ -20,7 +20,7 @@ import org.egolessness.destino.grpc.GrpcStub;
 import com.google.protobuf.Any;
 import org.egolessness.destino.common.fixedness.Callback;
 import org.egolessness.destino.common.fixedness.RequestProcessor;
-import org.egolessness.destino.common.model.message.RequestChannel;
+import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.common.exception.DestinoException;
 import org.egolessness.destino.common.fixedness.Picker;
 import org.egolessness.destino.common.infrastructure.RequestProcessorRegistry;

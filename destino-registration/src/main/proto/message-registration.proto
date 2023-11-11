@@ -21,9 +21,14 @@ message ServiceKey {
   string serviceName = 3;
 }
 
+enum InstanceMode {
+  QUICKLY = 0;
+  SAFETY = 1;
+}
+
 message InstanceKey {
   string ip = 1;
   int32 port = 2;
   string cluster = 3;
-  optional RegisterMode mode = 4;
+  optional InstanceMode mode = 4;
 }

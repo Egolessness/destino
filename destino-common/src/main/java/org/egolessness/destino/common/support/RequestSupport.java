@@ -24,7 +24,7 @@ import org.egolessness.destino.common.utils.JsonUtils;
 import org.egolessness.destino.common.utils.NetUtils;
 import org.egolessness.destino.common.utils.PredicateUtils;
 import com.google.protobuf.*;
-import org.egolessness.destino.common.model.message.RequestChannel;
+import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.common.model.message.Request;
 
 import java.io.Serializable;

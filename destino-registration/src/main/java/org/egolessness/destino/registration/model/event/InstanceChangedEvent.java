@@ -16,7 +16,7 @@
 
 package org.egolessness.destino.registration.model.event;
 
-import org.egolessness.destino.common.model.message.RequestChannel;
+import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.core.event.ElementOperationEvent;
 import org.egolessness.destino.core.infrastructure.notify.event.MonoEvent;
 import org.egolessness.destino.core.enumration.ElementOperation;

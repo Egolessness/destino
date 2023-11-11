@@ -16,7 +16,7 @@
 
 package org.egolessness.destino.common.remote.http;
 
-import org.egolessness.destino.common.model.message.RequestChannel;
+import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.common.exception.DestinoException;
 import org.egolessness.destino.common.exception.DestinoRuntimeException;
 import org.egolessness.destino.common.fixedness.Callback;

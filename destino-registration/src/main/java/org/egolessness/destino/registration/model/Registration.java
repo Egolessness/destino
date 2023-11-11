@@ -16,7 +16,7 @@
 
 package org.egolessness.destino.registration.model;
 
-import org.egolessness.destino.common.model.message.RequestChannel;
+import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.common.model.ServiceInstance;
 import org.egolessness.destino.core.model.Meta;
 

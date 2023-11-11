@@ -19,7 +19,7 @@ package org.egolessness.destino.core.model;
 import org.egolessness.destino.common.fixedness.Callback;
 import org.egolessness.destino.common.fixedness.Listener;
 import org.egolessness.destino.common.model.message.Request;
-import org.egolessness.destino.common.model.message.RequestChannel;
+import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.common.exception.DestinoException;
 import org.egolessness.destino.common.model.message.Response;
 import org.egolessness.destino.common.remote.RequestClient;

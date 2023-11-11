@@ -18,7 +18,7 @@ package org.egolessness.destino.registration.repository;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import org.egolessness.destino.common.model.message.RegisterMode;
+import org.egolessness.destino.common.enumeration.RegisterMode;
 import org.egolessness.destino.core.repository.KvRepository;
 import org.egolessness.destino.core.repository.KvRepositorySelector;
 import org.egolessness.destino.core.repository.AtomicKvRepository;

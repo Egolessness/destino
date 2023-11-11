@@ -21,17 +21,6 @@ message Response {
   google.protobuf.Any data = 4;
 }
 
-enum RequestChannel {
-  HTTP = 0;
-  GRPC = 1;
-  THRIFT = 2;
-}
-
-enum RegisterMode {
-  QUICKLY = 0;
-  SAFETY = 1;
-}
-
 enum BlockedStrategy {
   SERIAL = 0;
   PARALLEL = 1;

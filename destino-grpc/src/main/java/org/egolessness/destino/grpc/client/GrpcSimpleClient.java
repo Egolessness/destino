@@ -22,7 +22,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.egolessness.destino.common.fixedness.Callback;
 import org.egolessness.destino.common.enumeration.ErrorCode;
-import org.egolessness.destino.common.model.message.RequestChannel;
+import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.common.exception.DestinoException;
 import org.egolessness.destino.common.model.message.Request;
 import org.egolessness.destino.common.model.message.Response;

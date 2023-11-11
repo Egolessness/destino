@@ -18,7 +18,7 @@ package org.egolessness.destino.grpc;
 
 import org.egolessness.destino.common.annotation.SPI;
 import org.egolessness.destino.common.properties.RequestProperties;
-import org.egolessness.destino.common.model.message.RequestChannel;
+import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.common.fixedness.Picker;
 import org.egolessness.destino.common.spi.RequestClientFactory;
 import org.egolessness.destino.common.remote.RequestHighLevelClient;

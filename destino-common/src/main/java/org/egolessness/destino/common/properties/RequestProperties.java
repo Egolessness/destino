@@ -16,7 +16,7 @@
 
 package org.egolessness.destino.common.properties;
 
-import org.egolessness.destino.common.model.message.RequestChannel;
+import org.egolessness.destino.common.enumeration.RequestChannel;
 
 import java.time.Duration;
 

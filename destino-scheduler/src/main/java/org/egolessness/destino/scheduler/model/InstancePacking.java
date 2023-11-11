@@ -16,7 +16,7 @@
 
 package org.egolessness.destino.scheduler.model;
 
-import org.egolessness.destino.common.model.message.RequestChannel;
+import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.common.model.ServiceInstance;
 import org.egolessness.destino.common.support.RequestSupport;
 import org.egolessness.destino.registration.support.RegistrationSupport;

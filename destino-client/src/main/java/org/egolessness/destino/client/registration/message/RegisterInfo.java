@@ -17,7 +17,7 @@
 package org.egolessness.destino.client.registration.message;
 
 import org.egolessness.destino.client.scheduling.functional.Scheduled;
-import org.egolessness.destino.common.model.message.RegisterMode;
+import org.egolessness.destino.common.enumeration.RegisterMode;
 
 import java.util.Map;
 import java.util.Set;
