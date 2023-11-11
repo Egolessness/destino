@@ -76,7 +76,7 @@ public class SchedulerManager implements Starter {
         if (started.compareAndSet(false, true)) {
             this.executionPool.initFastChannel();
             this.schedulerDispatcher.start();
-            this.triggerExecutor.scheduleAtFixedRate(this.executionPool, 10, 100, TimeUnit.MILLISECONDS);
+            this.triggerExecutor.scheduleAtFixedRate(this.executionPool, 10, 150, TimeUnit.MILLISECONDS);
             this.commonExecutor.scheduleAtFixedRate(this.feedbackAcceptor, 3, 2, TimeUnit.SECONDS);
             this.commonExecutor.scheduleAtFixedRate(this.executionStorage::sync, 10, 1, TimeUnit.SECONDS);
             this.commonExecutor.scheduleAtFixedRate(this.executionLogCollector, 1, 1, TimeUnit.SECONDS);

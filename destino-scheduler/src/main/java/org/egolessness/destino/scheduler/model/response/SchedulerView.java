@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.scheduler.model.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.egolessness.destino.scheduler.model.SchedulerInfo;
 import org.egolessness.destino.common.model.message.ScheduledMode;
 import org.egolessness.destino.scheduler.model.Contact;
@@ -34,6 +35,7 @@ public class SchedulerView implements Serializable {
 
     private static final long serialVersionUID = -6193820296625972426L;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private long id;
 
     private boolean enabled;

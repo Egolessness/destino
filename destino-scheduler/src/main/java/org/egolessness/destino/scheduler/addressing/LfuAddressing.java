@@ -45,7 +45,7 @@ public class LfuAddressing extends AbstractAddressing {
     }
 
     @Override
-    public void accept(Collection<InstancePacking> values) {
+    public synchronized void accept(Collection<InstancePacking> values) {
         for (InstancePacking packing : values) {
             Node node = nodeMap.get(packing.getRegistrationKey());
             if (node == null) {
@@ -58,7 +58,7 @@ public class LfuAddressing extends AbstractAddressing {
     }
 
     @Override
-    public void lastDest(RegistrationKey registrationKey, long executionTime) {
+    public synchronized void lastDest(RegistrationKey registrationKey, long executionTime) {
         Boolean origin = cache.putIfAbsent(executionTime + registrationKey.toString(), Boolean.TRUE);
         if (origin != null) {
             return;
@@ -78,13 +78,16 @@ public class LfuAddressing extends AbstractAddressing {
     }
 
     @Override
-    public InstancePacking get() {
+    public synchronized InstancePacking get() {
 
         Node node = head;
         while ((node = node.next) != null) {
             if (node.instancePacking == null) {
                 node.pre.next = node.next;
-                node.next.pre = node.pre;
+                Node next = node.next;
+                if (next != null) {
+                    next.pre = node.pre;
+                }
                 nodeMap.remove(node.registrationKey);
                 continue;
             }
@@ -104,7 +107,7 @@ public class LfuAddressing extends AbstractAddressing {
     }
 
     @Override
-    Collection<InstancePacking> all() {
+    public Collection<InstancePacking> all() {
         return nodeMap.values().stream().map(node -> node.instancePacking)
                 .filter(Objects::nonNull).collect(Collectors.toList());
     }

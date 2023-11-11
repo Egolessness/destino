@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.scheduler.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.egolessness.destino.scheduler.validation.CronValid;
 import org.egolessness.destino.common.model.Document;
 import org.egolessness.destino.common.model.Script;
@@ -39,6 +40,7 @@ public class SchedulerInfo extends SchedulerFate implements Document {
 
     private static final long serialVersionUID = 5974650400614598541L;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private long id;
 
     private boolean enabled;

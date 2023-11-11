@@ -234,42 +234,45 @@ public class ExecutionPool implements Runnable, Lucermaire {
     }
 
     private Optional<InstancePacking> selectInstance(ExecutionInfo executionInfo) {
+        try {
+            Execution execution = executionInfo.getExecution();
+            SchedulerContext schedulerContext = executionInfo.getContext();
+            SchedulerInfo schedulerInfo = schedulerContext.getSchedulerInfo();
 
-        Execution execution = executionInfo.getExecution();
-        SchedulerContext schedulerContext = executionInfo.getContext();
-        SchedulerInfo schedulerInfo = schedulerContext.getSchedulerInfo();
-
-        Addressing addressing;
-        if (executionInfo.getForwardCount() <= 0) {
-            addressing = addressingFactory.get(schedulerInfo);
-        } else {
-            addressing = addressingFactory.create(AddressingStrategy.ROUND_ROBIN, schedulerInfo);
-            if (executionInfo.getLastDest() != null) {
-                addressing.lastDest(executionInfo.getLastDest(), execution.getExecutionTime());
-            }
-        }
-
-        InstancePacking selected;
-        if (executionInfo.getSendFailedCount() > 3 && execution.getExecutionTime() <= System.currentTimeMillis()) {
-            selected = addressing.safetySelect();
-            if (selected == null) {
-                selected = addressing.select();
-                if (selected == null) {
-                    return Optional.empty();
+            Addressing addressing;
+            if (executionInfo.getForwardCount() <= 0) {
+                addressing = addressingFactory.get(schedulerInfo);
+            } else {
+                addressing = addressingFactory.create(AddressingStrategy.ROUND_ROBIN, schedulerInfo);
+                if (executionInfo.getLastDest() != null) {
+                    addressing.lastDest(executionInfo.getLastDest(), execution.getExecutionTime());
                 }
             }
-        } else {
-            selected = addressing.select();
-            if (selected == null) {
+
+            InstancePacking selected;
+            if (executionInfo.getSendFailedCount() > 3 && execution.getExecutionTime() <= System.currentTimeMillis()) {
                 selected = addressing.safetySelect();
                 if (selected == null) {
-                    return Optional.empty();
+                    selected = addressing.select();
+                    if (selected == null) {
+                        return Optional.empty();
+                    }
+                }
+            } else {
+                selected = addressing.select();
+                if (selected == null) {
+                    selected = addressing.safetySelect();
+                    if (selected == null) {
+                        return Optional.empty();
+                    }
                 }
             }
-        }
 
-        addressingFactory.get(schedulerInfo).lastDest(selected.getRegistrationKey(), execution.getExecutionTime());
-        return Optional.of(selected);
+            addressingFactory.get(schedulerInfo).lastDest(selected.getRegistrationKey(), execution.getExecutionTime());
+            return Optional.of(selected);
+        } catch (Throwable throwable) {
+            return Optional.empty();
+        }
     }
 
     private EventHandler<ExecutionInfoEvent> buildFastChannelHandler() {

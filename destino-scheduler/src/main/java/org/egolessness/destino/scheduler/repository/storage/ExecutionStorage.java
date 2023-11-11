@@ -64,7 +64,7 @@ import java.util.stream.Collectors;
 @Singleton
 public class ExecutionStorage implements SnapshotOperation, DomainLinker, StorageRefreshable, Cleanable {
 
-    private final SqlStorage executionStorage;
+    private final SqlStorage baseStorage;
 
     private final SqlStorage activatedStorage;
 
@@ -84,7 +84,7 @@ public class ExecutionStorage implements SnapshotOperation, DomainLinker, Storag
         options.setPrefixLength(8);
         Cosmos baseCosmos = CosmosSupport.buildCosmos(domain(), type());
         this.DELETE_KEY_BUFFER = new ConcurrentLinkedQueue<>();
-        this.executionStorage = recordStorageFactory.create(baseCosmos);
+        this.baseStorage = recordStorageFactory.create(baseCosmos);
         this.activatedStorage = recordStorageFactory.create(CosmosSupport.buildCosmos(domain(), "execution_activated"));
         this.activatedStorage.getSnapshotProcessorAware().addAfterLoadProcessor(this::refresh);
         this.activatedStorage.getSnapshotProcessorAware().addBeforeSaveProcessor(this::syncExecutionsToStorage);
@@ -100,7 +100,7 @@ public class ExecutionStorage implements SnapshotOperation, DomainLinker, Storag
     public Page<Execution> page(List<Condition> conditions, Pageable pageable) throws StorageException {
         try {
             String orderBy = " order by execution_time desc, scheduler_id desc";
-            return executionStorage.page(conditions, orderBy, pageable, ExecutionSqlSupport::toExecution);
+            return baseStorage.page(conditions, orderBy, pageable, ExecutionSqlSupport::toExecution);
         } catch (SQLException e) {
             SchedulerLoggers.EXECUTION.error("Failed to page query execution.", e);
             throw new StorageException(Errors.STORAGE_READ_FAILED, "Search error.");
@@ -206,7 +206,7 @@ public class ExecutionStorage implements SnapshotOperation, DomainLinker, Storag
     private Execution getFromDB(ExecutionKey executionKey) {
         try {
             String where = ExecutionSqlSupport.buildConditions(executionKey);
-            return ExecutionSqlSupport.toOneExecution(executionStorage.select(where));
+            return ExecutionSqlSupport.toOneExecution(baseStorage.select(where));
         } catch (Exception e) {
             return null;
         }
@@ -221,7 +221,7 @@ public class ExecutionStorage implements SnapshotOperation, DomainLinker, Storag
             String matched = ExecutionSqlSupport.buildKeyWhere(execution);
             String where = "AND process <= " + execution.getProcessValue() + " AND scheduler_update_time <= "
                     + execution.getSchedulerUpdateTime();
-            executionStorage.merge(ExecutionSqlSupport.buildData(execution), matched, where);
+            baseStorage.merge(ExecutionSqlSupport.buildData(execution), matched, where);
         } catch (Exception e) {
             Loggers.STORAGE.error("Failed to save scheduler execution.", e);
         }
@@ -233,27 +233,27 @@ public class ExecutionStorage implements SnapshotOperation, DomainLinker, Storag
 
     public void del(Execution execution) throws SQLException {
         List<Condition> conditions = ExecutionSqlSupport.buildKeyConditions(execution);
-        executionStorage.delete(conditions);
+        baseStorage.delete(conditions);
     }
 
     @Override
     public String snapshotName() {
-        return executionStorage.snapshotName();
+        return baseStorage.snapshotName();
     }
 
     @Override
     public String snapshotSource() {
-        return executionStorage.snapshotSource();
+        return baseStorage.snapshotSource();
     }
 
     @Override
     public void snapshotSave(String backupPath) throws SnapshotException {
-        executionStorage.snapshotSave(backupPath);
+        baseStorage.snapshotSave(backupPath);
     }
 
     @Override
     public void snapshotLoad(String path) throws SnapshotException {
-        executionStorage.snapshotLoad(path);
+        baseStorage.snapshotLoad(path);
     }
 
     public Class<Execution> type() {
@@ -300,7 +300,7 @@ public class ExecutionStorage implements SnapshotOperation, DomainLinker, Storag
 
     public void clear(ClearKey clearKey) {
         try {
-            executionStorage.delete(ExecutionSqlSupport.buildConditions(clearKey));
+            baseStorage.delete(ExecutionSqlSupport.buildConditions(clearKey));
         } catch (Exception e) {
             SchedulerLoggers.EXECUTION_LOG.error("Scheduler execution clean failed.", e);
         }
@@ -318,7 +318,7 @@ public class ExecutionStorage implements SnapshotOperation, DomainLinker, Storag
             }
             List<Condition> conditions = new ArrayList<>();
             conditions.add(new Condition("execution_time", "<", toTime));
-            executionStorage.delete(conditions);
+            baseStorage.delete(conditions);
             this.lastCleanTime = toTime;
         } catch (Exception e) {
             SchedulerLoggers.EXECUTION.error("Scheduler execution clean failed.", e);
@@ -337,7 +337,7 @@ public class ExecutionStorage implements SnapshotOperation, DomainLinker, Storag
         long todayStart = ZonedDateTime.now().with(LocalTime.MIN).toInstant().toEpochMilli();
         String where = " execution_time >= " + todayStart;
         try {
-            return executionStorage.count(where);
+            return baseStorage.count(where);
         } catch (SQLException e) {
             throw new StorageException(Errors.STORAGE_READ_FAILED, e);
         }

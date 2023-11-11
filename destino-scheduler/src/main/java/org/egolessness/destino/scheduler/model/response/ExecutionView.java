@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.scheduler.model.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.egolessness.destino.scheduler.model.TargetInstance;
 import org.egolessness.destino.scheduler.model.TargetService;
 import org.egolessness.destino.common.model.message.ScheduledMode;
@@ -43,6 +44,7 @@ public class ExecutionView implements Serializable {
 
     private String schedulerName;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private long schedulerId;
 
     private long executionTime;

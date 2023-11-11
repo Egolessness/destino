@@ -42,7 +42,7 @@ public class LruAddressing extends AbstractAddressing {
     }
 
     @Override
-    public void accept(Collection<InstancePacking> values) {
+    public synchronized void accept(Collection<InstancePacking> values) {
         Map<RegistrationKey, InstancePacking> tmpMap = values.stream()
                 .collect(Collectors.toMap(InstancePacking::getRegistrationKey, Function.identity()));
 
@@ -62,7 +62,7 @@ public class LruAddressing extends AbstractAddressing {
     public synchronized void lastDest(RegistrationKey dest, long executionTime) {
         if (executionTime > this.lastExecutionTime) {
             this.lastExecutionTime = executionTime;
-            lruMap.compute(dest, (k, v) -> v);
+            lruMap.get(dest);
         }
     }
 
@@ -72,7 +72,7 @@ public class LruAddressing extends AbstractAddressing {
     }
 
     @Override
-    public InstancePacking get() {
+    public synchronized InstancePacking get() {
         for (InstancePacking packing : lruMap.values()) {
             lruMap.put(packing.getRegistrationKey(), packing);
             if (!packing.isRemoved() && packing.isConnectable()) {
@@ -88,8 +88,8 @@ public class LruAddressing extends AbstractAddressing {
     }
 
     @Override
-    public void clear() {
-        lruMap.replaceAll((k, v) -> null);
+    public synchronized void clear() {
+        lruMap.clear();
     }
 
     @Override

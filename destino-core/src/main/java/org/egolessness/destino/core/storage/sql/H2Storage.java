@@ -26,10 +26,7 @@ import org.egolessness.destino.core.support.PageSupport;
 
 import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -119,10 +116,14 @@ public class H2Storage implements SqlStorage {
             page.setTotal(resultSet.getInt(1));
         }
 
+        if (page.getTotal() <= 0) {
+            return Page.empty();
+        }
+
         PreparedStatement limitStatement = connection.prepareStatement(limitSql);
-        setWhereValue(limitStatement, conditions);
-        limitStatement.setInt(conditions.size() + 1, pageable.getSize());
-        limitStatement.setInt(conditions.size() + 2, offset);
+        int index =  setWhereValue(limitStatement, conditions);
+        limitStatement.setInt(index + 1, pageable.getSize());
+        limitStatement.setInt(index + 2, offset);
         executed = limitStatement.execute();
         List<T> records = new ArrayList<>(pageable.getSize());
         if (executed) {
@@ -142,17 +143,28 @@ public class H2Storage implements SqlStorage {
         }
         return conditions.stream().map(condition -> {
                     if (condition.getValue() instanceof Object[]) {
-                        return condition.getKey() + " " + condition.getExp() + " (?)";
+                        String ps = Arrays.stream(((Object[]) condition.getValue())).map(v -> "?")
+                                .collect(Collectors.joining(","));
+                        return condition.getKey() + " " + condition.getExp() + " (" + ps + ")";
                     }
                     return condition.getKey() + " " + condition.getExp() + " ?";
                 })
                 .collect(Collectors.joining(" AND "));
     }
 
-    private void setWhereValue(PreparedStatement statement, List<Condition> conditions) throws SQLException {
-        for (int i = 0; i < conditions.size(); i++) {
-            statement.setObject(i + 1, conditions.get(i).getValue());
+    private int setWhereValue(PreparedStatement statement, List<Condition> conditions) throws SQLException {
+        int index = 0;
+        for (Condition condition : conditions) {
+            if (condition.getValue() instanceof Object[]) {
+                Object[] value = (Object[]) condition.getValue();
+                for (Object v : value) {
+                    statement.setObject(++ index, v);
+                }
+            } else {
+                statement.setObject(++ index, condition.getValue());
+            }
         }
+        return index;
     }
 
     @Override

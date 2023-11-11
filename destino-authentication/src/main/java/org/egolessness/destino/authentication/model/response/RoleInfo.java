@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.authentication.model.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.egolessness.destino.authentication.resource.RoleResource;
 import org.egolessness.destino.authentication.model.Role;
 import org.egolessness.destino.common.utils.PredicateUtils;
@@ -33,6 +34,7 @@ public class RoleInfo implements Serializable {
 
     private static final long serialVersionUID = 3409947376887479151L;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
 
     private String name;

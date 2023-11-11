@@ -110,7 +110,7 @@ public class ScheduledSupport {
         int paramLength = parameters.length;
         Object[] paramValues = paramInitValues(parameters);
         Class<?> returnType = method.getReturnType();
-        if (Objects.equals(returnType, void.class) || !Objects.equals(returnType, Result.class)) {
+        if (Objects.equals(returnType, void.class) || !Result.class.isAssignableFrom(returnType)) {
             if (paramLength <= 0) {
                 return build(name, () -> invokeFunction(instance, method));
             } else {

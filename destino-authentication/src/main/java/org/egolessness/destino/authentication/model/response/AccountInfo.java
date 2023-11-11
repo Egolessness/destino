@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.authentication.model.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.egolessness.destino.authentication.resource.AccountResource;
 import org.egolessness.destino.authentication.model.Account;
 
@@ -31,6 +32,7 @@ public class AccountInfo implements Serializable {
 
     private static final long serialVersionUID = -1537532941518113138L;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private long id;
 
     private String username;

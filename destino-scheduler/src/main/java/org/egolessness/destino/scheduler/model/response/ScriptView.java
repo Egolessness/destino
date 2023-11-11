@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.scheduler.model.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.egolessness.destino.common.model.Script;
 import org.egolessness.destino.common.model.ScriptFate;
 
@@ -31,6 +32,7 @@ public class ScriptView implements Serializable {
 
     private static final long serialVersionUID = 5749394328459015188L;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private long id;
 
     private Script script;

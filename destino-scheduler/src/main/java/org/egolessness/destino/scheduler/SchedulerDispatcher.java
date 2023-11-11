@@ -48,8 +48,6 @@ public class SchedulerDispatcher implements Starter {
 
     private final Logger logger = LoggerFactory.getLogger(SchedulerDispatcher.class);
 
-    private final static int affinityCpu = 0;
-
     private final SchedulerSetting schedulerSetting;
 
     private final ExecutionRepository executionRepository;
@@ -97,8 +95,6 @@ public class SchedulerDispatcher implements Starter {
     }
 
     private void dispatch(boolean addWaitingWhenHandleLine) {
-        Affinity.setAffinity(affinityCpu);
-
         if (!started.get()) {
             return;
         }
