@@ -59,7 +59,7 @@ public class AvoidableAuthorizeInterceptor implements MethodInterceptor {
     public Object invoke(final MethodInvocation invocation) throws Throwable {
         AvoidableAuthorize annotation = invocation.getMethod().getAnnotation(AvoidableAuthorize.class);
 
-        if (!authenticationSetting.isSkipRegistration()) {
+        if (authenticationSetting.isSkipRegistration()) {
             return invocation.proceed();
         }
 
