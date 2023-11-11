@@ -128,6 +128,10 @@ public abstract class RequestHighLevelClient implements RequestClient {
     }
     
     public final RequestHighLevelClient start() {
+        if (ADDRESS_PICKER.list().isEmpty()) {
+            return this;
+        }
+
         boolean success = stateChange(RequestClientState.READY, RequestClientState.STARTING);
         if (!success) {
             return this;

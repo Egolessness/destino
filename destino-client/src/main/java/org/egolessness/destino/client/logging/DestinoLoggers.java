@@ -32,7 +32,8 @@ public class DestinoLoggers {
         try {
             Class.forName("ch.qos.logback.classic.Logger");
             new LogbackLoader(properties).load();
-        } catch (ClassNotFoundException ignored) {
+            return;
+        } catch (Exception ignored) {
         }
         try {
             Class.forName("org.apache.logging.log4j.LogManager");

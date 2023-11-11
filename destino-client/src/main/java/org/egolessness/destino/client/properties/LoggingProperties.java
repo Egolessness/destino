@@ -28,7 +28,7 @@ public class LoggingProperties {
      */
     private Boolean defaultConfigEnabled;
 
-    private String configDir;
+    private String configPath;
 
     private String logPath;
 
@@ -52,12 +52,12 @@ public class LoggingProperties {
         this.defaultConfigEnabled = defaultConfigEnabled;
     }
 
-    public String getConfigDir() {
-        return configDir;
+    public String getConfigPath() {
+        return configPath;
     }
 
-    public void setConfigDir(String configDir) {
-        this.configDir = configDir;
+    public void setConfigPath(String configPath) {
+        this.configPath = configPath;
     }
 
     public String getLogPath() {

@@ -132,6 +132,7 @@ public class ServerAddressesReader {
         }
 
         requestClient.changeAddresses(new RoundRobinBalancer<>(allUris).convertPicker());
+        requestClient.start();
     }
 
 }

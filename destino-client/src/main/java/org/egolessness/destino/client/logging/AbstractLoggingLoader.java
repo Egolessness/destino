@@ -45,7 +45,7 @@ public abstract class AbstractLoggingLoader {
     }
 
     protected String getConfigPath(final String defaultPath) {
-        String configPath = properties.getLoggingProperties().getConfigDir();
+        String configPath = properties.getLoggingProperties().getConfigPath();
         if (PredicateUtils.isNotBlank(configPath)) {
             return configPath;
         }
