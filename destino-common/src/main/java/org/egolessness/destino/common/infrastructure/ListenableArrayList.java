@@ -20,6 +20,7 @@ import org.egolessness.destino.common.infrastructure.monitor.Monitor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
@@ -53,12 +54,12 @@ public class ListenableArrayList<E> extends ArrayList<E> {
     }
 
     public ListenableArrayList(Collection<? extends E> c) {
-        super(c);
+        super(null != c ? c : Collections.emptyList());
         this.monitor = new Monitor<>();
     }
 
     public ListenableArrayList(Collection<? extends E> c, Monitor<ListenableArrayList<E>> monitor) {
-        super(c);
+        super(null != c ? c : Collections.emptyList());
         this.monitor = monitor;
         monitor.notifyUpdate(this);
     }
