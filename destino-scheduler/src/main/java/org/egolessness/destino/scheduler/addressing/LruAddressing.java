@@ -74,6 +74,9 @@ public class LruAddressing extends AbstractAddressing {
     @Override
     public synchronized InstancePacking get() {
         for (InstancePacking packing : lruMap.values()) {
+            if (null == packing) {
+                continue;
+            }
             lruMap.put(packing.getRegistrationKey(), packing);
             if (!packing.isRemoved() && packing.isConnectable()) {
                 return packing;
@@ -89,7 +92,7 @@ public class LruAddressing extends AbstractAddressing {
 
     @Override
     public synchronized void clear() {
-        lruMap.clear();
+        lruMap.replaceAll((k, v) -> null);
     }
 
     @Override

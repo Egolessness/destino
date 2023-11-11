@@ -144,7 +144,10 @@ public class LfuAddressing extends AbstractAddressing {
         while ((node = node.next) != null) {
             if (node.instancePacking == null) {
                 node.pre.next = node.next;
-                node.next.pre = node.pre;
+                Node next = node.next;
+                if (next != null) {
+                    next.pre = node.pre;
+                }
                 nodeMap.remove(node.registrationKey);
             }
             node.instancePacking = null;
