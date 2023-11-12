@@ -175,8 +175,8 @@ public class ScheduledSupport {
         try {
             return JsonUtils.toObj(param, paramType);
         } catch (Throwable throwable) {
-            DestinoLoggers.SCHEDULING.error("Trigger param deserialize failed, param = {}", param, throwable);
-            return paramType.isPrimitive() ? paramType.cast(PrimitiveTypes.getInitValue(paramType)) : null;
+            DestinoLoggers.SCHEDULING.error("Execution param deserialize failed, param = {}", param, throwable);
+            throw new RuntimeException("Execution param cannot deserialize to class: " + paramType.getSimpleName());
         }
     }
 
