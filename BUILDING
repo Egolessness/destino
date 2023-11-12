@@ -4,7 +4,7 @@ Build Instructions for Destino
 
 (1) Prerequisites
 
-    JDK 1.8+ is required in order to compile and run Destino.
+    JDK 1.8+, Gradle 8.0+ is required in order to compile and run Destino.
 
 (2) Build jar packages
 
