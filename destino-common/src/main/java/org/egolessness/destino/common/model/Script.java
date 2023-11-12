@@ -16,7 +16,6 @@
 
 package org.egolessness.destino.common.model;
 
-import org.egolessness.destino.common.model.message.ScriptType;
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -29,18 +28,18 @@ public class Script extends ScriptFate {
     private static final long serialVersionUID = 3822114272259864207L;
 
     @NotNull
-    private ScriptType type;
+    private String type;
 
     private String content;
 
     public Script() {
     }
 
-    public ScriptType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(ScriptType type) {
+    public void setType(String type) {
         this.type = type;
     }
 

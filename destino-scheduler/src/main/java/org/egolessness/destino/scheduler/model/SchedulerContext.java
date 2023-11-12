@@ -17,7 +17,6 @@
 package org.egolessness.destino.scheduler.model;
 
 import org.egolessness.destino.common.model.Script;
-import org.egolessness.destino.common.model.message.ScriptType;
 import org.egolessness.destino.common.model.message.Scripting;
 import org.egolessness.destino.scheduler.support.ScheduledSupport;
 import com.cronutils.model.Cron;
@@ -174,7 +173,7 @@ public class SchedulerContext {
             builder.setJobName(PredicateUtils.emptyString());
             Script script = schedulerInfo.getScript();
             if (ScheduledSupport.isValid(script)) {
-                ScriptType scriptType = script.getType();
+                String scriptType = script.getType();
                 long scriptVersion = script.getVersion();
                 Scripting.Builder scriptBuilder = Scripting.newBuilder().setVersion(scriptVersion).setType(scriptType);
                 builder.setScript(scriptBuilder);

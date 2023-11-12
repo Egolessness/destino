@@ -49,7 +49,7 @@ public class ScheduledExecution {
 
     private ScheduledMode                       mode;
 
-    private Scheduled<String, String> scheduled;
+    private Scheduled<String, String>           scheduled;
 
     private CompletableFuture<Result<String>>   completableFuture;
 

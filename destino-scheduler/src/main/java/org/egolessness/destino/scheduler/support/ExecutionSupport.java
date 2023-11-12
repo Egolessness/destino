@@ -23,7 +23,6 @@ import com.cronutils.model.time.ExecutionTime;
 import com.google.common.base.Strings;
 import org.egolessness.destino.common.model.Script;
 import org.egolessness.destino.common.model.message.ScheduledMode;
-import org.egolessness.destino.common.model.message.ScriptType;
 import org.egolessness.destino.common.model.message.Scripting;
 import org.egolessness.destino.common.utils.PredicateUtils;
 import org.egolessness.destino.scheduler.message.Execution;
@@ -130,7 +129,7 @@ public class ExecutionSupport {
             if (!ScheduledSupport.isValid(script)) {
                 return null;
             }
-            ScriptType scriptType = script.getType();
+            String scriptType = script.getType();
             long scriptVersion = script.getVersion();
             Scripting.Builder scriptBuilder = Scripting.newBuilder().setVersion(scriptVersion).setType(scriptType);
             builder.setScript(scriptBuilder);

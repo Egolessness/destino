@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.scheduler.support;
 
+import com.google.common.base.Strings;
 import org.egolessness.destino.common.model.message.ScheduledMode;
 import org.egolessness.destino.common.model.message.Scripting;
 import org.egolessness.destino.common.utils.PredicateUtils;
@@ -41,7 +42,7 @@ public class ExecutionSqlSupport {
         data.put("execution_time", execution.getExecutionTime());
         data.put("mode", execution.getModeValue());
         data.put("job_name", execution.getJobName());
-        data.put("script_type", execution.getScript().getTypeValue());
+        data.put("script_type", execution.getScript().getType());
         data.put("script_version", execution.getScript().getVersion());
         data.put("param", execution.getParam());
         data.put("timeout", execution.getTimeout());
@@ -171,7 +172,7 @@ public class ExecutionSqlSupport {
             builder.setModeValue(resultSet.getInt("mode"));
             builder.setJobName(resultSet.getString("job_name"));
             Scripting.Builder scb = Scripting.newBuilder();
-            scb.setTypeValue(resultSet.getInt("script_type"));
+            scb.setType(Strings.nullToEmpty(resultSet.getString("script_type")));
             scb.setVersion(resultSet.getLong("script_version"));
             builder.setScript(scb);
             builder.setParam(resultSet.getString("param"));

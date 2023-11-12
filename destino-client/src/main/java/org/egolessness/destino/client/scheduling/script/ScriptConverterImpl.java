@@ -22,7 +22,6 @@ import org.egolessness.destino.client.scheduling.functional.Scheduled;
 import org.egolessness.destino.client.scheduling.support.ScheduledSupport;
 import org.egolessness.destino.common.exception.ConvertFailedException;
 import org.egolessness.destino.common.model.Result;
-import org.egolessness.destino.common.model.message.ScriptType;
 
 import javax.script.*;
 import java.lang.reflect.Method;
@@ -41,6 +40,8 @@ public class ScriptConverterImpl implements ScriptConverter {
 
     private final static String EXECUTE_PARAM = "param";
 
+    private final static String SCRIPT_TYPE_GROOVY = "GROOVY";
+
     private final ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
 
     private final ScriptFactory factory;
@@ -52,15 +53,15 @@ public class ScriptConverterImpl implements ScriptConverter {
     }
 
     @Override
-    public Scheduled<String, String> convert(ScriptType type, String content) throws ConvertFailedException {
+    public Scheduled<String, String> convert(String type, String content) throws ConvertFailedException {
         if (content == null || content.trim().length() == 0) {
             throw new ConvertFailedException("Empty content.");
         }
 
-        ScriptEngine scriptEngine = scriptEngineManager.getEngineByName(type.name().toLowerCase());
+        ScriptEngine scriptEngine = scriptEngineManager.getEngineByName(type.toLowerCase());
         try {
 
-            if (type != ScriptType.GROOVY) {
+            if (!Objects.equals(type, SCRIPT_TYPE_GROOVY)) {
                 return ScheduledSupport.build(DEFAULT_SCHEDULED_NAME, param -> {
                     Bindings bindings = scriptEngine.createBindings();
                     bindings.put(EXECUTE_PARAM, param);

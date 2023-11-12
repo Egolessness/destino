@@ -156,7 +156,7 @@ public class SchedulingReactor implements Lucermaire {
     }
 
     private ScheduledExecution getScriptExecution(final long schedulerId, final Scripting script) {
-        ScriptType type = script.getType();
+        String type = script.getType();
         String content = script.getContent();
         long version = script.getVersion();
 

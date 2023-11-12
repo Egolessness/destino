@@ -18,7 +18,6 @@ package org.egolessness.destino.client.scheduling.script;
 
 import org.egolessness.destino.client.scheduling.functional.Scheduled;
 import org.egolessness.destino.common.exception.ConvertFailedException;
-import org.egolessness.destino.common.model.message.ScriptType;
 
 /**
  * interface of script converter
@@ -28,6 +27,6 @@ import org.egolessness.destino.common.model.message.ScriptType;
 @FunctionalInterface
 public interface ScriptConverter {
 
-    Scheduled<String, String> convert(ScriptType type, String content) throws ConvertFailedException;
+    Scheduled<String, String> convert(String type, String content) throws ConvertFailedException;
 
 }
