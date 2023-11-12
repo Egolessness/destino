@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS execution_activated (
     execution_time bigint NOT NULL,
     mode integer NOT NULL,
     job_name varchar(300) DEFAULT '',
-    script_type integer DEFAULT -1,
+    script_type varchar(30) DEFAULT -1,
     script_version bigint DEFAULT -1,
     param varchar(3000) DEFAULT NULL,
     timeout bigint DEFAULT -1,
