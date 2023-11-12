@@ -109,11 +109,11 @@ public class PackingContainer implements Container {
                 }
                 acceptor.accept(packingMap.values());
             } else {
-                List<InstancePacking> packingList = new ArrayList<>();
+                LinkedHashSet<InstancePacking> packingSet = new LinkedHashSet<>();
                 for (Map<RegistrationKey, InstancePacking> val : sis.values()) {
-                    packingList.addAll(val.values());
+                    packingSet.addAll(val.values());
                 }
-                acceptor.accept(packingList);
+                acceptor.accept(packingSet);
             }
             return;
         }
@@ -159,11 +159,11 @@ public class PackingContainer implements Container {
             }
             return packingMap.values();
         } else {
-            List<InstancePacking> packingList = new ArrayList<>();
+            LinkedHashSet<InstancePacking> packingSet = new LinkedHashSet<>();
             for (Map<RegistrationKey, InstancePacking> val : map.values()) {
-                packingList.addAll(val.values());
+                packingSet.addAll(val.values());
             }
-            return packingList;
+            return packingSet;
         }
     }
 
