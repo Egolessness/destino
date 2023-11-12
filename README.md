@@ -47,6 +47,12 @@ Download the package from the [latest stable release](https://github.com/Egoless
 
 > sh startup.sh -m cluster
 
+**Administrator**
+````
+username: admin
+password: admin
+````
+
 ## Philosophy
 
 - Ultimate elegant design, minimalistic operation
