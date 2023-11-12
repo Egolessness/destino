@@ -19,6 +19,7 @@ package org.egolessness.destino.scheduler.container;
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import org.egolessness.destino.common.model.ServiceInstance;
+import org.egolessness.destino.common.model.message.ScheduledMode;
 import org.egolessness.destino.common.support.RequestSupport;
 import org.egolessness.destino.common.utils.PredicateUtils;
 import org.egolessness.destino.core.container.Container;
@@ -101,11 +102,19 @@ public class PackingContainer implements Container {
             if (Objects.isNull(sis)) {
                 return;
             }
-            Map<RegistrationKey, InstancePacking> packingMap = sis.get(schedulerInfo.getJobName());
-            if (PredicateUtils.isEmpty(packingMap)) {
-                return;
+            if (schedulerInfo.getMode() == ScheduledMode.STANDARD) {
+                Map<RegistrationKey, InstancePacking> packingMap = sis.get(schedulerInfo.getJobName());
+                if (Objects.isNull(packingMap)) {
+                    return;
+                }
+                acceptor.accept(packingMap.values());
+            } else {
+                List<InstancePacking> packingList = new ArrayList<>();
+                for (Map<RegistrationKey, InstancePacking> val : sis.values()) {
+                    packingList.addAll(val.values());
+                }
+                acceptor.accept(packingList);
             }
-            acceptor.accept(packingMap.values());
             return;
         }
 
@@ -141,12 +150,21 @@ public class PackingContainer implements Container {
         }
     }
 
-    private Collection<InstancePacking> getInstances(Map<String, Map<RegistrationKey, InstancePacking>> map, SchedulerInfo schedulerInfo) {
-        Map<RegistrationKey, InstancePacking> packingMap = map.get(schedulerInfo.getJobName());
-        if (Objects.isNull(packingMap)) {
-            return Collections.emptySet();
+    private Collection<InstancePacking> getInstances(Map<String, Map<RegistrationKey, InstancePacking>> map,
+                                                     SchedulerInfo schedulerInfo) {
+        if (schedulerInfo.getMode() == ScheduledMode.STANDARD) {
+            Map<RegistrationKey, InstancePacking> packingMap = map.get(schedulerInfo.getJobName());
+            if (Objects.isNull(packingMap)) {
+                return Collections.emptySet();
+            }
+            return packingMap.values();
+        } else {
+            List<InstancePacking> packingList = new ArrayList<>();
+            for (Map<RegistrationKey, InstancePacking> val : map.values()) {
+                packingList.addAll(val.values());
+            }
+            return packingList;
         }
-        return packingMap.values();
     }
 
     private boolean isReachable(Registration registration) {
