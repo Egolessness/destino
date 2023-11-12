@@ -600,7 +600,7 @@ public class ExecutionPool implements Runnable, Lucermaire {
         executionInfo.forward();
         logCollector.addLogLine(executionInfo.getKey(), logParser);
         if (executionInfo.isForwardLimit()) {
-            executionInfo.setProcess(Process.TERMINATED);
+            executionInfo.setProcess(Process.FAILED);
             int forwardTimes = executionInfo.getContext().getSchedulerInfo().getForwardTimes();
             executionAlarm.send(executionInfo, ALARM_REASON_OVER_LIMIT.getValue(forwardTimes));
             logCollector.addLogLine(executionInfo.getKey(), ForwardLimitLogParser.INSTANCE);

@@ -61,7 +61,7 @@ public class ScriptConverterImpl implements ScriptConverter {
         ScriptEngine scriptEngine = scriptEngineManager.getEngineByName(type.toLowerCase());
         try {
 
-            if (!Objects.equals(type, SCRIPT_TYPE_GROOVY)) {
+            if (!SCRIPT_TYPE_GROOVY.equalsIgnoreCase(type)) {
                 return ScheduledSupport.build(DEFAULT_SCHEDULED_NAME, param -> {
                     Bindings bindings = scriptEngine.createBindings();
                     bindings.put(EXECUTE_PARAM, param);
