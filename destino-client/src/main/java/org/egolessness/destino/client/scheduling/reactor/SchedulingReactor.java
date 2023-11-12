@@ -261,8 +261,10 @@ public class SchedulingReactor implements Lucermaire {
                 try {
                     requester.executeRequest(new ExecutionFeedbackRequest(feedbacks));
                 } catch (Exception e) {
-                    DestinoLoggers.SCHEDULING.warn("[SCHEDULED] Feedback submit failed.", e);
-                    this.feedbackQueue.addAll(feedbacks);
+                    DestinoLoggers.SCHEDULING.warn("Execution feedback submit failed.", e);
+                    if (this.feedbackQueue.size() < feedbackBatchSize * 3) {
+                        this.feedbackQueue.addAll(feedbacks);
+                    }
                 }
             }
         }

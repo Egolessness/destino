@@ -130,13 +130,13 @@ public class RequestSupport {
     }
 
     public static byte[] getDateBytes(Request request) {
-        return request.getData().getValue().toByteArray();
+        ByteString byteString = request.getData().getValue();
+        return ByteUtils.decompress(byteString.toByteArray());
     }
 
     public static <T> T deserializeData(Request request, Class<T> requestClass) {
         try {
-            ByteString byteString = request.getData().getValue();
-            return JsonUtils.toObj(byteString.toByteArray(), requestClass);
+            return JsonUtils.toObj(getDateBytes(request), requestClass);
         } catch (Exception ignore) {
             return null;
         }
@@ -227,7 +227,7 @@ public class RequestSupport {
 
     public static List<URI> parseUris(List<String> addresses, boolean tlsEnabled) {
         return addresses.stream().map(address -> parseUri(address, tlsEnabled)).filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                .distinct().collect(Collectors.toList());
     }
 
     public static URI parseUri(String address, boolean tlsEnabled) {

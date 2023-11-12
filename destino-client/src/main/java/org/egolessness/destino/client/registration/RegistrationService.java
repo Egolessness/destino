@@ -19,7 +19,7 @@ package org.egolessness.destino.client.registration;
 import org.egolessness.destino.client.common.Leaves;
 import org.egolessness.destino.client.infrastructure.Requester;
 import org.egolessness.destino.client.registration.message.MetadataStuffer;
-import org.egolessness.destino.client.registration.message.RegisterInfo;
+import org.egolessness.destino.client.registration.message.RegistrationInfo;
 import org.egolessness.destino.client.registration.provider.RegistrationProvider;
 import org.egolessness.destino.client.registration.provider.impl.RegistrationProviderImpl;
 import org.egolessness.destino.client.scheduling.functional.Scheduled;
@@ -120,19 +120,19 @@ public class RegistrationService implements Lucermaire {
     public void register(String namespace, String groupName, String serviceName, String ip, int port,
                          String cluster, Collection<Scheduled<String, String>> jobs) throws DestinoException
     {
-        RegisterInfo registerInfo = new RegisterInfo();
-        registerInfo.setIp(ip);
-        registerInfo.setPort(port);
-        registerInfo.setCluster(cluster);
-        registerInfo.setMode(RegisterMode.QUICKLY);
-        registerInfo.setJobs(new HashSet<>(jobs));
-        register(namespace, groupName, serviceName, registerInfo);
+        RegistrationInfo registrationInfo = new RegistrationInfo();
+        registrationInfo.setIp(ip);
+        registrationInfo.setPort(port);
+        registrationInfo.setCluster(cluster);
+        registrationInfo.setMode(RegisterMode.QUICKLY);
+        registrationInfo.setJobs(new HashSet<>(jobs));
+        register(namespace, groupName, serviceName, registrationInfo);
     }
 
-    public void register(String namespace, String groupName, String serviceName, RegisterInfo registerInfo)
+    public void register(String namespace, String groupName, String serviceName, RegistrationInfo registrationInfo)
             throws DestinoException
     {
-        ServiceInstance instance = buildInstance(serviceName, registerInfo);
+        ServiceInstance instance = buildInstance(serviceName, registrationInfo);
         registrationProvider.registerInstance(namespace, groupName, serviceName, instance);
     }
 
@@ -179,35 +179,35 @@ public class RegistrationService implements Lucermaire {
         registrationProvider.deregisterInstance(namespace, groupName, serviceName, instance);
     }
 
-    public void update(String namespace, String groupName, String serviceName, RegisterInfo registerInfo)
+    public void update(String namespace, String groupName, String serviceName, RegistrationInfo registrationInfo)
             throws DestinoException
     {
-        ServiceInstance instance = buildInstance(serviceName, registerInfo);
+        ServiceInstance instance = buildInstance(serviceName, registrationInfo);
         registrationProvider.updateInstance(namespace, groupName, serviceName, instance);
     }
 
-    private ServiceInstance buildInstance(String serviceName, RegisterInfo registerInfo) throws DestinoException {
-        Objects.requireNonNull(registerInfo);
+    private ServiceInstance buildInstance(String serviceName, RegistrationInfo registrationInfo) throws DestinoException {
+        Objects.requireNonNull(registrationInfo);
 
         ServiceInstance instance = new ServiceInstance();
-        instance.setIp(registerInfo.getIp());
-        instance.setPort(registerInfo.getPort());
-        instance.setWeight(registerInfo.getWeight());
-        instance.setMode(registerInfo.getMode());
-        instance.setEnabled(registerInfo.isEnabled());
+        instance.setIp(registrationInfo.getIp());
+        instance.setPort(registrationInfo.getPort());
+        instance.setWeight(registrationInfo.getWeight());
+        instance.setMode(registrationInfo.getMode());
+        instance.setEnabled(registrationInfo.isEnabled());
         instance.setServiceName(serviceName);
-        instance.setCluster(registerInfo.getCluster());
+        instance.setCluster(registrationInfo.getCluster());
         instance.setUdpPort(requester.getUdpPort());
-        if (null != registerInfo.getMetadata()) {
-            instance.setMetadata(new HashMap<>(registerInfo.getMetadata()));
+        if (null != registrationInfo.getMetadata()) {
+            instance.setMetadata(new HashMap<>(registrationInfo.getMetadata()));
         }
 
         metadataStuffer.setMetadata(instance.getMetadata());
 
         InstanceSupport.validate(instance);
 
-        if (PredicateUtils.isNotEmpty(registerInfo.getJobs())) {
-            Set<String> jobNames = registerInfo.getJobs().stream().map(Scheduled::name)
+        if (PredicateUtils.isNotEmpty(registrationInfo.getJobs())) {
+            Set<String> jobNames = registrationInfo.getJobs().stream().map(Scheduled::name)
                     .filter(Objects::nonNull).collect(Collectors.toSet());
             instance.setJobs(jobNames);
         }

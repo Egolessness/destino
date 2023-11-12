@@ -203,13 +203,13 @@ public class ExecutionLineHandlerFactory {
                             cancelExecution(execution, schedulerUpdateTime);
                             return;
                         }
-                        updateExecution(updatedBuilder.build(), context);
-                        return;
+                        execution = updatedBuilder.build();
+                        updateExecution(execution, context);
                     }
 
                     if (!context.equalsExecution(execution)) {
-                        updateExecution(updatedBuilder.build(), context);
-                        return;
+                        execution = updatedBuilder.build();
+                        updateExecution(execution, context);
                     }
                 }
 

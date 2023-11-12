@@ -308,18 +308,18 @@ public class ExecutionStorage implements SnapshotOperation, DomainLinker, Storag
 
     private void clear(Period survivalPeriod) {
         long toTime = ZonedDateTime.now().with(LocalTime.MAX).minus(survivalPeriod).toInstant().toEpochMilli();
+        if (toTime < lastCleanTime) {
+            return;
+        }
         clear(toTime);
+        this.lastCleanTime = toTime;
     }
 
     private void clear(long toTime) {
         try {
-            if (toTime < lastCleanTime) {
-                return;
-            }
             List<Condition> conditions = new ArrayList<>();
             conditions.add(new Condition("execution_time", "<", toTime));
             baseStorage.delete(conditions);
-            this.lastCleanTime = toTime;
         } catch (Exception e) {
             SchedulerLoggers.EXECUTION.error("Scheduler execution clean failed.", e);
         }

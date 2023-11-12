@@ -62,6 +62,11 @@ public class ExecutionMerger {
 
     public Executions submit(ExecutionMerge executionMerge) {
         Executions.Builder builder = Executions.newBuilder();
+
+        if (executionMerge.getTo() < System.currentTimeMillis() - 5000) {
+            return builder.build();
+        }
+
         boolean parallel = executionMerge.getExecutionCount() > 50;
 
         if (parallel) {
@@ -142,6 +147,9 @@ public class ExecutionMerger {
             case INIT:
                 executionContainer.compute(execution, (key, exe) -> {
                     if (exe == null) {
+                        return execution;
+                    }
+                    if (sup > exe.getSchedulerUpdateTime()) {
                         return execution;
                     }
                     if (exe.getExecutionTime() < sup) {
