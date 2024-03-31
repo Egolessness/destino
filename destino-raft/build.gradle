@@ -1,18 +1,11 @@
 dependencies {
-    implementation ("com.alipay.sofa:jraft-core:${jraftVersion}") {
+    implementation ("com.alipay.sofa:jraft-core") {
         exclude module: 'bolt'
     }
-    implementation "com.alipay.sofa:rpc-grpc-impl:${jraftVersion}"
-    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
-    implementation "com.google.inject:guice:${guiceVersion}"
+    implementation "com.alipay.sofa:rpc-grpc-impl"
+    implementation "io.grpc:grpc-protobuf"
+    implementation "com.google.inject:guice"
 
     implementation project(":destino-core")
     implementation project(":destino-common")
-
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterVersion}"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}"
-}
-
-test {
-    useJUnitPlatform()
 }

@@ -1,19 +1,8 @@
-plugins {
-    id 'java'
-}
-
 dependencies {
-    implementation "com.google.protobuf:protobuf-java:${protobufVersion}"
-    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-    implementation "org.apache.httpcomponents:httpasyncclient:${httpasyncclientVersion}"
-    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
+    implementation "com.google.protobuf:protobuf-java"
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation "org.apache.httpcomponents:httpasyncclient"
+    implementation "org.slf4j:slf4j-api"
 
     implementation project(":destino-common")
-
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterVersion}"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}"
-}
-
-test {
-    useJUnitPlatform()
 }

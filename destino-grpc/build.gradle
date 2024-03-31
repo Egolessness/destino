@@ -3,16 +3,13 @@ plugins {
 }
 
 dependencies {
-    implementation "io.grpc:grpc-api:${grpcVersion}"
-    implementation "io.grpc:grpc-stub:${grpcVersion}"
-    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
-    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
-    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
+    implementation "io.grpc:grpc-api"
+    implementation "io.grpc:grpc-stub"
+    implementation "io.grpc:grpc-protobuf"
+    implementation "io.grpc:grpc-netty-shaded"
+    implementation "org.slf4j:slf4j-api"
 
     implementation project(":destino-common")
-
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterVersion}"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}"
 }
 
 protobuf {

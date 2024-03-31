@@ -1,27 +1,16 @@
-plugins {
-    id 'java'
-}
-
 dependencies {
-    compileOnly "org.slf4j:slf4j-api:${slf4jVersion}"
-    compileOnly "org.apache.logging.log4j:log4j-core:${log4jVersion}"
-    compileOnly "org.apache.logging.log4j:log4j-api:${log4jVersion}"
-    compileOnly "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
-    compileOnly "ch.qos.logback:logback-classic:${logbackVersion}"
-    compileOnly "ch.qos.logback:logback-core:${logbackVersion}"
-    compileOnly "com.google.code.findbugs:jsr305:${jsr305Version}"
+    compileOnly "org.slf4j:slf4j-api"
+    compileOnly "org.apache.logging.log4j:log4j-core"
+    compileOnly "org.apache.logging.log4j:log4j-api"
+    compileOnly "org.apache.logging.log4j:log4j-slf4j-impl"
+    compileOnly "ch.qos.logback:logback-classic"
+    compileOnly "ch.qos.logback:logback-core"
+    compileOnly "com.google.code.findbugs:jsr305"
 
-    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
-    implementation "com.google.protobuf:protobuf-java:${protobufVersion}"
-    implementation "io.prometheus:simpleclient:${prometheusVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
+    implementation "com.google.protobuf:protobuf-java"
+    implementation "io.prometheus:simpleclient"
 
     implementation project(":destino-common")
-
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterVersion}"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}"
-}
-
-test {
-    useJUnitPlatform()
 }

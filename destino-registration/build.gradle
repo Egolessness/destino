@@ -3,17 +3,14 @@ plugins {
 }
 
 dependencies {
-    compileOnly "com.google.inject:guice:${guiceVersion}"
-    compileOnly "com.linecorp.armeria:armeria:${armeriaVersion}"
-    compileOnly "org.hibernate.validator:hibernate-validator:${hibernateValidatorVersion}"
-    implementation "com.google.protobuf:protobuf-java:${protobufVersion}"
-    implementation "commons-lang:commons-lang:${commonslangVersion}"
+    compileOnly "com.google.inject:guice"
+    compileOnly "com.linecorp.armeria:armeria"
+    compileOnly "org.hibernate.validator:hibernate-validator"
+    implementation "com.google.protobuf:protobuf-java"
+    implementation "commons-lang:commons-lang"
 
     implementation project(":destino-core")
     implementation project(":destino-common")
-
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterVersion}"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}"
 }
 
 protobuf {
@@ -30,8 +27,4 @@ protobuf {
             grpc {}
         }
     }
-}
-
-test {
-    useJUnitPlatform()
 }

@@ -3,26 +3,25 @@ plugins {
 }
 
 dependencies {
-    implementation "io.grpc:grpc-stub:${grpcVersion}"
-    implementation "io.grpc:grpc-netty:${grpcVersion}"
-    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
-    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
-    implementation "io.grpc:grpc-services:${grpcVersion}"
-    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
-    implementation "com.google.inject:guice:${guiceVersion}"
+    implementation "io.grpc:grpc-stub"
+    implementation "io.grpc:grpc-netty"
+    implementation "io.grpc:grpc-netty-shaded"
+    implementation "io.grpc:grpc-protobuf"
+    implementation "io.grpc:grpc-services"
+    implementation "com.google.inject:guice"
 
-    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-properties:${jacksonVersion}"
-    implementation "org.hibernate.validator:hibernate-validator:${hibernateValidatorVersion}"
-    implementation "com.linecorp.armeria:armeria:${armeriaVersion}"
-    implementation "com.linecorp.armeria:armeria-grpc:${armeriaVersion}"
-    implementation "commons-io:commons-io:${commonsioVersion}"
-    implementation "commons-lang:commons-lang:${commonslangVersion}"
-    implementation "org.apache.commons:commons-text:${commonstextVersion}"
-    implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
-    implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"
-    implementation "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-properties"
+    implementation "org.hibernate.validator:hibernate-validator"
+    implementation "com.linecorp.armeria:armeria"
+    implementation "com.linecorp.armeria:armeria-grpc"
+    implementation "commons-io:commons-io"
+    implementation "commons-lang:commons-lang"
+    implementation "org.apache.commons:commons-text"
+    implementation "org.apache.logging.log4j:log4j-core"
+    implementation "org.apache.logging.log4j:log4j-api"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl"
 
     implementation project(":destino-core")
     implementation project(":destino-common")
@@ -35,9 +34,6 @@ dependencies {
     if (!project.hasProperty("no-scheduler")) {
         implementation project(":destino-scheduler")
     }
-
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterVersion}"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}"
 }
 
 shadowJar {
@@ -80,7 +76,3 @@ jar {
 }
 
 compileJava.dependsOn processResources
-
-test {
-    useJUnitPlatform()
-}

@@ -3,28 +3,25 @@ plugins {
 }
 
 dependencies {
-    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
-    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
-    implementation "org.hibernate.validator:hibernate-validator:${hibernateValidatorVersion}"
-    implementation "commons-io:commons-io:${commonsioVersion}"
-    implementation "commons-lang:commons-lang:${commonslangVersion}"
-    implementation "org.rocksdb:rocksdbjni:${rocksdbVersion}"
-    implementation "com.h2database:h2:${h2Version}"
-    implementation "com.google.inject:guice:${guiceVersion}"
-    implementation "de.ruedigermoeller:fst:${fstVersion}"
-    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
-    implementation "com.lmax:disruptor:${disruptorVersion}"
-    implementation "com.alipay.sofa:hessian:${hessianVersion}"
-    implementation "com.sun.mail:jakarta.mail:${jakartamailVersion}"
-    implementation "com.linecorp.armeria:armeria:${armeriaVersion}"
-    implementation "com.linecorp.armeria:armeria-grpc:${armeriaVersion}"
+    implementation "org.slf4j:slf4j-api"
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
+    implementation "org.hibernate.validator:hibernate-validator"
+    implementation "commons-io:commons-io"
+    implementation "commons-lang:commons-lang:"
+    implementation "org.rocksdb:rocksdbjni"
+    implementation "com.h2database:h2"
+    implementation "com.google.inject:guice"
+    implementation "de.ruedigermoeller:fst"
+    implementation "io.grpc:grpc-protobuf"
+    implementation "com.lmax:disruptor"
+    implementation "com.alipay.sofa:hessian"
+    implementation "com.sun.mail:jakarta.mail"
+    implementation "com.linecorp.armeria:armeria"
+    implementation "com.linecorp.armeria:armeria-grpc"
 
     implementation project(":destino-common")
     implementation project(":destino-grpc")
-
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterVersion}"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}"
 }
 
 protobuf {
@@ -41,8 +38,4 @@ protobuf {
             grpc {}
         }
     }
-}
-
-test {
-    useJUnitPlatform()
 }

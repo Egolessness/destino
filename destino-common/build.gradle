@@ -3,16 +3,13 @@ plugins {
 }
 
 dependencies {
-    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
-    implementation "com.google.protobuf:protobuf-java:${protobufVersion}"
-    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-    implementation "org.hibernate.validator:hibernate-validator:${hibernateValidatorVersion}"
-    implementation "net.jodah:typetools:${typetoolsVersion}"
-    implementation "org.glassfish:jakarta.el:${jakartaelVersion}"
-    implementation "com.google.code.findbugs:jsr305:${jsr305Version}"
-
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterVersion}"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}"
+    implementation "org.slf4j:slf4j-api"
+    implementation "com.google.protobuf:protobuf-java"
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation "org.hibernate.validator:hibernate-validator"
+    implementation "net.jodah:typetools"
+    implementation "org.glassfish:jakarta.el"
+    implementation "com.google.code.findbugs:jsr305"
 }
 
 processResources {
@@ -35,8 +32,4 @@ protobuf {
             grpc {}
         }
     }
-}
-
-test {
-    useJUnitPlatform()
 }
