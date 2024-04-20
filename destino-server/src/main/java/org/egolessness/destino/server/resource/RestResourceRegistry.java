@@ -23,7 +23,7 @@ import org.egolessness.destino.core.DestinoServer;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
-import org.egolessness.destino.common.infrastructure.CustomServiceLoader;
+import org.egolessness.destino.common.infrastructure.CustomizedServiceLoader;
 import org.egolessness.destino.core.Loggers;
 import org.egolessness.destino.core.spi.Resource;
 
@@ -47,7 +47,7 @@ public class RestResourceRegistry implements ResourceRegistry {
         DestinoServer destinoServer = injector.getInstance(DestinoServer.class);
         destinoServer.addRestDecorator(new RestServiceDecorator());
         destinoServer.addHttpService(Mark.SLASH.getValue(), FileService.of(ClassLoader.getSystemClassLoader(),"console"));
-        CustomServiceLoader.load(Resource.class, injector::getInstance).forEach(destinoServer::addHttpAnnotatedService);
+        CustomizedServiceLoader.load(Resource.class, injector::getInstance).forEach(destinoServer::addHttpAnnotatedService);
         Loggers.SERVER.info("Restful resources has loaded.");
     }
 

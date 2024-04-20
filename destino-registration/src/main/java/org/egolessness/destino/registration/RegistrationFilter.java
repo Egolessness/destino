@@ -16,13 +16,13 @@
 
 package org.egolessness.destino.registration;
 
+import org.egolessness.destino.common.infrastructure.CustomizedServiceLoader;
 import org.egolessness.destino.registration.model.NamespaceInfo;
 import org.egolessness.destino.registration.model.Service;
 import org.egolessness.destino.registration.model.ServiceCluster;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
-import org.egolessness.destino.common.infrastructure.CustomServiceLoader;
 import org.egolessness.destino.core.enumration.Action;
 import org.egolessness.destino.core.fixedness.DomainLinker;
 import org.egolessness.destino.core.spi.ResourceFilter;
@@ -45,7 +45,7 @@ public class RegistrationFilter implements DomainLinker {
 
     @Inject
     public RegistrationFilter(Injector injector) {
-        CustomServiceLoader.load(ResourceFilter.class, injector::getInstance).forEach(filters::add);
+        CustomizedServiceLoader.load(ResourceFilter.class, injector::getInstance).forEach(filters::add);
     }
 
     public Predicate<NamespaceInfo> buildNamespaceFilter(Action action) {

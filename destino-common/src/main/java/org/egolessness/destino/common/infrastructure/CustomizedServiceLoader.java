@@ -25,15 +25,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.security.AccessControlContext;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.*;
 
-/**
- * copy from {@link ServiceLoader}, and add class instantiate function
- */
-public class CustomServiceLoader<S> implements Iterable<S> {
+public class CustomizedServiceLoader<S> implements Iterable<S> {
 
     private static final String PREFIX = "META-INF/services/";
 
@@ -41,24 +35,21 @@ public class CustomServiceLoader<S> implements Iterable<S> {
 
     private final ClassLoader loader;
 
-    private final AccessControlContext acc;
-
     private final LinkedHashMap<String,S> providers = new LinkedHashMap<>();
 
-    private CustomServiceLoader<S>.LazyIterator lookupIterator;
+    private CustomizedServiceLoader<S>.LazyIterator lookupIterator;
 
     private final EFunction<Class<S>, S> instantiationFunction;
 
     public void reload() {
         providers.clear();
-        lookupIterator = new CustomServiceLoader<S>.LazyIterator(service, loader);
+        lookupIterator = new CustomizedServiceLoader<S>.LazyIterator(service, loader);
     }
 
-    private CustomServiceLoader(Class<S> svc, ClassLoader cl, EFunction<Class<S>, S> ief) {
+    private CustomizedServiceLoader(Class<S> svc, ClassLoader cl, EFunction<Class<S>, S> ief) {
         service = Objects.requireNonNull(svc, "Service interface cannot be null");
         loader = (cl == null) ? ClassLoader.getSystemClassLoader() : cl;
-        instantiationFunction = (ief == null) ? Class::newInstance : ief;
-        acc = (System.getSecurityManager() != null) ? AccessController.getContext() : null;
+        instantiationFunction = (ief == null) ? type -> type.getDeclaredConstructor().newInstance() : ief;
         reload();
     }
 
@@ -207,21 +198,11 @@ public class CustomServiceLoader<S> implements Iterable<S> {
         }
 
         public boolean hasNext() {
-            if (acc == null) {
-                return hasNextService();
-            } else {
-                PrivilegedAction<Boolean> action = this::hasNextService;
-                return AccessController.doPrivileged(action, acc);
-            }
+            return hasNextService();
         }
 
         public S next() {
-            if (acc == null) {
-                return nextService();
-            } else {
-                PrivilegedAction<S> action = this::nextService;
-                return AccessController.doPrivileged(action, acc);
-            }
+            return nextService();
         }
 
         public void remove() {
@@ -255,40 +236,40 @@ public class CustomServiceLoader<S> implements Iterable<S> {
         };
     }
 
-    public static <S> CustomServiceLoader<S> load(Class<S> service, ClassLoader loader, EFunction<Class<S>, S> function)
+    public static <S> CustomizedServiceLoader<S> load(Class<S> service, ClassLoader loader, EFunction<Class<S>, S> function)
     {
-        return new CustomServiceLoader<>(service, loader, function);
+        return new CustomizedServiceLoader<>(service, loader, function);
     }
 
-    public static <S> CustomServiceLoader<S> load(Class<S> service,
-                                            ClassLoader loader)
+    public static <S> CustomizedServiceLoader<S> load(Class<S> service,
+                                                      ClassLoader loader)
     {
-        return CustomServiceLoader.load(service, loader, null);
+        return CustomizedServiceLoader.load(service, loader, null);
     }
 
-    public static <S> CustomServiceLoader<S> load(Class<S> service) {
+    public static <S> CustomizedServiceLoader<S> load(Class<S> service) {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        return CustomServiceLoader.load(service, cl);
+        return CustomizedServiceLoader.load(service, cl);
     }
 
-    public static <S> CustomServiceLoader<S> load(Class<S> service, EFunction<Class<S>, S> function)
+    public static <S> CustomizedServiceLoader<S> load(Class<S> service, EFunction<Class<S>, S> function)
     {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        return new CustomServiceLoader<>(service, cl, function);
+        return new CustomizedServiceLoader<>(service, cl, function);
     }
 
-    public static <S> CustomServiceLoader<S> loadInstalled(Class<S> service) {
+    public static <S> CustomizedServiceLoader<S> loadInstalled(Class<S> service) {
         ClassLoader cl = ClassLoader.getSystemClassLoader();
         ClassLoader prev = null;
         while (cl != null) {
             prev = cl;
             cl = cl.getParent();
         }
-        return CustomServiceLoader.load(service, prev);
+        return CustomizedServiceLoader.load(service, prev);
     }
 
     public String toString() {
-        return "java.util.ServiceLoader[" + service.getName() + "]";
+        return "CustomizedServiceLoader[" + service.getName() + "]";
     }
 
 }

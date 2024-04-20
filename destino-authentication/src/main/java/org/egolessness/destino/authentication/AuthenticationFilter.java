@@ -19,7 +19,7 @@ package org.egolessness.destino.authentication;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
-import org.egolessness.destino.common.infrastructure.CustomServiceLoader;
+import org.egolessness.destino.common.infrastructure.CustomizedServiceLoader;
 import org.egolessness.destino.core.enumration.Action;
 import org.egolessness.destino.core.fixedness.DomainLinker;
 import org.egolessness.destino.core.spi.ResourceFilter;
@@ -40,7 +40,7 @@ public class AuthenticationFilter implements DomainLinker {
 
     @Inject
     public AuthenticationFilter(Injector injector) {
-        CustomServiceLoader.load(ResourceFilter.class, injector::getInstance).forEach(filters::add);
+        CustomizedServiceLoader.load(ResourceFilter.class, injector::getInstance).forEach(filters::add);
     }
 
     public boolean hasAction(Action action) {

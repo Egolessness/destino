@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.server.manager;
 
+import org.egolessness.destino.common.infrastructure.CustomizedServiceLoader;
 import org.egolessness.destino.server.spi.ResourceRegistry;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -24,7 +25,6 @@ import org.egolessness.destino.common.exception.DestinoException;
 import org.egolessness.destino.core.DestinoServer;
 import org.egolessness.destino.core.Loggers;
 import org.egolessness.destino.core.fixedness.Server;
-import org.egolessness.destino.common.infrastructure.CustomServiceLoader;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -53,7 +53,7 @@ public class ServerManager implements Server {
 
     private List<ResourceRegistry> initResourceRegistries(final Injector injector) {
         List<ResourceRegistry> registries = new ArrayList<>();
-        CustomServiceLoader.load(ResourceRegistry.class, injector::getInstance).forEach(registries::add);
+        CustomizedServiceLoader.load(ResourceRegistry.class, injector::getInstance).forEach(registries::add);
         return registries;
     }
 

@@ -16,11 +16,11 @@
 
 package org.egolessness.destino.server.application;
 
+import org.egolessness.destino.common.infrastructure.CustomizedServiceLoader;
 import org.egolessness.destino.core.fixedness.Processor;
 import org.egolessness.destino.core.fixedness.Server;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import org.egolessness.destino.common.infrastructure.CustomServiceLoader;
 import org.egolessness.destino.core.spi.Postprocessor;
 import org.egolessness.destino.core.spi.Preprocessor;
 import org.egolessness.destino.core.utils.ThreadUtils;
@@ -54,9 +54,9 @@ public class ApplicationServer {
         // build server
         this.server = injector.getInstance(ServerManager.class);
         // load pre-processors
-        this.preProcessors = CustomServiceLoader.load(Preprocessor.class, injector::getInstance).iterator();
+        this.preProcessors = CustomizedServiceLoader.load(Preprocessor.class, injector::getInstance).iterator();
         // load post-processors
-        this.postProcessors = CustomServiceLoader.load(Postprocessor.class, injector::getInstance).iterator();
+        this.postProcessors = CustomizedServiceLoader.load(Postprocessor.class, injector::getInstance).iterator();
         // add shutdown hook
         DestroyProcessor destroyProcessor = injector.getInstance(DestroyProcessor.class);
         ThreadUtils.addShutdownHook(destroyProcessor::process);

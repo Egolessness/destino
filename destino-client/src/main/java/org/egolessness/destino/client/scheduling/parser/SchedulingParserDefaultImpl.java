@@ -23,7 +23,7 @@ import org.egolessness.destino.client.scheduling.functional.Scheduled;
 import org.egolessness.destino.client.scheduling.support.ScheduledSupport;
 import org.egolessness.destino.client.spi.ScheduledConverter;
 import org.egolessness.destino.common.enumeration.Mark;
-import org.egolessness.destino.common.infrastructure.CustomServiceLoader;
+import org.egolessness.destino.common.infrastructure.CustomizedServiceLoader;
 import org.egolessness.destino.common.utils.PredicateUtils;
 
 import javax.annotation.Nonnull;
@@ -42,7 +42,7 @@ public class SchedulingParserDefaultImpl implements SchedulingParser {
 
     @SuppressWarnings("unchecked")
     public SchedulingParserDefaultImpl() {
-        CustomServiceLoader.load(ScheduledConverter.class).forEach(convert -> CONVERTS.put(convert.type(), convert));
+        CustomizedServiceLoader.load(ScheduledConverter.class).forEach(convert -> CONVERTS.put(convert.type(), convert));
     }
 
     @Override

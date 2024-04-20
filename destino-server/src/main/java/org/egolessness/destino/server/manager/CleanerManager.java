@@ -23,7 +23,7 @@ import org.egolessness.destino.common.executor.SimpleThreadFactory;
 import org.egolessness.destino.core.Loggers;
 import org.egolessness.destino.core.spi.Cleanable;
 import org.egolessness.destino.core.fixedness.Starter;
-import org.egolessness.destino.common.infrastructure.CustomServiceLoader;
+import org.egolessness.destino.common.infrastructure.CustomizedServiceLoader;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ public class CleanerManager implements Runnable, Starter {
     public CleanerManager(final Injector injector) {
         ThreadFactory threadFactory = new SimpleThreadFactory("Destino-clean-executor");
         this.cleanExecutor = Executors.newSingleThreadScheduledExecutor(threadFactory);
-        CustomServiceLoader.load(Cleanable.class, injector::getInstance).forEach(cleanableList::add);
+        CustomizedServiceLoader.load(Cleanable.class, injector::getInstance).forEach(cleanableList::add);
     }
 
     @Override

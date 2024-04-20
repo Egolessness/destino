@@ -17,7 +17,7 @@
 package org.egolessness.destino.common.remote;
 
 import org.egolessness.destino.common.annotation.SPI;
-import org.egolessness.destino.common.infrastructure.CustomServiceLoader;
+import org.egolessness.destino.common.infrastructure.CustomizedServiceLoader;
 import org.egolessness.destino.common.properties.RequestProperties;
 import org.egolessness.destino.common.remote.http.DefaultClientFactory;
 import org.egolessness.destino.common.spi.RequestClientFactory;
@@ -42,7 +42,7 @@ public class RequestClientFactories {
     public RequestClientFactories(RequestProperties requestProperties) {
         this.requestProperties = requestProperties;
 
-        CustomServiceLoader<RequestClientFactory> loader = CustomServiceLoader.load(RequestClientFactory.class,
+        CustomizedServiceLoader<RequestClientFactory> loader = CustomizedServiceLoader.load(RequestClientFactory.class,
                 factoryClass -> factoryClass.getConstructor(RequestProperties.class).newInstance(requestProperties));
 
         loader.forEach(factory -> {

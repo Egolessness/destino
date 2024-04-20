@@ -19,7 +19,7 @@ package org.egolessness.destino.core.infrastructure;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
-import org.egolessness.destino.common.infrastructure.CustomServiceLoader;
+import org.egolessness.destino.common.infrastructure.CustomizedServiceLoader;
 import org.egolessness.destino.core.annotation.LoggedIn;
 import org.egolessness.destino.core.fixedness.Countable;
 import org.egolessness.destino.core.model.Metric;
@@ -35,7 +35,7 @@ public class ServiceMetrics {
 
     @Inject
     public ServiceMetrics(final Injector injector) {
-        CustomServiceLoader.load(Countable.class, injector::getInstance).forEach(countableList::add);
+        CustomizedServiceLoader.load(Countable.class, injector::getInstance).forEach(countableList::add);
     }
 
     @LoggedIn

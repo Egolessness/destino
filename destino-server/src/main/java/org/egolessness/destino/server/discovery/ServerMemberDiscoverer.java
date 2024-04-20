@@ -22,7 +22,7 @@ import com.google.inject.Singleton;
 import org.egolessness.destino.common.exception.NotRequiredServiceException;
 import org.egolessness.destino.common.model.Address;
 import org.egolessness.destino.core.enumration.NodeState;
-import org.egolessness.destino.common.infrastructure.CustomServiceLoader;
+import org.egolessness.destino.common.infrastructure.CustomizedServiceLoader;
 import org.egolessness.destino.common.utils.PredicateUtils;
 import org.egolessness.destino.core.container.ContainerFactory;
 import org.egolessness.destino.core.container.MemberContainer;
@@ -74,7 +74,7 @@ public class ServerMemberDiscoverer implements Runnable, Starter {
         this.memberContainer = containerFactory.getContainer(MemberContainer.class);
         this.membersEntrance = membersEntrance;
         this.discoveryProperties = clusterProperties.getDiscovery();
-        Iterator<DiscoveryStrategy> iterator = CustomServiceLoader.load(DiscoveryStrategy.class, injector::getInstance).iterator();
+        Iterator<DiscoveryStrategy> iterator = CustomizedServiceLoader.load(DiscoveryStrategy.class, injector::getInstance).iterator();
         while (iterator.hasNext()) {
             try {
                 DiscoveryStrategy discoveryStrategy = iterator.next();

@@ -18,7 +18,7 @@ package org.egolessness.destino.setting;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import org.egolessness.destino.common.infrastructure.CustomServiceLoader;
+import org.egolessness.destino.common.infrastructure.CustomizedServiceLoader;
 import org.egolessness.destino.core.container.Container;
 import org.egolessness.destino.core.spi.Setting;
 
@@ -38,7 +38,7 @@ public class SettingContainer implements Container {
 
     @Inject
     public SettingContainer(Injector injector) {
-        CustomServiceLoader.load(Setting.class, injector::getInstance).forEach(setting ->
+        CustomizedServiceLoader.load(Setting.class, injector::getInstance).forEach(setting ->
                 SETTINGS.put(setting.subdomain(), setting)
         );
     }

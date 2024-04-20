@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.server.resource;
 
+import org.egolessness.destino.common.infrastructure.CustomizedServiceLoader;
 import org.egolessness.destino.core.resource.*;
 import org.egolessness.destino.server.spi.ResourceRegistry;
 import com.google.inject.*;
@@ -31,7 +32,6 @@ import org.egolessness.destino.core.Loggers;
 import org.egolessness.destino.core.annotation.Rpc;
 import org.egolessness.destino.core.annotation.RpcFocus;
 import org.egolessness.destino.core.DestinoServer;
-import org.egolessness.destino.common.infrastructure.CustomServiceLoader;
 import org.egolessness.destino.core.fixedness.RequestRouter;
 import org.egolessness.destino.core.container.ContainerFactory;
 import org.egolessness.destino.core.function.EBiFunction;
@@ -71,7 +71,7 @@ public class RpcResourceRegistry extends RequestProcessorRegistry implements Res
         DestinoServer destinoServer = injector.getInstance(DestinoServer.class);
         destinoServer.addGrpcService(new RequestGrpc(this));
         destinoServer.addGrpcService(new RequestStreamGrpc(this, containerFactory));
-        CustomServiceLoader.load(Resource.class, injector::getInstance).forEach(this::registerResource);
+        CustomizedServiceLoader.load(Resource.class, injector::getInstance).forEach(this::registerResource);
         Loggers.SERVER.info("Grpc resources has loaded.");
     }
 
