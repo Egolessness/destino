@@ -10,6 +10,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind"
     implementation "com.google.inject:guice"
     implementation "org.apache.logging.log4j:log4j-slf4j-impl"
+    implementation "javax.annotation:javax.annotation-api"
 
     implementation project(":destino-core")
     implementation project(":destino-common")

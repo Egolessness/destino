@@ -6,7 +6,9 @@ dependencies {
     compileOnly "com.google.inject:guice"
     compileOnly "org.slf4j:slf4j-api"
     compileOnly "com.linecorp.armeria:armeria"
+
     implementation "org.hibernate.validator:hibernate-validator"
+    implementation "javax.annotation:javax.annotation-api"
     implementation "io.grpc:grpc-protobuf"
     implementation "io.grpc:grpc-stub"
     implementation "net.openhft:affinity"

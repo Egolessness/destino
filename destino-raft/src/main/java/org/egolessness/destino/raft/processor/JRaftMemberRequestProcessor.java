@@ -48,7 +48,7 @@ public class JRaftMemberRequestProcessor implements RpcProcessor<MemberRequest> 
     public JRaftMemberRequestProcessor(RaftGroupContainer raftGroupContainer, MemberContainer memberContainer) {
         this.memberContainer = memberContainer;
         this.raftGroupContainer = raftGroupContainer;
-        this.serializer = SerializerFactory.getSerializer(SerializeType.FST);
+        this.serializer = SerializerFactory.getSerializer(SerializeType.JSON);
     }
 
     @Override

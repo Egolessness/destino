@@ -17,7 +17,6 @@
 package org.egolessness.destino.core.enumration;
 
 import org.egolessness.destino.core.infrastructure.serialize.*;
-import org.egolessness.destino.core.infrastructure.serialize.*;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.Arrays;
@@ -31,11 +30,10 @@ import java.util.function.Supplier;
  */
 public enum SerializeType {
 
-    FST(FstSerializer::new),
     HESSIAN(HessianSerializer::new),
     JSON(JacksonSerializer::new),
     PROTOBUF(ProtobufSerializer::new),
-    DEFAULT(FST.constructor);
+    DEFAULT(JSON.constructor);
 
     private final Supplier<Serializer> constructor;
 

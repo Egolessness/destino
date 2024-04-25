@@ -5,8 +5,10 @@ plugins {
 dependencies {
     compileOnly "com.google.inject:guice"
     compileOnly "com.linecorp.armeria:armeria"
+
     implementation "com.google.protobuf:protobuf-java"
     implementation "org.hibernate.validator:hibernate-validator"
+    implementation "javax.annotation:javax.annotation-api"
     implementation "io.jsonwebtoken:jjwt-api"
     implementation "io.jsonwebtoken:jjwt-impl"
 

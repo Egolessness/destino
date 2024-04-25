@@ -142,13 +142,14 @@ public class MemberContainer extends MemberIdAssigner implements Container {
             }
         }
 
+        ID_INDEXER.put(member.getId(), member);
+        ADDRESS_INDEXER.put(member.getAddress(), member);
+
         if (Objects.equals(member, current)) {
             current.setId(member.getId());
             return;
         }
 
-        ID_INDEXER.put(member.getId(), member);
-        ADDRESS_INDEXER.put(member.getAddress(), member);
         updateContextPathIndex(member);
 
         notifyMemberChange(member, ElementOperation.ADD);

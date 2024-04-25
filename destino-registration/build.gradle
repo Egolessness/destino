@@ -6,8 +6,10 @@ dependencies {
     compileOnly "com.google.inject:guice"
     compileOnly "com.linecorp.armeria:armeria"
     compileOnly "org.hibernate.validator:hibernate-validator"
+
     implementation "com.google.protobuf:protobuf-java"
     implementation "commons-lang:commons-lang"
+    implementation "javax.annotation:javax.annotation-api"
 
     implementation project(":destino-core")
     implementation project(":destino-common")

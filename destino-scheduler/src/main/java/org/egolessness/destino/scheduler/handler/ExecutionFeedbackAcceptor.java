@@ -109,7 +109,7 @@ public class ExecutionFeedbackAcceptor implements Runnable {
 
     @Inject
     public ExecutionFeedbackAcceptor(RocksDBStorageFactoryImpl storageFactory) throws StorageException {
-        this.serializer = SerializerFactory.getSerializer(SerializeType.FST);
+        this.serializer = SerializerFactory.getSerializer(SerializeType.JSON);
         StorageOptions storageOptions = StorageOptions.newBuilder().writeAsync(true).flushAsync(true).build();
         Cosmos tmpCosmos = CosmosSupport.buildCosmos(ConsistencyDomain.SCHEDULER, ExecutionFeedback.class);
         this.tmpStorage = storageFactory.create(tmpCosmos, BytesSpecifier.INSTANCE, storageOptions);

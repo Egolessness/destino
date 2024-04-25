@@ -8,6 +8,8 @@ dependencies {
     compileOnly "com.linecorp.armeria:armeria"
     compileOnly "org.hibernate.validator:hibernate-validator"
 
+    implementation "javax.annotation:javax.annotation-api"
+
     implementation project(":destino-core")
     implementation project(":destino-common")
 }

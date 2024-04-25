@@ -35,6 +35,9 @@ public class NamespaceSubject implements Serializable {
 
     private WriteMode mode;
 
+    public NamespaceSubject() {
+    }
+
     public NamespaceSubject(String desc, WriteMode mode) {
         this.desc = desc;
         this.mode = mode;

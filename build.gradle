@@ -18,8 +18,8 @@ subprojects {
         options.encoding = 'UTF-8'
     }
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
     }
@@ -45,6 +45,7 @@ subprojects {
             api "org.hibernate.validator:hibernate-validator:${hibernateValidatorVersion}"
             api "commons-io:commons-io:${commonsioVersion}"
             api "commons-lang:commons-lang:${commonslangVersion}"
+            api "javax.annotation:javax.annotation-api:${javaxAnnotationVersion}"
             api "org.apache.commons:commons-text:${commonstextVersion}"
             api "com.google.code.findbugs:jsr305:${jsr305Version}"
             api "io.prometheus:simpleclient:${prometheusVersion}"
@@ -58,7 +59,6 @@ subprojects {
             api "com.h2database:h2:${h2Version}"
 
             api "com.google.inject:guice:${guiceVersion}"
-            api "de.ruedigermoeller:fst:${fstVersion}"
             api "com.alipay.sofa:hessian:${hessianVersion}"
             api "io.jsonwebtoken:jjwt-api:${jwtVersion}"
             api "io.jsonwebtoken:jjwt-impl:${jwtVersion}"
