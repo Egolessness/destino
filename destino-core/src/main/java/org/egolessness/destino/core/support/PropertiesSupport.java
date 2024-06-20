@@ -23,9 +23,10 @@ import org.egolessness.destino.core.properties.ServerProperties;
 import com.google.inject.Binder;
 import org.egolessness.destino.common.support.BeanValidator;
 
+import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 
@@ -40,15 +41,16 @@ public class PropertiesSupport {
     public static  <T extends PropertiesValue> void bindProperties(Binder binder, T properties)
             throws IllegalAccessException, IntrospectionException, InvocationTargetException
     {
-        if (properties != null) {
-            binder.bind((Class<T>) properties.getClass()).toInstance(properties);
-            for (Field field : properties.getClass().getDeclaredFields()) {
-                if (PropertiesValue.class.isAssignableFrom(field.getType())) {
-                    PropertyDescriptor descriptor = new PropertyDescriptor(field.getName(), properties.getClass());
-                    PropertiesValue value = (PropertiesValue) descriptor.getReadMethod().invoke(properties);
-                    BeanValidator.validateWithException(value);
-                    bindProperties(binder, value);
-                }
+        if (Objects.isNull(properties)) {
+            return;
+        }
+        binder.bind((Class<T>) properties.getClass()).toInstance(properties);
+        BeanInfo beanInfo = Introspector.getBeanInfo(properties.getClass());
+        for (PropertyDescriptor descriptor : beanInfo.getPropertyDescriptors()) {
+            if (PropertiesValue.class.isAssignableFrom(descriptor.getPropertyType())) {
+                PropertiesValue value = (PropertiesValue) descriptor.getReadMethod().invoke(properties);
+                BeanValidator.validateWithException(value);
+                bindProperties(binder, value);
             }
         }
     }

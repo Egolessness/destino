@@ -53,7 +53,7 @@ public class ResultSupport {
             parser.nextToken();
             JsonToken token = parser.nextToken();
             while (token != JsonToken.END_OBJECT && token != null) {
-                String fieldName = parser.getCurrentName();
+                String fieldName = parser.currentName();
                 if (Objects.equals("code", fieldName)) {
                     if (parser.nextToken() == JsonToken.VALUE_NUMBER_INT) {
                         builder.setCode(parser.getValueAsInt());
