@@ -1,5 +1,6 @@
 plugins {
     id 'com.google.protobuf'
+    id 'com.vanniktech.maven.publish'
 }
 
 dependencies {
@@ -27,8 +28,4 @@ protobuf {
             grpc {}
         }
     }
-}
-
-test {
-    useJUnitPlatform()
 }
