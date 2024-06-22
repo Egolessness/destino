@@ -133,7 +133,7 @@ public class ServiceFacade {
     }
 
     @AvoidableAuthorize(domain = REGISTRATION, action = Action.READ, resourceParser = ServiceResourceParser.class)
-    public ServiceMercury acquire(ServiceAcquireRequest request) throws DestinoException {
+    public ServiceMercury acquire(ServiceFindRequest request) throws DestinoException {
         Service service = serviceProvider.get(request.getNamespace(), request.getGroupName(), request.getServiceName());
         return RegistrationSupport.buildServiceMercury(service, request.getClusters(), request.isHealthyOnly());
     }

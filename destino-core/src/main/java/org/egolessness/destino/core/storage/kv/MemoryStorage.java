@@ -40,10 +40,6 @@ public class MemoryStorage<K, V> implements KvStorage<K, V> {
         this.storage = storage;
     }
 
-    public static <T extends Comparable<T>, V> MemoryStorage<T, V> create() {
-        return new MemoryStorage<>(new ConcurrentSkipListMap<>());
-    }
-
     @Override
     public V get(@Nonnull K key) throws StorageException {
         return storage.get(key);

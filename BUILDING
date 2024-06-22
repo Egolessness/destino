@@ -8,8 +8,12 @@ Build Instructions for Destino
 
 (2) Build jar packages
 
-    $ gradlew -P prod -P cluster shadowJar
+    $ ./gradlew shadowJar
+
+    with prod profile and cluster server mode
+
+    $ ./gradlew -P prod -P cluster shadowJar
 
     without scheduler and console
 
-    $ gradlew -P no-scheduler -P no-console shadowJar
+    $ ./gradlew -P no-scheduler -P no-console shadowJar

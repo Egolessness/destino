@@ -49,24 +49,21 @@ public class ServiceProviderImpl implements ServiceProvider {
 
     private final ServiceCollector serviceCollector;
 
-    public ServiceProviderImpl(final Requester requester, final ServiceCollector serviceCollector)
-    {
+    public ServiceProviderImpl(final Requester requester, final ServiceCollector serviceCollector) {
         this.requester = requester;
         this.serviceCollector = serviceCollector;
         this.requestRepeater = requester.getRequestRepeater();
         this.registerProcessor(requester);
     }
 
-    private void registerProcessor(Requester requester)
-    {
+    private void registerProcessor(Requester requester) {
         requester.registerProcessor(ServicePushRequest.class, new ServicePushRequestProcessor(serviceCollector));
         requester.registerProcessor(ServiceUploadRequest.class, new ServiceUploadRequestProcessor(serviceCollector));
     }
 
     @Override
     public void create(String namespace, String groupName, String serviceName, ServiceInfo serviceInfo)
-            throws DestinoException
-    {
+            throws DestinoException {
         ServiceCreateRequest createRequest = new ServiceCreateRequest(namespace, groupName, serviceName);
         if (Objects.nonNull(serviceInfo)) {
             createRequest.setExpectantInstanceCount(serviceInfo.getExpectProvideLeast());
@@ -76,16 +73,14 @@ public class ServiceProviderImpl implements ServiceProvider {
     }
 
     @Override
-    public void delete(String namespace, String groupName, String serviceName) throws DestinoException
-    {
+    public void delete(String namespace, String groupName, String serviceName) throws DestinoException {
         ServiceDeleteRequest deleteRequest = new ServiceDeleteRequest(namespace, groupName, serviceName);
         requester.executeRequest(deleteRequest);
     }
 
     @Override
     public void update(String namespace, String groupName, String serviceName, ServiceInfo serviceInfo)
-            throws DestinoException
-    {
+            throws DestinoException {
         ServiceUpdateRequest updateRequest = new ServiceUpdateRequest(namespace, groupName, serviceName);
         if (Objects.nonNull(serviceInfo)) {
             updateRequest.setExpectantInstanceCount(serviceInfo.getExpectProvideLeast());
@@ -95,17 +90,15 @@ public class ServiceProviderImpl implements ServiceProvider {
     }
 
     @Override
-    public Service acquire(String namespace, String groupName, String serviceName, String... clusters)
-            throws DestinoException
-    {
-        ServiceAcquireRequest request = new ServiceAcquireRequest(namespace, groupName, serviceName, clusters);
+    public Service find(String namespace, String groupName, String serviceName, String... clusters)
+            throws DestinoException {
+        ServiceFindRequest request = new ServiceFindRequest(namespace, groupName, serviceName, clusters);
         Response response = requester.executeRequest(request);
         return ResponseSupport.dataDeserialize(response, Service.class);
     }
 
     @Override
-    public Page<String> queryServiceNames(String namespace, String groupName, Pageable pageable) throws DestinoException
-    {
+    public Page<String> findServiceNames(String namespace, String groupName, Pageable pageable) throws DestinoException {
         ServiceQueryRequest queryRequest = new ServiceQueryRequest(namespace, groupName, pageable);
         Response response = requester.executeRequest(queryRequest);
         return ResponseSupport.dataDeserializeWithTypeReference(response, new TypeReference<Page<String>>() {});
@@ -113,8 +106,7 @@ public class ServiceProviderImpl implements ServiceProvider {
 
     @Override
     public Service subscribe(String namespace, String groupName, String serviceName, String... clusters)
-            throws DestinoException
-    {
+            throws DestinoException {
         ServiceSubscriptionRequest subscriptionRequest = new ServiceSubscriptionRequest(namespace, groupName,
                 serviceName, clusters);
         subscriptionRequest.setUdpPort(requester.getUdpPort());
@@ -132,8 +124,7 @@ public class ServiceProviderImpl implements ServiceProvider {
 
     @Override
     public void unsubscribe(String namespace, String groupName, String serviceName, String... clusters)
-            throws DestinoException
-    {
+            throws DestinoException {
         ServiceUnsubscriptionRequest unsubscriptionRequest = new ServiceUnsubscriptionRequest(namespace, groupName,
                 serviceName, clusters);
         requester.executeRequest(unsubscriptionRequest);

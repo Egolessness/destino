@@ -181,9 +181,9 @@ public class ServiceResource implements Resource {
     }
 
     @Rpc
-    @Get("/acquire")
+    @Get("/find")
     @RequestConverter(ServiceAcquireRequestConverter.class)
-    public Result<ServiceMercury> acquire(@RpcFocus ServiceAcquireRequest acquireRequest) throws DestinoException {
+    public Result<ServiceMercury> acquire(@RpcFocus ServiceFindRequest acquireRequest) throws DestinoException {
         ServiceMercury mercury = serviceFacade.acquire(acquireRequest);
         return Result.success(mercury);
     }

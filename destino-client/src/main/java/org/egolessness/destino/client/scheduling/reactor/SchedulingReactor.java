@@ -68,7 +68,6 @@ public class SchedulingReactor implements Lucermaire {
 
     public SchedulingReactor(final SchedulingProperties schedulingProperties, final Requester requester,
                              final ScriptFactory scriptFactory) {
-
         this.requester = requester;
         this.scriptConverter = new ScriptConverterImpl(scriptFactory);
         this.jobs = new ConcurrentHashMap<>();

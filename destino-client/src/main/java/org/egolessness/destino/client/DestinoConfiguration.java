@@ -16,13 +16,15 @@
 
 package org.egolessness.destino.client;
 
-import org.egolessness.destino.client.scheduling.LocalSchedulingService;
+import org.egolessness.destino.client.registration.ConsultationService;
+import org.egolessness.destino.client.registration.RegistrationService;
+import org.egolessness.destino.client.scheduling.impl.LocalSchedulingServiceImpl;
 import org.egolessness.destino.client.infrastructure.ScriptFactory;
 import org.egolessness.destino.client.properties.DestinoProperties;
 import org.egolessness.destino.client.infrastructure.PropertiesInitializer;
 import org.egolessness.destino.client.infrastructure.Requester;
-import org.egolessness.destino.client.registration.RegistrationService;
-import org.egolessness.destino.client.registration.ConsultationService;
+import org.egolessness.destino.client.registration.impl.RegistrationServiceImpl;
+import org.egolessness.destino.client.registration.impl.ConsultationServiceImpl;
 import org.egolessness.destino.common.exception.DestinoException;
 import org.egolessness.destino.common.fixedness.Lucermaire;
 
@@ -40,7 +42,7 @@ public class DestinoConfiguration implements Lucermaire {
 
     private final Requester requester;
 
-    private final LocalSchedulingService localSchedulingService;
+    private final LocalSchedulingServiceImpl localSchedulingService;
 
     private final RegistrationService registrationService;
 
@@ -60,9 +62,9 @@ public class DestinoConfiguration implements Lucermaire {
         this.properties = PropertiesInitializer.init(properties);
         this.scriptFactory = scriptFactory;
         this.requester = new Requester(properties);
-        this.localSchedulingService = new LocalSchedulingService(requester, properties, scriptFactory);
-        this.registrationService = new RegistrationService(requester);
-        this.consultationService = new ConsultationService(requester, properties);
+        this.localSchedulingService = new LocalSchedulingServiceImpl(requester, properties, scriptFactory);
+        this.registrationService = new RegistrationServiceImpl(requester);
+        this.consultationService = new ConsultationServiceImpl(requester, properties);
     }
 
     public boolean serverCheck() throws TimeoutException {
@@ -73,7 +75,7 @@ public class DestinoConfiguration implements Lucermaire {
         return properties;
     }
 
-    public LocalSchedulingService getLocalScheduledService() {
+    public LocalSchedulingServiceImpl getLocalScheduledService() {
         return localSchedulingService;
     }
 

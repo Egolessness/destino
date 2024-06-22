@@ -75,7 +75,6 @@ public class StorageOptions {
         this.flushAsync = flushAsync;
     }
 
-
     public static final class Builder {
         private boolean writeAsync;
         private boolean flushAsync;
@@ -103,4 +102,5 @@ public class StorageOptions {
             return new StorageOptions(this);
         }
     }
+
 }

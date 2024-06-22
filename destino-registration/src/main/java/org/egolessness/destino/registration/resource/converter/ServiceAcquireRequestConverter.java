@@ -20,7 +20,7 @@ import com.linecorp.armeria.common.AggregatedHttpRequest;
 import com.linecorp.armeria.common.annotation.Nullable;
 import com.linecorp.armeria.server.ServiceRequestContext;
 import com.linecorp.armeria.server.annotation.RequestConverterFunction;
-import org.egolessness.destino.common.model.request.ServiceAcquireRequest;
+import org.egolessness.destino.common.model.request.ServiceFindRequest;
 import org.egolessness.destino.common.support.BeanValidator;
 import org.egolessness.destino.registration.resource.ServiceResource;
 import org.apache.commons.lang.BooleanUtils;
@@ -43,8 +43,8 @@ public class ServiceAcquireRequestConverter implements RequestConverterFunction 
                                            @Nullable ParameterizedType expectedParameterizedResultType) {
 
         Object convertObj;
-        if (expectedResultType == ServiceAcquireRequest.class) {
-            ServiceAcquireRequest acquireRequest = new ServiceAcquireRequest();
+        if (expectedResultType == ServiceFindRequest.class) {
+            ServiceFindRequest acquireRequest = new ServiceFindRequest();
             acquireRequest.setNamespace(ctx.queryParam("namespace"));
             acquireRequest.setGroupName(ctx.queryParam("groupName"));
             acquireRequest.setServiceName(ctx.queryParam("serviceName"));

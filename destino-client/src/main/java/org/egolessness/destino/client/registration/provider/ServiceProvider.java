@@ -63,7 +63,7 @@ public interface ServiceProvider extends Lucermaire {
     void update(String namespace, String groupName, String serviceName, ServiceInfo serviceInfo) throws DestinoException;
 
     /**
-     * acquire service instances.
+     * find service.
      *
      * @param   namespace           namespace
      * @param   groupName           name of group
@@ -72,7 +72,7 @@ public interface ServiceProvider extends Lucermaire {
      * @return  service
      * @throws DestinoException    exception
      */
-    Service acquire(String namespace, String groupName, String serviceName, String... clusters) throws DestinoException;
+    Service find(String namespace, String groupName, String serviceName, String... clusters) throws DestinoException;
 
     /**
      * query service page list.
@@ -83,7 +83,7 @@ public interface ServiceProvider extends Lucermaire {
      * @return  page list of service
      * @throws DestinoException    exception
      */
-    Page<String> queryServiceNames(String namespace, String groupName, Pageable pageable) throws DestinoException;
+    Page<String> findServiceNames(String namespace, String groupName, Pageable pageable) throws DestinoException;
     
     /**
      * subscribe service.

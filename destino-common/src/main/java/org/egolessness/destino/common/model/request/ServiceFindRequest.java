@@ -27,8 +27,8 @@ import jakarta.validation.constraints.NotEmpty;
  *
  * @author zsmjwk@outlook.com (wangkang)
  */
-@Http(value = "/api/service/acquire", method = HttpMethod.GET)
-public class ServiceAcquireRequest extends ServiceBaseInfo {
+@Http(value = "/api/service/find", method = HttpMethod.GET)
+public class ServiceFindRequest extends ServiceBaseInfo {
 
     private static final long serialVersionUID = 582321729791459043L;
 
@@ -36,14 +36,14 @@ public class ServiceAcquireRequest extends ServiceBaseInfo {
 
     private boolean healthyOnly;
 
-    public ServiceAcquireRequest() {
+    public ServiceFindRequest() {
     }
 
-    public ServiceAcquireRequest(String namespace, String groupName, String serviceName) {
+    public ServiceFindRequest(String namespace, String groupName, String serviceName) {
         super(namespace, groupName, serviceName);
     }
 
-    public ServiceAcquireRequest(String namespace, String groupName, String serviceName, String[] clusters) {
+    public ServiceFindRequest(String namespace, String groupName, String serviceName, String[] clusters) {
         super(namespace, groupName, serviceName);
         this.clusters = clusters;
     }
