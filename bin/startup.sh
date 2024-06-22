@@ -38,7 +38,7 @@ if [ -z "$JAVA_HOME" ]; then
   fi
 fi
 
-export VERSION="1.0.1"
+export VERSION="1.0.2"
 export MODE="cluster"
 export SERVER="destino-server-${VERSION}"
 export CLUSTER_MEMBERS=""
