@@ -48,7 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Singleton
 public final class H2StorageFactoryImpl implements RecordStorageFactory {
 
-    private final static String H2_STORAGE_BASE_DIR = "h2-storage";
+    private final static String H2_STORAGE_BASE_DIR = Paths.get("storage", "h2").toString();
 
     private final Map<ConsistencyDomain, H2Context> contexts = new ConcurrentHashMap<>();
 

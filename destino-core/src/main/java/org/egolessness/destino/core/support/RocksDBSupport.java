@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  */
 public class RocksDBSupport {
 
-    private final static String ROCKSDB_STORAGE_BASE_DIR = "rocksdb-storage";
+    private final static String ROCKSDB_STORAGE_BASE_DIR = Paths.get("storage", "rocksdb").toString();
 
     public static RocksDB openDB(String dbDir, Options options, Collection<ColumnFamilyDescriptor> descriptors,
                                  List<ColumnFamilyHandle> cfHandles) throws RocksDBException {
