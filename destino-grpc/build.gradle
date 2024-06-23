@@ -4,11 +4,12 @@ plugins {
 }
 
 dependencies {
+    compileOnly "org.slf4j:slf4j-api"
+
     implementation "io.grpc:grpc-api"
     implementation "io.grpc:grpc-stub"
     implementation "io.grpc:grpc-protobuf"
     implementation "io.grpc:grpc-netty-shaded"
-    implementation "org.slf4j:slf4j-api"
     implementation "javax.annotation:javax.annotation-api"
 
     implementation project(":destino-common")

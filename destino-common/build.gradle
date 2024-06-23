@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation "org.slf4j:slf4j-api"
+    compileOnly "org.slf4j:slf4j-api"
     implementation "com.google.protobuf:protobuf-java"
     implementation "com.fasterxml.jackson.core:jackson-databind"
     implementation "org.hibernate.validator:hibernate-validator"
