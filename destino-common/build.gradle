@@ -4,14 +4,14 @@ plugins {
 }
 
 dependencies {
-    compileOnly "org.slf4j:slf4j-api"
-    implementation "com.google.protobuf:protobuf-java"
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "org.hibernate.validator:hibernate-validator"
-    implementation "javax.annotation:javax.annotation-api"
-    implementation "net.jodah:typetools"
-    implementation "org.glassfish:jakarta.el"
-    implementation "com.google.code.findbugs:jsr305"
+    compileOnly libs.slf4j.api
+    implementation libs.protobuf.java
+    implementation libs.jackson.databind
+    implementation libs.hibernate.validator
+    implementation libs.javax.annotation.api
+    implementation libs.typetools
+    implementation libs.jakarta.el
+    implementation libs.jsr305
 }
 
 processResources {
@@ -22,11 +22,11 @@ processResources {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:${protobufVersion}"
+        artifact = "com.google.protobuf:protoc:${libs.versions.protobufVersion.get()}"
     }
     plugins {
         grpc {
-            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpcVersion.get()}"
         }
     }
     generateProtoTasks {

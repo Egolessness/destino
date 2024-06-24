@@ -3,18 +3,15 @@ plugins {
 }
 
 dependencies {
-    compileOnly "org.slf4j:slf4j-api"
-    compileOnly "org.apache.logging.log4j:log4j-core"
-    compileOnly "org.apache.logging.log4j:log4j-api"
-    compileOnly "org.apache.logging.log4j:log4j-slf4j-impl"
-    compileOnly "ch.qos.logback:logback-classic"
-    compileOnly "ch.qos.logback:logback-core"
-    compileOnly "com.google.code.findbugs:jsr305"
+    compileOnly libs.slf4j.api
+    compileOnly libs.bundles.log4j
+    compileOnly libs.logback.classic
+    compileOnly libs.logback.core
+    compileOnly libs.jsr305
 
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
-    implementation "com.google.protobuf:protobuf-java"
-    implementation "io.prometheus:simpleclient"
+    implementation libs.jackson.databind
+    implementation libs.protobuf.java
+    implementation libs.prometheus.client
 
     implementation project(":destino-common")
 }

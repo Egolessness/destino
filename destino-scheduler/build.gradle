@@ -3,18 +3,18 @@ plugins {
 }
 
 dependencies {
-    compileOnly "com.google.inject:guice"
-    compileOnly "org.slf4j:slf4j-api"
-    compileOnly "com.linecorp.armeria:armeria"
+    compileOnly libs.guice
+    compileOnly libs.slf4j.api
+    compileOnly libs.armeria
 
-    implementation "org.hibernate.validator:hibernate-validator"
-    implementation "javax.annotation:javax.annotation-api"
-    implementation "io.grpc:grpc-protobuf"
-    implementation "io.grpc:grpc-stub"
-    implementation "net.openhft:affinity"
-    implementation "com.cronutils:cron-utils"
-    implementation "org.rocksdb:rocksdbjni"
-    implementation "com.lmax:disruptor"
+    implementation libs.hibernate.validator
+    implementation libs.javax.annotation.api
+    implementation libs.grpc.protobuf
+    implementation libs.grpc.stub
+    implementation libs.affinity
+    implementation libs.cron.utils
+    implementation libs.rocksdbjni
+    implementation libs.disruptor
 
     implementation project(":destino-registration")
     implementation project(":destino-setting")
@@ -24,11 +24,11 @@ dependencies {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:${protobufVersion}"
+        artifact = "com.google.protobuf:protoc:${libs.versions.protobufVersion.get()}"
     }
     plugins {
         grpc {
-            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpcVersion.get()}"
         }
     }
     generateProtoTasks {

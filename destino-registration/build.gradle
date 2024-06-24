@@ -3,13 +3,13 @@ plugins {
 }
 
 dependencies {
-    compileOnly "com.google.inject:guice"
-    compileOnly "com.linecorp.armeria:armeria"
-    compileOnly "org.hibernate.validator:hibernate-validator"
+    compileOnly libs.guice
+    compileOnly libs.armeria
+    compileOnly libs.hibernate.validator
 
-    implementation "com.google.protobuf:protobuf-java"
-    implementation "commons-lang:commons-lang"
-    implementation "javax.annotation:javax.annotation-api"
+    implementation libs.protobuf.java
+    implementation libs.commons.lang
+    implementation libs.javax.annotation.api
 
     implementation project(":destino-core")
     implementation project(":destino-common")
@@ -17,11 +17,11 @@ dependencies {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:${protobufVersion}"
+        artifact = "com.google.protobuf:protoc:${libs.versions.protobufVersion.get()}"
     }
     plugins {
         grpc {
-            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpcVersion.get()}"
         }
     }
     generateProtoTasks {

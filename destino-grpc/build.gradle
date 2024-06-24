@@ -4,24 +4,24 @@ plugins {
 }
 
 dependencies {
-    compileOnly "org.slf4j:slf4j-api"
+    compileOnly libs.slf4j.api
 
-    implementation "io.grpc:grpc-api"
-    implementation "io.grpc:grpc-stub"
-    implementation "io.grpc:grpc-protobuf"
-    implementation "io.grpc:grpc-netty-shaded"
-    implementation "javax.annotation:javax.annotation-api"
+    implementation libs.grpc.api
+    implementation libs.grpc.stub
+    implementation libs.grpc.protobuf
+    implementation libs.grpc.netty.shaded
+    implementation libs.javax.annotation.api
 
     implementation project(":destino-common")
 }
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:${protobufVersion}"
+        artifact = "com.google.protobuf:protoc:${libs.versions.protobufVersion.get()}"
     }
     plugins {
         grpc {
-            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpcVersion.get()}"
         }
     }
     generateProtoTasks {

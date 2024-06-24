@@ -1,10 +1,10 @@
 dependencies {
-    implementation ("com.alipay.sofa:jraft-core") {
+    implementation (libs.jraft.core) {
         exclude module: 'bolt'
     }
-    implementation "com.alipay.sofa:rpc-grpc-impl"
-    implementation "io.grpc:grpc-protobuf"
-    implementation "com.google.inject:guice"
+    implementation libs.jraft.grpc
+    implementation libs.grpc.protobuf
+    implementation libs.guice
 
     implementation project(":destino-core")
     implementation project(":destino-common")

@@ -3,25 +3,24 @@ plugins {
 }
 
 dependencies {
-    implementation "io.grpc:grpc-stub"
-    implementation "io.grpc:grpc-netty"
-    implementation "io.grpc:grpc-netty-shaded"
-    implementation "io.grpc:grpc-protobuf"
-    implementation "io.grpc:grpc-services"
-    implementation "com.google.inject:guice"
+    implementation libs.grpc.stub
+    implementation libs.grpc.netty
+    implementation libs.grpc.netty.shaded
+    implementation libs.grpc.protobuf
+    implementation libs.grpc.services
+    implementation libs.guice
 
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml"
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-properties"
-    implementation "org.hibernate.validator:hibernate-validator"
-    implementation "com.linecorp.armeria:armeria"
-    implementation "com.linecorp.armeria:armeria-grpc"
-    implementation "commons-io:commons-io"
-    implementation "commons-lang:commons-lang"
-    implementation "org.apache.commons:commons-text"
-    implementation "org.apache.logging.log4j:log4j-core"
-    implementation "org.apache.logging.log4j:log4j-api"
-    implementation "org.apache.logging.log4j:log4j-slf4j-impl"
+    implementation libs.jackson.databind
+    implementation libs.jackson.dataformat.yaml
+    implementation libs.hibernate.validator
+    implementation libs.armeria
+    implementation libs.armeria.grpc
+    implementation libs.commons.io
+    implementation libs.commons.lang
+    implementation libs.commons.text
+    implementation libs.log4j.core
+    implementation libs.log4j.api
+    implementation libs.log4j.slf4j.impl
 
     implementation project(":destino-core")
     implementation project(":destino-common")

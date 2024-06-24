@@ -3,14 +3,14 @@ plugins {
 }
 
 dependencies {
-    compileOnly "com.linecorp.armeria:armeria"
+    compileOnly libs.armeria
 
-    implementation "io.grpc:grpc-protobuf"
-    implementation "io.grpc:grpc-stub"
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "com.google.inject:guice"
-    implementation "org.apache.logging.log4j:log4j-slf4j-impl"
-    implementation "javax.annotation:javax.annotation-api"
+    implementation libs.grpc.protobuf
+    implementation libs.grpc.stub
+    implementation libs.jackson.databind
+    implementation libs.guice
+    implementation libs.log4j.slf4j.impl
+    implementation libs.javax.annotation.api
 
     implementation project(":destino-core")
     implementation project(":destino-common")
@@ -18,11 +18,11 @@ dependencies {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:${protobufVersion}"
+        artifact = "com.google.protobuf:protoc:${libs.versions.protobufVersion.get()}"
     }
     plugins {
         grpc {
-            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+            artifact = "io.grpc:protoc-gen-grpc-java:${libs.versions.grpcVersion.get()}"
         }
     }
     generateProtoTasks {

@@ -3,11 +3,11 @@ plugins {
 }
 
 dependencies {
-    compileOnly "org.slf4j:slf4j-api"
+    compileOnly libs.slf4j.api
 
-    implementation "com.google.protobuf:protobuf-java"
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "org.apache.httpcomponents:httpasyncclient"
+    implementation libs.protobuf.java
+    implementation libs.jackson.databind
+    implementation libs.httpasyncclient
 
     implementation project(":destino-common")
 }
