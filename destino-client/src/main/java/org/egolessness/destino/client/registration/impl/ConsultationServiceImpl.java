@@ -66,6 +66,11 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
+    public InstanceSelector selectInstances(String namespace, String groupName, String serviceName) throws DestinoException {
+        return selectInstances(namespace, groupName, serviceName, new String[0]);
+    }
+
+    @Override
     public InstanceSelector selectInstances(String namespace, String groupName, String serviceName, String[] clusters)
             throws DestinoException {
         Service service = serviceCollector.getService(namespace, groupName, serviceName, clusters);
@@ -84,6 +89,11 @@ public class ConsultationServiceImpl implements ConsultationService {
     @Override
     public InstanceSelector subscribeService(String groupName, String serviceName, String[] clusters) throws DestinoException {
         return subscribeService(DefaultConstants.REGISTRATION_NAMESPACE, groupName, serviceName, clusters);
+    }
+
+    @Override
+    public InstanceSelector subscribeService(String namespace, String groupName, String serviceName) throws DestinoException {
+        return subscribeService(namespace, groupName, serviceName, new String[0]);
     }
 
     @Override
@@ -113,6 +123,11 @@ public class ConsultationServiceImpl implements ConsultationService {
     @Override
     public void unsubscribeService(String namespace, String serviceName, String[] clusters) throws DestinoException {
         unsubscribeService(namespace, DefaultConstants.REGISTRATION_GROUP, serviceName, clusters);
+    }
+
+    @Override
+    public void unsubscribeService(String namespace, String groupName, String serviceName) throws DestinoException {
+        unsubscribeService(namespace, groupName, serviceName, new String[0]);
     }
 
     @Override

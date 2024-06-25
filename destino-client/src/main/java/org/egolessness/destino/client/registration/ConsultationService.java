@@ -22,6 +22,8 @@ public interface ConsultationService extends Lucermaire {
 
     InstanceSelector selectInstances(String namespace, String serviceName, String[] clusters) throws DestinoException;
 
+    InstanceSelector selectInstances(String namespace, String groupName, String serviceName) throws DestinoException;
+
     InstanceSelector selectInstances(String namespace, String groupName, String serviceName, String[] clusters)
             throws DestinoException;
 
@@ -29,8 +31,10 @@ public interface ConsultationService extends Lucermaire {
 
     InstanceSelector subscribeService(String groupName, String serviceName, String[] clusters) throws DestinoException;
 
+    InstanceSelector subscribeService(String namespace, String groupName, String serviceName) throws DestinoException;
+
     InstanceSelector subscribeService(String namespace, String groupName, String serviceName, String[] clusters)
-                    throws DestinoException;
+            throws DestinoException;
 
     Cancellable subscribeService(Listener<Service> listener, String namespace, String groupName, String serviceName,
                                  String[] clusters) throws DestinoException;
@@ -39,8 +43,10 @@ public interface ConsultationService extends Lucermaire {
 
     void unsubscribeService(String namespace, String serviceName, String[] clusters) throws DestinoException;
 
+    void unsubscribeService(String namespace, String groupName, String serviceName) throws DestinoException;
+
     void unsubscribeService(String namespace, String groupName, String serviceName, String[] clusters)
-                                                                throws DestinoException;
+            throws DestinoException;
 
     Page<String> queryServices(Pageable pageable) throws DestinoException;
 
