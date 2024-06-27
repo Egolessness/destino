@@ -218,12 +218,8 @@ public class JRaftEngine implements Lucermaire {
         }
 
         RouteTable.getInstance().updateConfiguration(domain.name(), configuration);
-        jRaftTaskExecutorService.getCoreExecutorService().schedule(() ->
-                peerRegistry.register(domain, currentPeerId, configuration), 0, TimeUnit.MILLISECONDS);
+        peerRegistry.submitRegisterTask(domain, currentPeerId, nodeOptions);
 
-        long period = nodeOptions.getElectionTimeoutMs() + ThreadLocalRandom.current().nextInt(5000);
-        jRaftTaskExecutorService.getCoreExecutorService().scheduleAtFixedRate(() -> refreshRouteTable(domain),
-                nodeOptions.getElectionTimeoutMs(), period, TimeUnit.MILLISECONDS);
         raftGroupContainer.add(new RaftGroup(processor, raftGroupService, node, cliClientService.getRpcClient(),
                 raftProperties, jRaftTaskExecutorService.getRequestExecutorService()));
     }
@@ -271,7 +267,7 @@ public class JRaftEngine implements Lucermaire {
 
         if (current != null && !RaftSupport.equalsPeerId(current, currentPeerId)) {
             PeerId latestCurrentPeer = RaftSupport.buildPeer(current);
-            peerRegistry.register(latestCurrentPeer);
+            peerRegistry.submitRegisterTask(latestCurrentPeer);
             peerRegistry.deregister(currentPeerId);
             this.currentPeerId = latestCurrentPeer;
         }
@@ -296,52 +292,12 @@ public class JRaftEngine implements Lucermaire {
         return refreshResult;
     }
 
-    void refreshRouteTable(ConsistencyDomain domain) {
-        if (!initialized.get()) {
-            return;
-        }
-
-        String groupName = domain.name();
-        try {
-            RouteTable routeTable = RouteTable.getInstance();
-            Status status = routeTable.refreshLeader(this.cliClientService, groupName, raftProperties.getRequestTimeout());
-            if (!initialized.get()) {
-                return;
-            }
-            if (!status.isOk()) {
-                Loggers.PROTOCOL.warn("Raft group {} failed to refresh leader, error: {}.",
-                        groupName.toLowerCase(Locale.ROOT), status.getErrorMsg());
-                return;
-            }
-            status = routeTable.refreshConfiguration(this.cliClientService, groupName, raftProperties.getRequestTimeout());
-            if (!initialized.get()) {
-                return;
-            }
-            if (!status.isOk()) {
-                Loggers.PROTOCOL.warn("Raft group {} failed to refresh configuration, error: {}.",
-                        groupName.toLowerCase(Locale.ROOT), status.getErrorMsg());
-            }
-        } catch (TimeoutException e) {
-            Loggers.PROTOCOL.warn("Raft group {} refresh timed out with the raft route table.",
-                    groupName.toLowerCase(Locale.ROOT));
-        } catch (Exception e) {
-            Loggers.PROTOCOL.warn("Raft group {} refresh failed with the raft route table.",
-                    groupName.toLowerCase(Locale.ROOT), e);
-        }
-    }
-
     public void waitLeader() {
-        CompletableFuture<?>[] completableFutures = processorMap.values().stream()
-                .map(processor -> CompletableFuture.runAsync(() -> waitLeader(processor),
-                        jRaftTaskExecutorService.getCoreExecutorService()))
-                .toArray((IntFunction<CompletableFuture<?>[]>) CompletableFuture[]::new);
-        CompletableFuture.allOf(completableFutures).join();
-    }
-
-    private void waitLeader(JRaftConsistencyProcessor processor) {
-        while (!processor.hasLeader() && !processor.hasError() && initialized.get()) {
-            Loggers.PROTOCOL.info("Raft group {} is waiting leader vote ...", processor.getGroup());
-            ThreadUtils.sleep(Duration.ofMillis(2000));
+        for (JRaftConsistencyProcessor processor : processorMap.values()) {
+            while (!processor.hasLeader() && !processor.hasError() && initialized.get()) {
+                Loggers.PROTOCOL.info("Raft group {} is waiting leader vote ...", processor.getGroup());
+                ThreadUtils.sleep(Duration.ofMillis(2000));
+            }
         }
     }
 

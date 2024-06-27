@@ -31,6 +31,8 @@ public class ClusterProperties implements PropertiesValue {
 
     private static final long serialVersionUID = 5503169768986007289L;
 
+    private String url;
+
     private List<String> nodes;
 
     private String group = DEFAULT;
@@ -40,6 +42,14 @@ public class ClusterProperties implements PropertiesValue {
     private DiscoveryProperties discovery = new DiscoveryProperties();
 
     public ClusterProperties() {
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public void setNodes(List<String> nodes) {
@@ -73,4 +83,5 @@ public class ClusterProperties implements PropertiesValue {
     public void setDiscovery(DiscoveryProperties discovery) {
         this.discovery = discovery;
     }
+
 }

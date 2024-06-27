@@ -19,6 +19,7 @@ package org.egolessness.destino.server.discovery;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
+import org.egolessness.destino.common.enumeration.Mark;
 import org.egolessness.destino.common.exception.NotRequiredServiceException;
 import org.egolessness.destino.common.model.Address;
 import org.egolessness.destino.core.enumration.NodeState;
@@ -43,6 +44,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * members discoverer.
@@ -62,9 +64,9 @@ public class ServerMemberDiscoverer implements Runnable, Starter {
 
     private final Set<DiscoveryStrategy> activeStrategies = new HashSet<>();
 
-    private final DiscoveryProperties discoveryProperties;
+    private final List<Member> fixedMembers = new ArrayList<>();
 
-    private List<Member> fixedMembers;
+    private final DiscoveryProperties discoveryProperties;
 
     private volatile boolean shutdown;
 
@@ -82,9 +84,14 @@ public class ServerMemberDiscoverer implements Runnable, Starter {
             } catch (NotRequiredServiceException ignored) {
             }
         }
+        if (PredicateUtils.isNotEmpty(clusterProperties.getUrl())) {
+            String[] nodeArray = Mark.COMMA.split(clusterProperties.getUrl());
+            Stream.of(nodeArray).map(String::trim).filter(PredicateUtils::isNotBlank)
+                    .distinct().map(MemberSupport::build).forEach(fixedMembers::add);
+        }
         if (PredicateUtils.isNotEmpty(clusterProperties.getNodes())) {
-            this.fixedMembers = clusterProperties.getNodes().stream().map(String::trim).filter(PredicateUtils::isNotBlank)
-                    .distinct().map(MemberSupport::build).collect(Collectors.toList());
+            clusterProperties.getNodes().stream().map(String::trim).filter(PredicateUtils::isNotBlank)
+                    .distinct().map(MemberSupport::build).forEach(fixedMembers::add);
         }
     }
 
@@ -186,10 +193,8 @@ public class ServerMemberDiscoverer implements Runnable, Starter {
             }
         }
 
-        if (fixedMembers != null) {
-            for (Member fixedMember : fixedMembers) {
-                memberMap.putIfAbsent(fixedMember.getAddress(), fixedMember);
-            }
+        for (Member fixedMember : fixedMembers) {
+            memberMap.putIfAbsent(fixedMember.getAddress(), fixedMember);
         }
 
         if (memberMap.isEmpty()) {
