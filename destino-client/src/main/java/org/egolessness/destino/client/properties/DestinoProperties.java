@@ -73,8 +73,8 @@ public class DestinoProperties {
         this.servers = new ListenableArrayList<>(servers, this.servers.getMonitor());
     }
 
-    public void addAddress(String address) {
-        this.servers.add(address);
+    public void addServer(String server) {
+        this.servers.add(server);
     }
 
     public String getServersProviderUrl() {
