@@ -34,8 +34,8 @@ public class PropertiesInitializer {
         if (properties.getLoggingProperties() == null) {
             properties.setLoggingProperties(new LoggingProperties());
         }
-        if (properties.getAddresses() == null) {
-            properties.setAddresses(new ListenableArrayList<>());
+        if (properties.getServers() == null) {
+            properties.setServers(new ListenableArrayList<>());
         }
         if (properties.getReceiverProperties() == null) {
             properties.setReceiverProperties(new ReceiverProperties());

@@ -74,19 +74,19 @@ public class ServerAddressesReader {
     }
 
     private boolean isReadableForProviderUrl() {
-        return PredicateUtils.isNotBlank(properties.getAddressesProviderUrl());
+        return PredicateUtils.isNotBlank(properties.getServersProviderUrl());
     }
 
     private void read() {
         try {
-            String addressesProviderUrl = properties.getAddressesProviderUrl();
-            if (PredicateUtils.isBlank(addressesProviderUrl)) {
+            String providerUrl = properties.getServersProviderUrl();
+            if (PredicateUtils.isBlank(providerUrl)) {
                 return;
             }
-            if (!addressesProviderUrl.contains(HttpScheme.SIGN)) {
-                addressesProviderUrl = HttpScheme.HTTP_PREFIX + addressesProviderUrl;
+            if (!providerUrl.contains(HttpScheme.SIGN)) {
+                providerUrl = HttpScheme.HTTP_PREFIX + providerUrl;
             }
-            URI uri = URI.create(addressesProviderUrl);
+            URI uri = URI.create(providerUrl);
             HttpURLConnection connection = baseClient.connect(uri, new HttpRequest(), requestTimeout);
             InputStream responseStream = null;
             BufferedReader bufferedReader = null;
@@ -110,8 +110,8 @@ public class ServerAddressesReader {
                 }
             }
         } catch (Exception e) {
-            DestinoLoggers.REGISTRATION.warn("Failed to read server addresses from provider url: {}",
-                    properties.getAddressesProviderUrl(), e);
+            DestinoLoggers.REGISTRATION.warn("Failed to read servers from provider url: {}",
+                    properties.getServersProviderUrl(), e);
         } finally {
             executor.schedule(this::read, readInterval.toMillis(), TimeUnit.MILLISECONDS);
         }
@@ -120,10 +120,10 @@ public class ServerAddressesReader {
     public synchronized void refreshServerAddress() {
         List<URI> allUris = new ArrayList<>();
 
-        ListenableArrayList<String> registryAddresses = properties.getAddresses();
-        if (PredicateUtils.isNotEmpty(registryAddresses)) {
+        ListenableArrayList<String> servers = properties.getServers();
+        if (PredicateUtils.isNotEmpty(servers)) {
             boolean tlsEnabled = properties.getRequestProperties().getTlsProperties().isEnabled();
-            List<URI> propertiesUris = RequestSupport.parseUris(registryAddresses, tlsEnabled);
+            List<URI> propertiesUris = RequestSupport.parseUris(servers, tlsEnabled);
             allUris.addAll(propertiesUris);
         }
 

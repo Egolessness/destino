@@ -30,9 +30,9 @@ import java.util.Collection;
 @SuppressWarnings("SpellCheckingInspection")
 public class DestinoProperties {
 
-    private ListenableArrayList<String> addresses = new ListenableArrayList<>();
+    private ListenableArrayList<String> servers = new ListenableArrayList<>();
 
-    private String addressesProviderUrl;
+    private String serversProviderUrl;
 
     private String accessToken;
 
@@ -65,24 +65,24 @@ public class DestinoProperties {
 
     private LoggingProperties loggingProperties;
 
-    public ListenableArrayList<String> getAddresses() {
-        return addresses;
+    public ListenableArrayList<String> getServers() {
+        return servers;
     }
 
-    public void setAddresses(Collection<String> addresses) {
-        this.addresses = new ListenableArrayList<>(addresses, this.addresses.getMonitor());
+    public void setServers(Collection<String> servers) {
+        this.servers = new ListenableArrayList<>(servers, this.servers.getMonitor());
     }
 
     public void addAddress(String address) {
-        this.addresses.add(address);
+        this.servers.add(address);
     }
 
-    public String getAddressesProviderUrl() {
-        return addressesProviderUrl;
+    public String getServersProviderUrl() {
+        return serversProviderUrl;
     }
 
-    public void setAddressesProviderUrl(String addressesProviderUrl) {
-        this.addressesProviderUrl = addressesProviderUrl;
+    public void setServersProviderUrl(String serversProviderUrl) {
+        this.serversProviderUrl = serversProviderUrl;
     }
 
     public String getAccessToken() {

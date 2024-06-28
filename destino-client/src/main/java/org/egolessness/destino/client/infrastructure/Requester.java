@@ -93,14 +93,14 @@ public class Requester implements Lucermaire {
         RequestClientFactories factories = new RequestClientFactories(requestProperties);
         RequestClientFactory factory = factories.getFactory();
 
-        ListenableArrayList<String> registryAddresses = properties.getAddresses();
-        List<URI> uris = RequestSupport.parseUris(registryAddresses, tlsProperties.isEnabled());
+        ListenableArrayList<String> servers = properties.getServers();
+        List<URI> uris = RequestSupport.parseUris(servers, tlsProperties.isEnabled());
         RequestHighLevelClient requestHighLevelClient = factory.createHighLevelClient(uris);
         return requestHighLevelClient.start();
     }
 
     private void init(DestinoProperties properties) {
-        Monitor<ListenableArrayList<String>> monitor = properties.getAddresses().getMonitor();
+        Monitor<ListenableArrayList<String>> monitor = properties.getServers().getMonitor();
         monitor.addListener(servers -> this.serverAddressesReader.refreshServerAddress());
         this.serverAddressesReader.tryStart();
     }
