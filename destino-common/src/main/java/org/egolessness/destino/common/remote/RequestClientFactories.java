@@ -17,6 +17,8 @@
 package org.egolessness.destino.common.remote;
 
 import org.egolessness.destino.common.annotation.SPI;
+import org.egolessness.destino.common.enumeration.ErrorCode;
+import org.egolessness.destino.common.exception.DestinoRuntimeException;
 import org.egolessness.destino.common.infrastructure.CustomizedServiceLoader;
 import org.egolessness.destino.common.properties.RequestProperties;
 import org.egolessness.destino.common.remote.http.DefaultClientFactory;
@@ -74,14 +76,21 @@ public class RequestClientFactories {
 
     public RequestClientFactory getFactory() {
         RequestChannel channel = requestProperties.getRequestChannel();
-        if (channel != null) {
+        if (Objects.nonNull(channel)) {
             return getFactory(channel);
         }
         return getHighestPriorityFactory();
     }
 
     public RequestClientFactory getFactory(RequestChannel channel) {
-        return factoryMap.get(channel);
+        RequestClientFactory factory = factoryMap.get(channel);
+        if (Objects.nonNull(factory)) {
+            return factory;
+        }
+        if (RequestChannel.HTTP == channel) {
+            return getDefaultClientFactory();
+        }
+        throw new DestinoRuntimeException(ErrorCode.REQUEST_FAILED, "Unsupported channel " + channel + ".");
     }
 
     public RequestClientFactory getHighestPriorityFactory() {

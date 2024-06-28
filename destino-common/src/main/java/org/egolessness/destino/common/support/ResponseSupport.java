@@ -56,7 +56,7 @@ public class ResponseSupport {
 
     public static <T> T dataDeserialize(final Response response, final Class<T> dataType) {
         byte[] dataBytes = getDataBytes(response);
-        if (Objects.isNull(dataBytes)) {
+        if (ByteUtils.isEmpty(dataBytes)) {
             return null;
         }
         return JsonUtils.toObj(dataBytes, dataType);
@@ -75,7 +75,7 @@ public class ResponseSupport {
 
     public static <T> T dataDeserialize(final Response response, final Class<T> dataType, final BiConsumer<T, byte[]> consumer) {
         byte[] dataBytes = getDataBytes(response);
-        if (Objects.isNull(dataBytes)) {
+        if (ByteUtils.isEmpty(dataBytes)) {
             return null;
         }
         T t = JsonUtils.toObj(dataBytes, dataType);
@@ -87,7 +87,7 @@ public class ResponseSupport {
 
     public static <T> T dataDeserializeWithTypeReference(final Response response, final TypeReference<T> dataType) {
         byte[] dataBytes = getDataBytes(response);
-        if (Objects.isNull(dataBytes)) {
+        if (ByteUtils.isEmpty(dataBytes)) {
             return null;
         }
         return JsonUtils.toObj(dataBytes, dataType);

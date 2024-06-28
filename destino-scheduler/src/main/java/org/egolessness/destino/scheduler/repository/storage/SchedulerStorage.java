@@ -52,6 +52,8 @@ import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.egolessness.destino.scheduler.model.enumration.SchedulerSchema.GET;
+
 /**
  * storage of scheduler
  *
@@ -102,7 +104,7 @@ public class SchedulerStorage implements PersistentDocStorage<SchedulerSeam> {
     private byte[] toSeamBytes(@Nullable byte[] value) {
         int bytesSize = value != null ? value.length : 0;
         ByteBuffer byteBuffer = ByteBuffer.allocate(bytesSize + 4);
-        byteBuffer.putInt(SchedulerSchema.GET.getNumber());
+        byteBuffer.putInt(GET.getNumber());
         if (value != null) {
             byteBuffer.put(value);
         }
@@ -195,7 +197,7 @@ public class SchedulerStorage implements PersistentDocStorage<SchedulerSeam> {
         SchedulerInfo schedulerInfo = schedulerContext.getSchedulerInfo();
         byte[] bytes = getSerializer().serialize(schedulerInfo);
         infoStorage.set(schedulerInfo.getId(), bytes);
-        return serialize(new SchedulerSeam(seam.getSchema(), schedulerInfo));
+        return serialize(new SchedulerSeam(GET, schedulerInfo));
     }
 
     @Override

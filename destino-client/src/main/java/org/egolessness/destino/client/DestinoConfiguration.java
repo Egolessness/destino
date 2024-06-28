@@ -18,6 +18,7 @@ package org.egolessness.destino.client;
 
 import org.egolessness.destino.client.registration.ConsultationService;
 import org.egolessness.destino.client.registration.RegistrationService;
+import org.egolessness.destino.client.scheduling.LocalSchedulingService;
 import org.egolessness.destino.client.scheduling.impl.LocalSchedulingServiceImpl;
 import org.egolessness.destino.client.infrastructure.ScriptFactory;
 import org.egolessness.destino.client.properties.DestinoProperties;
@@ -42,7 +43,7 @@ public class DestinoConfiguration implements Lucermaire {
 
     private final Requester requester;
 
-    private final LocalSchedulingServiceImpl localSchedulingService;
+    private final LocalSchedulingService localSchedulingService;
 
     private final RegistrationService registrationService;
 
@@ -75,7 +76,7 @@ public class DestinoConfiguration implements Lucermaire {
         return properties;
     }
 
-    public LocalSchedulingServiceImpl getLocalScheduledService() {
+    public LocalSchedulingService getLocalScheduledService() {
         return localSchedulingService;
     }
 
