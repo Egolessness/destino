@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * grpc channel.
@@ -152,7 +153,7 @@ public class GrpcChannel {
     }
 
     public StreamObserver<Any> connectToServer(final GrpcStub grpcStub, final Callback<Response> callback,
-                                               final RequestProcessorRegistry registry) throws DestinoException {
+                                               final RequestProcessorRegistry registry) throws DestinoException, TimeoutException {
         StreamObserver<Any> responseStream = buildResponseStream(callback, registry);
         StreamObserver<Any> streamObserver = grpcStub.bindStream(responseStream);
 
@@ -176,6 +177,8 @@ public class GrpcChannel {
                     return streamObserver;
                 }
             }
+        } catch (TimeoutException e) {
+            throw e;
         } catch (Exception e) {
             throw new DestinoException(ErrorCode.REQUEST_FAILED, e);
         }

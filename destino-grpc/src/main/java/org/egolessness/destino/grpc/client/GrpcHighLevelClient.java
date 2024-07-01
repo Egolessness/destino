@@ -33,6 +33,7 @@ import io.grpc.stub.StreamObserver;
 
 import java.net.URI;
 import java.util.*;
+import java.util.concurrent.TimeoutException;
 
 import static org.egolessness.destino.common.enumeration.RequestClientState.*;
 
@@ -85,7 +86,7 @@ public class GrpcHighLevelClient extends RequestHighLevelClient {
         }
 
         try {
-            LOGGER.info("The GRPC client is trying to connect to server {}.", uri);
+            LOGGER.info("The GRPC client is trying connect to server {}.", uri);
             GrpcStub newStub = grpcChannel.getStub(uri);
             StreamObserver<Any> streamObserveNew = grpcChannel.connectToServer(newStub, connectCallback, processorRegistry);
             stateChange(SWITCHING);
@@ -97,8 +98,10 @@ public class GrpcHighLevelClient extends RequestHighLevelClient {
             LOGGER.info("The GRPC client has successfully connected to server {}.", uri);
 
             return Objects.nonNull(this.streamObserver);
+        } catch (TimeoutException e) {
+            LOGGER.error("The GRPC client connect timed-out to server {}.", uri);
         } catch (DestinoException e) {
-            LOGGER.error("The GRPC client failed to connect to server {}.", uri, e);
+            LOGGER.error("The GRPC client connect failed to server {}.", uri, e);
         }
 
         return false;

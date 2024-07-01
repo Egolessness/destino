@@ -150,8 +150,10 @@ public class SettingProviderImpl implements SettingProvider {
             switch (writer.scope()) {
                 case GLOBAL:
                     globalSettings.put(specifier.transfer(key), ByteUtils.toBytes(value));
+                    break;
                 case LOCAL:
                     settingStorage.set(specifier.transfer(key), ByteUtils.toBytes(value));
+                    break;
             }
         }
 

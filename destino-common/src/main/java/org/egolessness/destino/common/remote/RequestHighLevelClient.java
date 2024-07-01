@@ -52,7 +52,7 @@ public abstract class RequestHighLevelClient implements RequestClient {
     
     protected static final Logger LOGGER = LoggerFactory.getLogger(RequestHighLevelClient.class);
 
-    private final RetryableDelayer RETRYABLE_DELAYER = RetryableDelayer.of(Duration.ofMillis(200), Duration.ofMillis(5000));
+    private final RetryableDelayer RETRYABLE_DELAYER = RetryableDelayer.of(Duration.ofMillis(500), Duration.ofMillis(30000));
 
     private final ReentrantLock LOCK = new ReentrantLock();
 
@@ -182,10 +182,14 @@ public abstract class RequestHighLevelClient implements RequestClient {
     }
 
     public boolean connectNext() {
-        return connect(ADDRESS_PICKER.next());
+        return connect(ADDRESS_PICKER.next(), 0);
     }
 
-    public boolean connect(final URI uri) {
+    private boolean connectNext(int retryCount) {
+        return connect(ADDRESS_PICKER.next(), retryCount);
+    }
+
+    private boolean connect(final URI uri, int retryCount) {
         try {
             if (is(RequestClientState.SHUTDOWN)) {
                 return false;
@@ -200,9 +204,12 @@ public abstract class RequestHighLevelClient implements RequestClient {
                     }
                     RETRYABLE_DELAYER.retryIncrement();
                     Duration duration = RETRYABLE_DELAYER.calculateDelay(ADDRESS_PICKER.list().size());
-                    LOGGER.warn("Unable to connect to destino server, try again in {} milliseconds.", duration.toMillis());
+                    LOGGER.warn("Unable connect to destino server, try again in {} milliseconds.", duration.toMillis());
+                    if (retryCount >= RETRY_TIMES) {
+                        return false;
+                    }
                     ThreadUtils.sleep(duration);
-                    return connectNext();
+                    return connectNext(++ retryCount);
                 } finally {
                     LOCK.unlock();
                 }
@@ -210,17 +217,17 @@ public abstract class RequestHighLevelClient implements RequestClient {
 
             return false;
         } catch (Exception e) {
-            LOGGER.warn("The {} client failed to connect to server {}.", channel(), uri, e);
+            LOGGER.warn("The {} client connect failed to server {}.", channel(), uri, e);
             return false;
         }
     }
 
     public boolean connectRedirect(final URI uri) {
         if (ADDRESS_PICKER.list().contains(uri)) {
-            return connect(uri);
+            return connect(uri, 0);
         }
 
-        boolean connected = connect(uri);
+        boolean connected = connect(uri, 0);
         if (connected) {
             ADDRESS_PICKER.list().add(uri);
         }
