@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.server.resource;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.egolessness.destino.common.infrastructure.CustomizedServiceLoader;
 import org.egolessness.destino.core.resource.*;
 import org.egolessness.destino.server.spi.ResourceRegistry;
@@ -79,23 +80,27 @@ public class RpcResourceRegistry extends RequestProcessorRegistry implements Res
         for (Method method : resource.getClass().getDeclaredMethods()) {
             if (method.isAnnotationPresent(Rpc.class)) {
                 Parameter[] parameters = method.getParameters();
-                for (int i = 0; i < parameters.length; i++) {
-                    RpcFocus rpc = parameters[i].getAnnotation(RpcFocus.class);
-                    if (rpc == null) {
-                        continue;
-                    }
-                    RpcParameterGetter parameterGetter = parameterAnalyzer.analysis(i, parameters);
-                    registerProcessor(parameters[i].getType(), (data, headers) -> {
-                        try {
-                            Object result = method.invoke(resource, parameterGetter.get(data, headers));
-                            return responseAnalyzer.analysis(result);
-                        } catch (InvocationTargetException e) {
-                            return ResponseSupport.failed(e.getCause().getMessage());
-                        } catch (Exception e) {
-                            return ResponseSupport.failed("Internal Server Error.");
-                        }
-                    });
+                if (ArrayUtils.isEmpty(parameters)) {
+                    continue;
                 }
+                int focusIndex = 0;
+                for (int i = 0; i < parameters.length; i++) {
+                    if (parameters[i].isAnnotationPresent(RpcFocus.class)) {
+                        focusIndex = i;
+                        break;
+                    }
+                }
+                RpcParameterGetter parameterGetter = parameterAnalyzer.analysis(focusIndex, parameters);
+                registerProcessor(parameters[focusIndex].getType(), (data, headers) -> {
+                    try {
+                        Object result = method.invoke(resource, parameterGetter.get(data, headers));
+                        return responseAnalyzer.analysis(result);
+                    } catch (InvocationTargetException e) {
+                        return ResponseSupport.failed(e.getCause().getMessage());
+                    } catch (Exception e) {
+                        return ResponseSupport.failed("Internal Server Error.");
+                    }
+                });
             }
         }
     }

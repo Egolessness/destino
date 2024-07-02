@@ -42,7 +42,7 @@ public class ProtocolRequestSupport {
         long timestamp = System.currentTimeMillis();
         SearchRequest.Builder builder = SearchRequest.newBuilder().setTimestamp(timestamp)
                 .setCosmos(cosmos).addAllKey(Lists.newArrayList(keys));
-        String keysJoin = Mark.EMPTY.join(builder.getKeyList());
+        String keysJoin = builder.getKeyList().stream().map(ByteString::toStringUtf8).collect(Collectors.joining());
         String token = SecuritySupport.createServerToken(timestamp, cosmos.toString(), SecurityUtils.md5Hex(keysJoin));
         return builder.setToken(token).build();
     }
@@ -130,7 +130,7 @@ public class ProtocolRequestSupport {
 
     public static DeleteRequest buildDeleteRequest(final Cosmos cosmos, final ByteString... keys) {
         long timestamp = System.currentTimeMillis();
-        String keysJoin = Mark.EMPTY.join(keys);
+        String keysJoin = Stream.of(keys).map(ByteString::toStringUtf8).collect(Collectors.joining());
         String token = SecuritySupport.createServerToken(timestamp, cosmos.toString(), SecurityUtils.md5Hex(keysJoin));
         return DeleteRequest.newBuilder()
                 .setTimestamp(timestamp)

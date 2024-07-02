@@ -57,7 +57,7 @@ public class AddressingFactory {
             if (origin == null) {
                 return create(schedulerInfo);
             }
-            if (origin.version() >= updateTimeMillis || origin.strategy() == schedulerInfo.getAddressingStrategy()) {
+            if (origin.version() >= updateTimeMillis) {
                 return origin;
             }
             return create(schedulerInfo);
