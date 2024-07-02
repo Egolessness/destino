@@ -24,6 +24,7 @@ import org.egolessness.destino.client.processor.ServerRequestProcessor;
 import org.egolessness.destino.client.properties.HeartbeatProperties;
 import org.egolessness.destino.common.enumeration.ErrorCode;
 import org.egolessness.destino.client.properties.DestinoProperties;
+import org.egolessness.destino.common.enumeration.RequestSchema;
 import org.egolessness.destino.common.fixedness.Lucermaire;
 import org.egolessness.destino.common.infrastructure.ListenableArrayList;
 import org.egolessness.destino.common.infrastructure.monitor.Monitor;
@@ -41,6 +42,7 @@ import org.egolessness.destino.common.spi.RequestClientFactory;
 import org.egolessness.destino.common.support.CallbackSupport;
 import org.egolessness.destino.common.support.RequestSupport;
 import org.egolessness.destino.common.support.ResponseSupport;
+import org.egolessness.destino.common.utils.PredicateUtils;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -82,19 +84,18 @@ public class Requester implements Lucermaire {
         this.requestRepeater = new RequestRepeater(requestClient, properties.getRepeaterProperties()).start();
         this.serverAddressesReader = new ServerAddressesReader(requestClient, properties);
         this.registerProcessor(ServerCheckRequest.class, new HealthCheckRequestProcessor());
-        this.registerProcessor(ConnectionRedirectRequest.class, new ConnectionRedirectRequestProcessor(requestClient));
+        this.registerProcessor(ConnectionRedirectRequest.class,
+                new ConnectionRedirectRequestProcessor(requestClient, properties.getRequestProperties().getTlsProperties()));
         this.init(properties);
     }
 
     private RequestHighLevelClient buildRequestClient(DestinoProperties properties) {
+        RequestClientFactory factory = buildRequestFactory(properties);
         RequestProperties requestProperties = properties.getRequestProperties();
         TlsProperties tlsProperties = requestProperties.getTlsProperties();
 
-        RequestClientFactories factories = new RequestClientFactories(requestProperties);
-        RequestClientFactory factory = factories.getFactory();
-
-        ListenableArrayList<String> servers = properties.getServers();
-        List<URI> uris = RequestSupport.parseUris(servers, tlsProperties.isEnabled());
+        RequestSchema schema = RequestSchema.findByChannel(factory.channel(), tlsProperties.isEnabled());
+        List<URI> uris = RequestSupport.parseUris(properties.getServers(), schema);
         RequestHighLevelClient requestHighLevelClient = factory.createHighLevelClient(uris);
         return requestHighLevelClient.start();
     }
@@ -103,6 +104,29 @@ public class Requester implements Lucermaire {
         Monitor<ListenableArrayList<String>> monitor = properties.getServers().getMonitor();
         monitor.addListener(servers -> this.serverAddressesReader.refreshServerAddress());
         this.serverAddressesReader.tryStart();
+    }
+
+    private RequestClientFactory buildRequestFactory(DestinoProperties properties) {
+        ListenableArrayList<String> servers = properties.getServers();
+        RequestClientFactories factories = new RequestClientFactories(properties.getRequestProperties());
+
+        if (PredicateUtils.isNotEmpty(servers)) {
+            for (String server : servers) {
+                URI uri = RequestSupport.parseUri(server, RequestSchema.GRPC);
+                if (null == uri) {
+                    continue;
+                }
+                RequestSchema schema = RequestSchema.findById(uri.getScheme());
+                switch (schema) {
+                    case HTTP:
+                    case HTTPS:
+                        return factories.getFactory(RequestChannel.HTTP);
+                    default:
+                        return factories.getFactory();
+                }
+            }
+        }
+        return factories.getFactory();
     }
 
     public boolean serverCheck() throws TimeoutException {
@@ -145,6 +169,10 @@ public class Requester implements Lucermaire {
 
     public <R extends Serializable> Response executeRequest(final R request, Callback<Response> callback) throws DestinoException {
         try {
+            if (PredicateUtils.isEmpty(requestClient.getAddresses())) {
+                throw new DestinoException(ErrorCode.REQUEST_FAILED, "Empty servers.");
+            }
+
             Map<String, String> headers = RequestSupport.commonHeaders();
             authenticationMaintainer.consumerAuthentication(headers::put);
             headers.putAll(Headers.getHeadersMap());

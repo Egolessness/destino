@@ -19,7 +19,8 @@ package org.egolessness.destino.client.infrastructure;
 import org.egolessness.destino.client.logging.DestinoLoggers;
 import org.egolessness.destino.client.properties.DestinoProperties;
 import org.egolessness.destino.common.balancer.RoundRobinBalancer;
-import org.egolessness.destino.common.constant.HttpScheme;
+import org.egolessness.destino.common.constant.CommonConstants;
+import org.egolessness.destino.common.enumeration.RequestSchema;
 import org.egolessness.destino.common.infrastructure.ListenableArrayList;
 import org.egolessness.destino.common.model.HttpRequest;
 import org.egolessness.destino.common.remote.RequestHighLevelClient;
@@ -83,8 +84,8 @@ public class ServerAddressesReader {
             if (PredicateUtils.isBlank(providerUrl)) {
                 return;
             }
-            if (!providerUrl.contains(HttpScheme.SIGN)) {
-                providerUrl = HttpScheme.HTTP_PREFIX + providerUrl;
+            if (!providerUrl.contains(CommonConstants.PROTOCOL_SIGN)) {
+                providerUrl = RequestSchema.HTTP.getPrefix() + providerUrl;
             }
             URI uri = URI.create(providerUrl);
             HttpURLConnection connection = baseClient.connect(uri, new HttpRequest(), requestTimeout);
@@ -94,8 +95,10 @@ public class ServerAddressesReader {
                 InputStream errorStream = connection.getErrorStream();
                 responseStream = errorStream != null ? errorStream : connection.getInputStream();
                 bufferedReader = new BufferedReader(new InputStreamReader(responseStream));
+                RequestSchema schema = RequestSchema.findByChannel(requestClient.channel(),
+                        properties.getRequestProperties().getTlsProperties().isEnabled());
                 List<URI> addresses = bufferedReader.lines()
-                        .map(address -> RequestSupport.parseUri(address, false))
+                        .map(address -> RequestSupport.parseUri(address, schema))
                         .filter(Objects::nonNull).sorted()
                         .collect(Collectors.toList());
                 if (!Objects.equals(cacheFromProviderUrl, addresses)) {
@@ -122,8 +125,9 @@ public class ServerAddressesReader {
 
         ListenableArrayList<String> servers = properties.getServers();
         if (PredicateUtils.isNotEmpty(servers)) {
-            boolean tlsEnabled = properties.getRequestProperties().getTlsProperties().isEnabled();
-            List<URI> propertiesUris = RequestSupport.parseUris(servers, tlsEnabled);
+            RequestSchema schema = RequestSchema.findByChannel(requestClient.channel(),
+                    properties.getRequestProperties().getTlsProperties().isEnabled());
+            List<URI> propertiesUris = RequestSupport.parseUris(servers, schema);
             allUris.addAll(propertiesUris);
         }
 

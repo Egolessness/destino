@@ -16,8 +16,9 @@
 
 package org.egolessness.destino.registration.healthy;
 
-import org.egolessness.destino.common.constant.HttpScheme;
+import org.egolessness.destino.common.constant.CommonConstants;
 import org.egolessness.destino.common.constant.InstanceMetadataKey;
+import org.egolessness.destino.common.enumeration.RequestSchema;
 import org.egolessness.destino.common.utils.PredicateUtils;
 import org.egolessness.destino.registration.RegistrationExecutors;
 import org.egolessness.destino.registration.model.Registration;
@@ -227,8 +228,8 @@ public class TcpHealthCheck implements HealthCheck, Runnable {
             return new InetSocketAddress(instance.getIp(), instance.getPort());
         }
 
-        if (!checkUrl.contains(HttpScheme.SIGN)) {
-            checkUrl += HttpScheme.HTTP_PREFIX;
+        if (!checkUrl.contains(CommonConstants.PROTOCOL_SIGN)) {
+            checkUrl += RequestSchema.HTTP.getPrefix();
         }
         try {
             URI uri = URI.create(checkUrl);

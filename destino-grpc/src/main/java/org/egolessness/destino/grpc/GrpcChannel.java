@@ -16,9 +16,9 @@
 
 package org.egolessness.destino.grpc;
 
-import org.egolessness.destino.common.constant.HttpScheme;
 import com.google.protobuf.Any;
 import org.egolessness.destino.common.constant.CommonConstants;
+import org.egolessness.destino.common.enumeration.RequestSchema;
 import org.egolessness.destino.common.infrastructure.SequenceCreator;
 import org.egolessness.destino.common.fixedness.Callback;
 import org.egolessness.destino.common.enumeration.ConnectionSource;
@@ -95,12 +95,7 @@ public class GrpcChannel {
     public GrpcStub createStub(final URI uri) {
         int port = uri.getPort();
         if (port < 0) {
-            if (Objects.equals(uri.getScheme(), HttpScheme.HTTP)) {
-                port = 80;
-            }
-            if (Objects.equals(uri.getScheme(), HttpScheme.HTTPS)) {
-                port = 443;
-            }
+            port = RequestSchema.findById(uri.getScheme()).getDefaultPort();
         }
 
         ManagedChannel managedChannel = ManagedChannelBuilder.forAddress(uri.getHost(), port)

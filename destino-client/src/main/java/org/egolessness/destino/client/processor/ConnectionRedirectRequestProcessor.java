@@ -16,12 +16,13 @@
 
 package org.egolessness.destino.client.processor;
 
-import org.egolessness.destino.common.constant.HttpScheme;
+import org.egolessness.destino.common.enumeration.RequestSchema;
 import org.egolessness.destino.common.exception.RequestInvalidException;
 import org.egolessness.destino.common.model.Address;
 import org.egolessness.destino.common.model.message.Request;
 import org.egolessness.destino.common.model.message.Response;
 import org.egolessness.destino.common.model.request.ConnectionRedirectRequest;
+import org.egolessness.destino.common.properties.TlsProperties;
 import org.egolessness.destino.common.remote.RequestHighLevelClient;
 import org.egolessness.destino.common.support.RequestSupport;
 import org.egolessness.destino.common.support.ResponseSupport;
@@ -40,8 +41,11 @@ public class ConnectionRedirectRequestProcessor implements ServerRequestProcesso
 
     private final RequestHighLevelClient requestClient;
 
-    public ConnectionRedirectRequestProcessor(RequestHighLevelClient requestClient) {
+    private final TlsProperties tlsProperties;
+
+    public ConnectionRedirectRequestProcessor(RequestHighLevelClient requestClient, TlsProperties tlsProperties) {
         this.requestClient = requestClient;
+        this.tlsProperties = tlsProperties;
     }
 
     @Override
@@ -57,7 +61,8 @@ public class ConnectionRedirectRequestProcessor implements ServerRequestProcesso
             String ip = redirectRequest.getIp();
             int port = redirectRequest.getPort();
             String path = redirectRequest.getPath();
-            String address = HttpScheme.HTTP + Address.of(ip, port);
+            RequestSchema schema = RequestSchema.findByChannel(requestClient.channel(), tlsProperties.isEnabled());
+            String address = schema.getPrefix() + Address.of(ip, port);
             if (PredicateUtils.isNotBlank(path)) {
                 address += path;
             }

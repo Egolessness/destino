@@ -17,8 +17,8 @@
 package org.egolessness.destino.common.support;
 
 import org.egolessness.destino.common.constant.CommonConstants;
-import org.egolessness.destino.common.constant.HttpScheme;
 import org.egolessness.destino.common.enumeration.Mark;
+import org.egolessness.destino.common.enumeration.RequestSchema;
 import org.egolessness.destino.common.utils.ByteUtils;
 import org.egolessness.destino.common.utils.JsonUtils;
 import org.egolessness.destino.common.utils.NetUtils;
@@ -225,12 +225,12 @@ public class RequestSupport {
         return Mark.AND.join(paramList);
     }
 
-    public static List<URI> parseUris(List<String> addresses, boolean tlsEnabled) {
-        return addresses.stream().map(address -> parseUri(address, tlsEnabled)).filter(Objects::nonNull)
+    public static List<URI> parseUris(List<String> addresses, RequestSchema defaultSchema) {
+        return addresses.stream().map(address -> parseUri(address, defaultSchema)).filter(Objects::nonNull)
                 .distinct().collect(Collectors.toList());
     }
 
-    public static URI parseUri(String address, boolean tlsEnabled) {
+    public static URI parseUri(String address, RequestSchema defaultSchema) {
         if (PredicateUtils.isBlank(address)) {
             return null;
         }
@@ -238,14 +238,10 @@ public class RequestSupport {
         if (address.endsWith(Mark.SLASH.getValue())) {
             address = address.substring(0, address.length() - 1);
         }
-        if (address.contains(HttpScheme.SIGN)) {
+        if (address.contains(CommonConstants.PROTOCOL_SIGN)) {
             return URI.create(address);
         }
-        return URI.create(getSchema(tlsEnabled) + address);
-    }
-
-    public static String getSchema(boolean tlsEnabled) {
-        return tlsEnabled ? HttpScheme.HTTPS_PREFIX : HttpScheme.HTTP_PREFIX;
+        return URI.create(defaultSchema.getPrefix() + address);
     }
 
     public static String joinParams(String uri, Map<String, Object> params, String charset) {

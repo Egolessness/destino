@@ -16,7 +16,7 @@
 
 package org.egolessness.destino.server.discovery;
 
-import org.egolessness.destino.common.constant.HttpScheme;
+import org.egolessness.destino.common.enumeration.RequestSchema;
 import org.egolessness.destino.common.utils.PredicateUtils;
 import com.google.inject.Inject;
 import org.egolessness.destino.common.model.Address;
@@ -75,7 +75,7 @@ public class RemoteDiscoveryStrategy implements DiscoveryStrategy {
             } else if (!addressUrl.startsWith("/")) {
                 addressUrl = "/" + addressUrl;
             }
-            address = HttpScheme.HTTP_PREFIX + Address.of(domainName, addressPort) + addressUrl;
+            address = RequestSchema.HTTP.getPrefix() + Address.of(domainName, addressPort) + addressUrl;
         }
     }
 

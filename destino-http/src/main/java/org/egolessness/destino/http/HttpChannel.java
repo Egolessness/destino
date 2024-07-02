@@ -16,7 +16,7 @@
 
 package org.egolessness.destino.http;
 
-import org.egolessness.destino.common.constant.HttpScheme;
+import org.egolessness.destino.common.enumeration.RequestSchema;
 import org.egolessness.destino.common.properties.HttpProperties;
 import org.egolessness.destino.common.properties.RequestProperties;
 import org.egolessness.destino.common.model.Address;
@@ -123,8 +123,8 @@ public class HttpChannel {
             DefaultConnectingIOReactor ioReactor = new DefaultConnectingIOReactor(ioReactorConfig);
 
             Registry<SchemeIOSessionStrategy> registry = RegistryBuilder.<SchemeIOSessionStrategy>create()
-                    .register(HttpScheme.HTTP, NoopIOSessionStrategy.INSTANCE)
-                    .register(HttpScheme.HTTPS, sslStrategy)
+                    .register(RequestSchema.HTTP.getId(), NoopIOSessionStrategy.INSTANCE)
+                    .register(RequestSchema.HTTPS.getId(), sslStrategy)
                     .build();
 
             PoolingNHttpClientConnectionManager connManager = new PoolingNHttpClientConnectionManager(ioReactor, registry);

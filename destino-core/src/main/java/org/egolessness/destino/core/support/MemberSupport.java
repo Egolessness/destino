@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.core.support;
 
+import org.egolessness.destino.common.enumeration.RequestSchema;
 import org.egolessness.destino.common.support.RequestSupport;
 import org.egolessness.destino.core.enumration.DiscoveryType;
 import org.egolessness.destino.core.enumration.MemberMetadata;
@@ -94,7 +95,7 @@ public class MemberSupport {
     }
 
     public static Member build(String address) {
-        URI uri = RequestSupport.parseUri(address, false);
+        URI uri = RequestSupport.parseUri(address, RequestSchema.GRPC);
         if (uri == null) {
             return null;
         }
