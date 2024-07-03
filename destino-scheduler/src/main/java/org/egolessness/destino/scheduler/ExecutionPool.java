@@ -519,7 +519,7 @@ public class ExecutionPool implements Runnable, Lucermaire {
                 return value;
             }
             value.setExecution(execution);
-            value.setSchedulerContext(null);
+            value.setContext(null);
             return value;
         });
         if (computed.isTerminated() && nullOfExecution.get()) {

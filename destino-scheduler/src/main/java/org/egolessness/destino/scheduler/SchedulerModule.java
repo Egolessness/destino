@@ -70,7 +70,7 @@ public class SchedulerModule extends AbstractModule implements DestinoModule {
 
     @Provides
     @Singleton
-    public SchedulerProperties createRaftProperties(PropertiesFactory propertiesFactory) {
+    public SchedulerProperties schedulerProperties(PropertiesFactory propertiesFactory) {
         SchedulerProperties schedulerProperties = propertiesFactory.getProperties(SchedulerProperties.class);
         String property = System.getProperty("scheduler.enabled");
         if (Objects.equals(property, "false") || Objects.equals(property, "0")) {
@@ -81,7 +81,7 @@ public class SchedulerModule extends AbstractModule implements DestinoModule {
 
     @Provides
     @Singleton
-    public SchedulerRepository createSchedulerRepository(SchedulerProperties schedulerProperties,
+    public SchedulerRepository schedulerRepository(SchedulerProperties schedulerProperties,
                                                          RepositoryFactory repositoryFactory,
                                                          SchedulerStorage storage) {
         if (!schedulerProperties.isEnabled()) {
@@ -92,7 +92,7 @@ public class SchedulerModule extends AbstractModule implements DestinoModule {
 
     @Provides
     @Singleton
-    public ExecutionRepository createExecutionRepository(SchedulerProperties schedulerProperties, ServerMode mode,
+    public ExecutionRepository executionRepository(SchedulerProperties schedulerProperties, ServerMode mode,
                                                     Injector injector) {
         if (schedulerProperties.isEnabled() && mode.isDistributed()) {
             return injector.getInstance(ClusteredExecutionRepository.class);

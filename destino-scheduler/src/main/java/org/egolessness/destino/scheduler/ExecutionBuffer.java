@@ -16,7 +16,10 @@
 
 package org.egolessness.destino.scheduler;
 
+import org.egolessness.destino.core.container.ContainerFactory;
+import org.egolessness.destino.scheduler.container.SchedulerContainer;
 import org.egolessness.destino.scheduler.model.ExecutionInfo;
+import org.egolessness.destino.scheduler.model.SchedulerContext;
 import org.egolessness.destino.scheduler.model.event.ExecutionCompletedEvent;
 import org.egolessness.destino.scheduler.repository.ExecutionRepository;
 import org.egolessness.destino.scheduler.repository.specifier.ExecutionKeySpecifier;
@@ -71,16 +74,20 @@ public class ExecutionBuffer implements Lucermaire {
 
     final RocksDBStorage<ExecutionKey> failedStorage;
 
+    final SchedulerContainer schedulerContainer;
+
     final ServerMode mode;
 
     @Inject
     public ExecutionBuffer(ExecutionStorage executionStorage, ExecutionRepository executionRepository,
                            @Named("SchedulerCommonExecutor") ScheduledExecutorService executorService,
-                           RocksDBStorageFactoryImpl storageFactory, Notifier notifier, ServerMode mode) throws StorageException {
+                           RocksDBStorageFactoryImpl storageFactory, Notifier notifier, ServerMode mode,
+                           ContainerFactory containerFactory) throws StorageException {
         this.executionStorage = executionStorage;
         this.executionRepository = executionRepository;
         this.executorService = executorService;
         this.mode = mode;
+        this.schedulerContainer = containerFactory.getContainer(SchedulerContainer.class);
         StorageOptions storageOptions = StorageOptions.newBuilder().writeAsync(true).flushAsync(true).build();
         Cosmos tmpCosmos = CosmosSupport.buildCosmos(ConsistencyDomain.SCHEDULER, this.getClass());
         this.failedStorage = storageFactory.create(tmpCosmos, ExecutionKeySpecifier.INSTANCE, storageOptions);
@@ -99,6 +106,10 @@ public class ExecutionBuffer implements Lucermaire {
     public void add(@Nullable ExecutionInfo executionInfo) {
         if (executionInfo == null) {
             return;
+        }
+        if (executionInfo.getContext() == null) {
+            Optional<SchedulerContext> contextOptional = schedulerContainer.find(executionInfo.getExecution().getSchedulerId());
+            contextOptional.ifPresent(executionInfo::setContext);
         }
         Execution execution = executionInfo.toLatestExecution();
         if (mode.isMonolithic()) {

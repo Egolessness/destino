@@ -108,7 +108,7 @@ public class ExecutionInfo {
         }
     }
 
-    public void setSchedulerContext(SchedulerContext schedulerContext) {
+    public void setContext(SchedulerContext schedulerContext) {
         this.schedulerContext = schedulerContext;
     }
 
@@ -196,6 +196,8 @@ public class ExecutionInfo {
         RegistrationKey.Builder reb;
         if (schedulerContext != null) {
             reb = ExecutionSupport.buildRegistrationKey(schedulerContext.getSchedulerInfo());
+        } else if (lastDest != null) {
+            reb = RegistrationKey.newBuilder().setNamespace(lastDest.getNamespace());
         } else {
             reb = RegistrationKey.newBuilder();
         }

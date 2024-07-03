@@ -99,8 +99,7 @@ public class ScheduledExecution {
         return scheduled;
     }
 
-    public synchronized Result<Void> submit(final ExecutorService executorService, final ScheduledTask scheduledTask)
-    {
+    public synchronized Result<Void> submit(final ExecutorService executorService, final ScheduledTask scheduledTask) {
         if (tasks.containsKey(scheduledTask.getExecutionTime())) {
             return new Result<>(TriggerCode.DUPLICATE, "Execution duplicate.");
         }
@@ -116,7 +115,7 @@ public class ScheduledExecution {
             lastExecutionTime = scheduledTask.getExecutionTime();
         }
 
-        long diffMillis = scheduledTask.getExecutionTime() - System.currentTimeMillis();
+        long diffMillis = scheduledTask.getExecutionTime() - System.currentTimeMillis() + 1;
         if (diffMillis <= 0) {
             return submitNow(executorService, scheduledTask);
         }
@@ -133,7 +132,6 @@ public class ScheduledExecution {
     }
 
     public synchronized Result<Void> submitNow(final ExecutorService executorService, final ScheduledTask scheduledTask) {
-
         switch (scheduledTask.getBlockedStrategy()) {
             case SERIAL:
                 tasks.put(scheduledTask.getExecutionTime(), scheduledTask);
