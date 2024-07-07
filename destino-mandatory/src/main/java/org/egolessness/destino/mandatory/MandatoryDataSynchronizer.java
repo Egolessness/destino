@@ -120,10 +120,13 @@ public class MandatoryDataSynchronizer implements Starter {
                     VersionKey lastVersionKey = new VersionKey(0, null);
                     if (appendSize > 0) {
                         for (int i = 0; i < appendSize; i++) {
-                            for (Map.Entry<VersionKey, VsData> appendEntry : syncData.getAppendDataMap().entrySet()) {
-                                builder.addAppend(appendEntry.getValue());
-                                lastVersionKey = appendEntry.getKey();
+                            Map.Entry<VersionKey, VsData> appendEntry = syncData.getAppendDataMap().pollFirstEntry();
+                            if (null == appendEntry) {
+                                lastVersionKey = new VersionKey(0, null);
+                                break;
                             }
+                            builder.addAppend(appendEntry.getValue());
+                            lastVersionKey = appendEntry.getKey();
                         }
                     }
 
