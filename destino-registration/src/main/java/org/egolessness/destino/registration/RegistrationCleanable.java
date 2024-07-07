@@ -115,9 +115,16 @@ public class RegistrationCleanable implements Cleanable, Lucermaire {
             return;
         }
 
-        if (!serviceCluster.instancesEmpty()) {
+        if (!serviceCluster.isEmpty()) {
             return;
         }
+
+        service.getClusterStore().computeIfPresent(cluster, (key, clu) -> {
+            if (clu.isEmpty()) {
+                return null;
+            }
+            return clu;
+        });
 
         if (!service.isEmpty() || !service.isExpired()) {
             return;
@@ -127,9 +134,7 @@ public class RegistrationCleanable implements Cleanable, Lucermaire {
         if (removed) {
             ServiceKey serviceKey = RegistrationSupport.buildServiceKey(namespaceName, serviceName, groupName);
             storageGalaxy.getServicePersistentStorage().getBaseKvStorage().del(ServiceKeySpecifier.INSTANCE.transfer(serviceKey));
-
         }
-
     }
 
     @Override

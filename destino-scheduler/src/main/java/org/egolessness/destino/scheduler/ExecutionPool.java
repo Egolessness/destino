@@ -283,7 +283,7 @@ public class ExecutionPool implements Runnable, Lucermaire {
             ExecutionInfo executionInfo = event.getExecutionInfo();
             long executionTime = executionInfo.getExecution().getExecutionTime();
             firstExecution.compareAndSet(Long.MAX_VALUE, executionTime);
-            if (executionTime >= System.currentTimeMillis()) {
+            if (executionTime <= System.currentTimeMillis()) {
                 asyncHandleFastChannelEvent(event);
             } else {
                 coreExecutor.execute(() -> {

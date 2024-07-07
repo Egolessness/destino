@@ -43,7 +43,7 @@ public class MandatoryRequestSupport extends ProtocolRequestSupport {
                 .build();
     }
 
-    public static MandatorySyncRequest buildSyncRequest(Collection<WriteInfo> writeInfos) {
+    public static MandatorySyncRequest buildSyncRequest(WriteInfo... writeInfos) {
         long timestamp = System.currentTimeMillis();
 
         MandatorySyncRequest.Builder builder = MandatorySyncRequest.newBuilder().setTimestamp(timestamp);

@@ -130,7 +130,7 @@ public class ServiceCluster extends ServiceClusterFate {
         return modes;
     }
 
-    public boolean instancesEmpty() {
+    public boolean isEmpty() {
         return getInstances().isEmpty();
     }
 

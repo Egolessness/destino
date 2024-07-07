@@ -16,6 +16,9 @@
 
 package org.egolessness.destino.mandatory.storage;
 
+import org.egolessness.destino.mandatory.model.MandatorySyncData;
+import org.egolessness.destino.mandatory.model.MandatorySyncRecorder;
+import org.egolessness.destino.mandatory.model.VersionKey;
 import org.egolessness.destino.mandatory.request.RequestBuffer;
 import com.google.protobuf.ByteString;
 import com.linecorp.armeria.internal.shaded.caffeine.cache.Cache;
@@ -32,7 +35,6 @@ import org.egolessness.destino.core.storage.specifier.MetaSpecifier;
 import org.egolessness.destino.core.storage.specifier.Specifier;
 import org.egolessness.destino.mandatory.message.VbKey;
 import org.egolessness.destino.mandatory.message.VsData;
-import org.egolessness.destino.mandatory.message.WriteInfo;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;
@@ -40,6 +42,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * abstract for storage delegate.
@@ -47,6 +50,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author zsmjwk@outlook.com (wangkang)
  */
 public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
+
+    final Duration validDuration = Duration.ofMinutes(3);
 
     final ConcurrentMap<K, Long> locals = new ConcurrentHashMap<>();
 
@@ -81,7 +86,7 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
             }
         };
         return Caffeine.newBuilder().softValues()
-                .expireAfterWrite(Duration.ofMinutes(3))
+                .expireAfterWrite(validDuration)
                 .scheduler(Scheduler.forScheduledExecutorService(GlobalExecutors.SCHEDULED_DEFAULT))
                 .evictionListener(removalListener)
                 .removalListener(removalListener)
@@ -152,23 +157,58 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
     }
 
     @Override
-    public WriteInfo undertake(long from) {
-        List<VsData> appends = new ArrayList<>();
-        List<VbKey> removes = new ArrayList<>();
+    public Map<Long, MandatorySyncData> getSyncData(Map<Long, MandatorySyncRecorder> recorderMap) {
+        Map<Long, MandatorySyncData> syncDataMap = new HashMap<>(recorderMap.size());
 
-        appoints.forEach((k, v) -> {
-            if (v.getVersion() > from && undertaker.isCurrent(k)) {
-                byte[] bytes = getStorage(k);
-                if (bytes == null) {
-                    delAppoint(k, v.getVersion());
-                    return;
+        recorderMap.forEach((memberId, recorder) -> {
+            List<VbKey> filteredRemovingKeys = recorder.getRemovingKeys().stream()
+                    .filter(vbKey -> System.currentTimeMillis() - vbKey.getVersion() <= validDuration.toMillis())
+                    .collect(Collectors.toList());
+            recorder.setRemovingKeys(filteredRemovingKeys);
+            syncDataMap.put(memberId, new MandatorySyncData(recorder));
+        });
+
+
+        locals.forEach((key, version) -> {
+            long searched = undertaker.search(key);
+            MandatorySyncData syncData = syncDataMap.computeIfAbsent(searched, targetId -> new MandatorySyncData());
+            MandatorySyncRecorder recorder = syncData.getRecorder();
+
+            if (version >= recorder.getLocalFirstTime()) {
+                VsData vsData = getVsData(key, version);
+                if (null != vsData) {
+                    syncData.getFirstDataList().add(vsData);
                 }
-                VsData vsData = VsData.newBuilder().setKey(specifier.transfer(k))
-                        .setValue(ByteString.copyFrom(bytes))
-                        .setVersion(v.getVersion())
-                        .setSource(v.getSource())
-                        .build();
-                appends.add(vsData);
+                return;
+            }
+
+            VersionKey versionKey = new VersionKey(version, key.toString());
+            if (versionKey.compareTo(recorder.getLocalAppendFlag()) > 0) {
+                VsData vsData = getVsData(key, version);
+                if (null != vsData) {
+                    syncData.getAppendDataMap().put(versionKey, vsData);
+                }
+            }
+        });
+
+        appoints.forEach((key, meta) -> {
+            if (!undertaker.isCurrent(key)) {
+                return;
+            }
+            VsData vsData = getVsData(key, meta.getVersion());
+            if (null == vsData) {
+                return;
+            }
+            for (MandatorySyncData syncData : syncDataMap.values()) {
+                MandatorySyncRecorder recorder = syncData.getRecorder();
+                if (meta.getVersion() >= recorder.getUndertakeFirstTime()) {
+                    syncData.getUndertakeDataList().add(vsData);
+                    continue;
+                }
+                VersionKey versionKey = new VersionKey(meta.getVersion(), key.toString());
+                if (versionKey.compareTo(recorder.getUndertakeAppendFlag()) > 0) {
+                    syncData.getAppendDataMap().put(versionKey, vsData);
+                }
             }
         });
 
@@ -176,38 +216,33 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
         removingKeys = new ConcurrentHashMap<>();
 
         for (Map.Entry<K, Long> removingEntry : removingEntries) {
+            Long version = removingEntry.getValue();
+            if (System.currentTimeMillis() - version > validDuration.toMillis()) {
+                continue;
+            }
             VbKey vbKey = VbKey.newBuilder().setKey(specifier.transfer(removingEntry.getKey()))
-                    .setVersion(removingEntry.getValue()).build();
-            removes.add(vbKey);
+                    .setVersion(version).build();
+            for (MandatorySyncData syncData : syncDataMap.values()) {
+                List<VbKey> removingKeys = syncData.getRecorder().getRemovingKeys();
+                removingKeys.add(vbKey);
+            }
         }
 
-        return WriteInfo.newBuilder().setCosmos(cosmos).addAllAppend(appends)
-                .addAllRemove(removes).build();
+        return syncDataMap;
     }
 
-    @Override
-    public Map<Long, List<VsData>> local(long from) {
-        Map<Long, List<VsData>> targetDataMap = new HashMap<>();
+    private VsData getVsData(K key, long version) {
+        byte[] bytes = getStorage(key);
+        if (bytes == null) {
+            delLocal(key, version);
+            return null;
+        }
 
-        locals.forEach((k, v) -> {
-            if (v <= from) {
-                return;
-            }
-            byte[] bytes = getStorage(k);
-            if (bytes == null) {
-                delLocal(k, v);
-                return;
-            }
-            long searched = undertaker.search(k);
-            VsData vsData = VsData.newBuilder().setKey(specifier.transfer(k))
-                    .setValue(ByteString.copyFrom(bytes))
-                    .setVersion(v)
-                    .setSource(undertaker.currentId())
-                    .build();
-            targetDataMap.computeIfAbsent(searched, targetId -> new ArrayList<>()).add(vsData);
-        });
-
-        return targetDataMap;
+        return VsData.newBuilder().setKey(specifier.transfer(key))
+                .setValue(ByteString.copyFrom(bytes))
+                .setVersion(version)
+                .setSource(undertaker.currentId())
+                .build();
     }
 
     @Override

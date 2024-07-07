@@ -20,6 +20,7 @@ import org.egolessness.destino.common.constant.DefaultConstants;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * service.
@@ -38,6 +39,10 @@ public class Service extends ServiceFate {
     public Service refreshAccessTime() {
         this.setLastAccessTime(System.currentTimeMillis());
         return this;
+    }
+
+    public ServiceCluster createCluster(String cluster, Function<String, ServiceCluster> mappingFunction) {
+        return clusterStore.computeIfAbsent(cluster, mappingFunction);
     }
 
     public Map<String, ServiceCluster> getClusterStore() {

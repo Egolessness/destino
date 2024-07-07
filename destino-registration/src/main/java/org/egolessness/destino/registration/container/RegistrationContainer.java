@@ -31,6 +31,7 @@ import org.egolessness.destino.core.infrastructure.notify.Notifier;
 import org.egolessness.destino.common.model.ServiceInstance;
 import org.egolessness.destino.registration.model.event.InstanceChangedEvent;
 import org.egolessness.destino.registration.setting.RegistrationSetting;
+import org.egolessness.destino.registration.support.RegistrationSupport;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -89,10 +90,16 @@ public class RegistrationContainer implements Container {
         String groupName = registrationKey.getGroupName();
         String serviceName = registrationKey.getServiceName();
         ServiceInstance instance = registration.getInstance();
-        ServiceCluster cluster = getNamespace(namespace).getCluster(groupName, serviceName, instance.getCluster());
-        ServiceInstance originInstance = cluster.addInstance(registrationKey.getInstanceKey(), instance);
-        ElementOperation operation = Objects.isNull(originInstance) ? ElementOperation.ADD : ElementOperation.UPDATE;
-        notifier.publish(new InstanceChangedEvent(registrationKey, registration, cluster, operation));
+        Service service = getNamespace(namespace).getService(groupName, serviceName);
+
+        ServiceCluster cluster = service.getClusterStore().compute(instance.getCluster(), (clusterName, clusterModel) -> {
+            if (null == clusterModel) {
+                clusterModel = RegistrationSupport.buildCluster(service, clusterName);
+            }
+            clusterModel.addInstance(registrationKey.getInstanceKey(), instance);
+            return clusterModel;
+        });
+        notifier.publish(new InstanceChangedEvent(registrationKey, registration, cluster, ElementOperation.ADD));
     }
 
     public void updateInstance(final RegistrationKey registrationKey, final Registration registration) {

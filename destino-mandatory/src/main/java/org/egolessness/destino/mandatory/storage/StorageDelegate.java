@@ -19,6 +19,8 @@ package org.egolessness.destino.mandatory.storage;
 import org.egolessness.destino.mandatory.message.VbKey;
 import org.egolessness.destino.mandatory.message.VsData;
 import org.egolessness.destino.mandatory.message.WriteInfo;
+import org.egolessness.destino.mandatory.model.MandatorySyncData;
+import org.egolessness.destino.mandatory.model.MandatorySyncRecorder;
 
 import java.util.*;
 
@@ -33,9 +35,7 @@ public interface StorageDelegate {
 
     Collection<VsData> loadAll();
 
-    WriteInfo undertake(long from);
-
-    Map<Long, List<VsData>> local(long from);
+    Map<Long, MandatorySyncData> getSyncData(Map<Long, MandatorySyncRecorder> recorderMap);
 
     void write(Collection<VsData> appendList, Collection<VbKey> removeList);
 

@@ -16,10 +16,12 @@
 
 package org.egolessness.destino.mandatory;
 
+import org.egolessness.destino.mandatory.model.MandatorySyncData;
+import org.egolessness.destino.mandatory.model.MandatorySyncRecorder;
+import org.egolessness.destino.mandatory.model.VersionKey;
 import org.egolessness.destino.mandatory.request.MandatoryClient;
 import org.egolessness.destino.mandatory.request.MandatoryClientFactory;
 import org.egolessness.destino.mandatory.request.MandatoryRequestSupport;
-import org.egolessness.destino.common.utils.PredicateUtils;
 import org.egolessness.destino.core.fixedness.Starter;
 import org.egolessness.destino.core.infrastructure.undertake.Undertaker;
 import org.egolessness.destino.common.exception.DestinoException;
@@ -30,10 +32,9 @@ import org.egolessness.destino.mandatory.message.WriteInfo;
 import org.egolessness.destino.mandatory.storage.StorageDelegate;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * data synchronizer.
@@ -48,17 +49,18 @@ public class MandatoryDataSynchronizer implements Starter {
 
     private final Map<Cosmos, StorageDelegate> storageDelegates;
 
+    private final Map<Cosmos, Map<Long, MandatorySyncRecorder>> syncRecorderCentral;
+
     private final AtomicBoolean started = new AtomicBoolean();
 
-    private volatile long lastSyncAllTime;
-
-    private volatile long lastSyncTime;
+    private final static int syncDataSizeLimit = 3000;
 
     public MandatoryDataSynchronizer(final MandatoryClientFactory clientFactory, final Undertaker undertaker,
                                      final Map<Cosmos, StorageDelegate> storageDelegates) {
         this.undertaker = undertaker;
         this.clientFactory = clientFactory;
         this.storageDelegates = storageDelegates;
+        this.syncRecorderCentral = new ConcurrentHashMap<>(storageDelegates.size());
         this.undertaker.whenChanged(() -> {
             for (StorageDelegate delegate : storageDelegates.values()) {
                 delegate.refresh();
@@ -80,46 +82,76 @@ public class MandatoryDataSynchronizer implements Starter {
 
         Set<Long> otherMemberIds = undertaker.other();
 
-        boolean syncAll = System.currentTimeMillis() - lastSyncAllTime > 30000;
-        long syncFrom = syncAll ? 0: lastSyncTime - 10000;
-
         try {
-            List<Function<Long, WriteInfo>> syncDataGetters = new ArrayList<>(storageDelegates.size());
+            for (Map.Entry<Cosmos, StorageDelegate> entry : storageDelegates.entrySet()) {
+                Cosmos cosmos = entry.getKey();
+                StorageDelegate delegate = entry.getValue();
 
-            for (StorageDelegate storageDelegate : storageDelegates.values()) {
-                WriteInfo writeInfo = storageDelegate.undertake(syncFrom);
-                Map<Long, List<VsData>> locals = storageDelegate.local(syncFrom);
-                Function<Long, WriteInfo> localDataGetter = memberId -> {
-                    List<VsData> localData = locals.get(memberId);
-                    if (PredicateUtils.isNotEmpty(localData)) {
-                        return writeInfo.toBuilder().addAllAppend(localData).build();
-                    }
-                    return writeInfo;
-                };
-                syncDataGetters.add(localDataGetter);
-            }
+                Map<Long, MandatorySyncRecorder> recorderMap = syncRecorderCentral.computeIfAbsent(cosmos, cos -> new HashMap<>());
+                Map<Long, MandatorySyncRecorder> newRecorderMap = new HashMap<>(otherMemberIds.size());
 
-            for (long memberId : otherMemberIds) {
-                if (!started.get()) {
-                    return;
+                for (Long otherMemberId : otherMemberIds) {
+                    MandatorySyncRecorder computed = recorderMap.compute(otherMemberId, (memberId, recorder) -> {
+                        if (null == recorder) {
+                            return new MandatorySyncRecorder();
+                        }
+                        return new MandatorySyncRecorder(recorder);
+                    });
+                    newRecorderMap.put(otherMemberId, computed);
                 }
-                List<WriteInfo> writeInfos = syncDataGetters.stream().map(func -> func.apply(memberId)).collect(Collectors.toList());
-                MandatorySyncRequest syncRequest = MandatoryRequestSupport.buildSyncRequest(writeInfos);
-                clientFactory.getClient(memberId).ifPresent(client -> {
-                    try {
-                        client.syncStream().onNext(syncRequest);
-                    } catch (Throwable throwable) {
-                        MandatoryLoggers.SYNCHRONIZER.warn("The data synchronization to server-{} failed.", memberId, throwable);
+                syncRecorderCentral.put(cosmos, newRecorderMap);
+
+                long now = System.currentTimeMillis();
+                Map<Long, MandatorySyncData> syncDataMap = delegate.getSyncData(newRecorderMap);
+                for (Map.Entry<Long, MandatorySyncData> syncDataEntry : syncDataMap.entrySet()) {
+                    if (!started.get()) {
+                        return;
                     }
-                });
+                    Long memberId = syncDataEntry.getKey();
+                    MandatorySyncData syncData = syncDataEntry.getValue();
+                    MandatorySyncRecorder recorder = syncData.getRecorder();
+
+                    WriteInfo.Builder builder = WriteInfo.newBuilder().setCosmos(cosmos);
+                    builder.addAllAppend(syncData.getFirstDataList());
+                    builder.addAllAppend(syncData.getUndertakeDataList());
+                    builder.addAllRemove(recorder.getRemovingKeys());
+
+                    int appendSize = syncDataSizeLimit - builder.getAppendCount();
+                    VersionKey lastVersionKey = new VersionKey(0, null);
+                    if (appendSize > 0) {
+                        for (int i = 0; i < appendSize; i++) {
+                            for (Map.Entry<VersionKey, VsData> appendEntry : syncData.getAppendDataMap().entrySet()) {
+                                builder.addAppend(appendEntry.getValue());
+                                lastVersionKey = appendEntry.getKey();
+                            }
+                        }
+                    }
+
+                    MandatorySyncRequest syncRequest = MandatoryRequestSupport.buildSyncRequest(builder.build());
+                    Optional<MandatoryClient> clientOptional = clientFactory.getClient(memberId);
+                    if (clientOptional.isPresent()) {
+                        MandatoryClient client = clientOptional.get();
+                        try {
+                            client.syncStream().onNext(syncRequest);
+                            recorder.setLocalFirstTime(now);
+                            recorder.setUndertakeFirstTime(now);
+                            recorder.setRemovingKeys(new ArrayList<>());
+                            recorder.setUndertakeAppendFlag(lastVersionKey);
+                            recorder.setLocalAppendFlag(lastVersionKey);
+                        } catch (Throwable throwable) {
+                            int failCount = recorder.getFailCounter().incrementAndGet();
+                            if (failCount > 5) {
+                                recorder.setLocalFirstTime(0);
+                                recorder.setUndertakeFirstTime(0);
+                                recorder.getFailCounter().set(0);
+                            }
+                            MandatoryLoggers.SYNCHRONIZER.warn("Failed to sync storage data to server-{}.", memberId, throwable);
+                        }
+                    }
+                }
             }
         } catch (Exception e) {
             MandatoryLoggers.SYNCHRONIZER.warn("The data synchronization failed.", e);
-        }
-
-        lastSyncTime = System.currentTimeMillis();
-        if (syncAll) {
-            lastSyncAllTime = lastSyncTime;
         }
         MandatoryExecutors.REQUEST_SYNC.schedule(this::sync, ThreadLocalRandom.current().nextLong(1000, 2000));
     }
@@ -132,4 +164,5 @@ public class MandatoryDataSynchronizer implements Starter {
             client.syncStream().onCompleted();
         }
     }
+
 }

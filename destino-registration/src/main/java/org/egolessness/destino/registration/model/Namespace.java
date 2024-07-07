@@ -105,7 +105,7 @@ public class Namespace implements Serializable {
 
     public ServiceCluster getCluster(final String groupName, final String serviceName, final String cluster) {
         Service service = getService(groupName, serviceName);
-        return service.getClusterStore().computeIfAbsent(cluster, key -> RegistrationSupport.buildCluster(service, cluster));
+        return service.createCluster(cluster, key -> RegistrationSupport.buildCluster(service, cluster));
     }
 
     public boolean isEmpty() {
