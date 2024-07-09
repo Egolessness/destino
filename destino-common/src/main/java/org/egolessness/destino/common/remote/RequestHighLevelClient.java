@@ -19,6 +19,7 @@ package org.egolessness.destino.common.remote;
 import org.egolessness.destino.common.enumeration.ErrorCode;
 import org.egolessness.destino.common.enumeration.RequestClientState;
 import org.egolessness.destino.common.exception.DestinoException;
+import org.egolessness.destino.common.executor.DestinoExecutors;
 import org.egolessness.destino.common.fixedness.Callback;
 import org.egolessness.destino.common.fixedness.Picker;
 import org.egolessness.destino.common.fixedness.RequestProcessor;
@@ -52,26 +53,29 @@ public abstract class RequestHighLevelClient implements RequestClient {
     
     protected static final Logger LOGGER = LoggerFactory.getLogger(RequestHighLevelClient.class);
 
-    private final RetryableDelayer RETRYABLE_DELAYER = RetryableDelayer.of(Duration.ofMillis(500), Duration.ofMillis(30000));
+    private static final long DEFAULT_TIMEOUT_MILLS = 3000L;
 
-    private final ReentrantLock LOCK = new ReentrantLock();
+    protected final RetryableDelayer RETRYABLE_DELAYER = RetryableDelayer.of(Duration.ofMillis(3000), Duration.ofMillis(30000));
 
-    private final AtomicReference<RequestClientState> STATE = new AtomicReference<>(RequestClientState.INIT);
+    protected final ReentrantLock LOCK = new ReentrantLock();
+
+    protected final AtomicReference<RequestClientState> STATE = new AtomicReference<>(RequestClientState.INIT);
+
+    protected final ChangedMonitor<RequestClientState> STATE_MONITOR = new ChangedMonitor<>(ForkJoinPool.commonPool());
+
+    protected final ScheduledExecutorService DISPATCHER = DestinoExecutors.buildScheduledExecutorService(1,
+            "Request-Dispatcher-Executor");
 
     protected Picker<URI> ADDRESS_PICKER;
 
     protected RequestClient SIMPLE_CLIENT;
-    
-    private static final long DEFAULT_TIMEOUT_MILLS = 3000L;
 
-    private int RETRY_TIMES = 3;
+    protected int RETRY_TIMES = 3;
 
-    private Duration KEEPALIVE_TIME = Duration.ofSeconds(5);
-    
-    private long LAST_ACTIVE_TIME;
-    
-    protected final ChangedMonitor<RequestClientState> STATE_MONITOR = new ChangedMonitor<>(ForkJoinPool.commonPool());
-    
+    protected Duration KEEPALIVE_TIME = Duration.ofSeconds(5);
+
+    protected long LAST_ACTIVE_TIME;
+
     public RequestHighLevelClient(RequestSimpleClient simpleClient, Picker<URI> addressPicker) {
         Objects.requireNonNull(simpleClient, "Only non-null simple client are permitted");
         this.SIMPLE_CLIENT = simpleClient;
@@ -189,7 +193,7 @@ public abstract class RequestHighLevelClient implements RequestClient {
         return connect(ADDRESS_PICKER.next(), retryCount);
     }
 
-    private boolean connect(final URI uri, int retryCount) {
+    private boolean connect(final URI uri, final int retryCount) {
         try {
             if (is(RequestClientState.SHUTDOWN)) {
                 return false;
@@ -202,14 +206,18 @@ public abstract class RequestHighLevelClient implements RequestClient {
                         RETRYABLE_DELAYER.reset();
                         return true;
                     }
-                    RETRYABLE_DELAYER.retryIncrement();
-                    Duration duration = RETRYABLE_DELAYER.calculateDelay(ADDRESS_PICKER.list().size());
-                    LOGGER.warn("Unable connect to destino server, try again in {} milliseconds.", duration.toMillis());
                     if (retryCount >= RETRY_TIMES) {
+                        RETRYABLE_DELAYER.failed();
+                        Duration duration = RETRYABLE_DELAYER.calculateDelay();
+                        DISPATCHER.schedule(() -> connectNext(retryCount + 1),
+                                duration.toMillis(), TimeUnit.MILLISECONDS);
                         return false;
                     }
+                    RETRYABLE_DELAYER.retryIncrement();
+                    Duration duration = RETRYABLE_DELAYER.calculateDelay();
+                    LOGGER.warn("Unable to connect destino server, try again in {} milliseconds.", duration.toMillis());
                     ThreadUtils.sleep(duration);
-                    return connectNext(++ retryCount);
+                    return connectNext(retryCount + 1);
                 } finally {
                     LOCK.unlock();
                 }
@@ -260,7 +268,7 @@ public abstract class RequestHighLevelClient implements RequestClient {
                 return;
             }
             clientConsumer.accept(this);
-        });
+        }, DISPATCHER);
     }
 
     @Override

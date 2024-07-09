@@ -17,7 +17,7 @@
 package org.egolessness.destino.common.infrastructure;
 
 import java.time.Duration;
-import java.util.concurrent.atomic.LongAdder;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * delayer for retryable
@@ -34,7 +34,7 @@ public class RetryableDelayer {
 
     private final long maxTurn;
 
-    public LongAdder counter = new LongAdder();
+    public AtomicLong counter = new AtomicLong();
 
     public RetryableDelayer(long initDelayMillis, long maxDelayMillis) {
         this.initDelayMillis = initDelayMillis;
@@ -47,15 +47,19 @@ public class RetryableDelayer {
     }
 
     public void reset() {
-        counter.reset();
+        counter.set(0);
+    }
+
+    public void failed() {
+        counter.set(maxTurn);
     }
 
     public void retryIncrement() {
-        counter.increment();
+        counter.incrementAndGet();
     }
 
-    public Duration calculateDelay(final int countPerTurn) {
-        long turns = counter.longValue() / countPerTurn;
+    public Duration calculateDelay() {
+        long turns = counter.longValue();
         long delayAddMillis = Math.min(turns, maxTurn) * delayAddPerTurn;
         long delayMillis = Math.min(initDelayMillis + delayAddMillis, maxDelayMillis);
         return Duration.ofMillis(delayMillis);

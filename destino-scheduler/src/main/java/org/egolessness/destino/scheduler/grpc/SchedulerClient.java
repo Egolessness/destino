@@ -50,6 +50,8 @@ public class SchedulerClient implements Lucermaire {
 
     private MethodDescriptor<ExecutionCommand, Response> sendMethod;
 
+    private MethodDescriptor<LogLines, BoolValue> sendLogMethod;
+
     private MethodDescriptor<Execution, BoolValue> transmitMethod;
 
     private MethodDescriptor<Execution, Empty> cancelMethod;
@@ -75,6 +77,10 @@ public class SchedulerClient implements Lucermaire {
 
     public ListenableFuture<BoolValue> feedback(Request request) {
         return ClientCalls.futureUnaryCall(channel.newCall(this.getFeedbackMethod(), CallOptions.DEFAULT), request);
+    }
+
+    public ListenableFuture<BoolValue> sendLog(LogLines logLines) {
+        return ClientCalls.futureUnaryCall(channel.newCall(this.getSendLogMethod(), CallOptions.DEFAULT), logLines);
     }
 
     public ListenableFuture<Response> send(ExecutionCommand executionCommand) {
@@ -144,6 +150,21 @@ public class SchedulerClient implements Lucermaire {
             }
         }
         return feedbackMethod;
+    }
+
+    public MethodDescriptor<LogLines, BoolValue> getSendLogMethod() {
+        if (sendLogMethod == null) {
+            if (PredicateUtils.isBlank(contextPath)) {
+                return SchedulerRequestAdapterGrpc.getSendLogMethod();
+            }
+            synchronized (this) {
+                if (sendLogMethod == null) {
+                    sendLogMethod = MessageSupport.getMethodDescriptor(
+                            SchedulerRequestAdapterGrpc.getSendLogMethod(), contextPath);
+                }
+            }
+        }
+        return sendLogMethod;
     }
 
     public MethodDescriptor<ExecutionCommand, Response> getSendMethod() {

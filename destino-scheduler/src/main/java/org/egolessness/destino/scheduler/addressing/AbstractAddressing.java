@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.scheduler.addressing;
 
+import org.egolessness.destino.common.support.RequestSupport;
 import org.egolessness.destino.core.container.ConnectionContainer;
 import org.egolessness.destino.core.container.ContainerFactory;
 import org.egolessness.destino.registration.message.RegistrationKey;
@@ -123,6 +124,13 @@ public abstract class AbstractAddressing implements Addressing {
 
         for (InstancePacking packing : values) {
             if (container.hasIndex(packing.getRegistrationKey()) && !packing.isRemoved() && packing.isConnectable()) {
+                return packing;
+            }
+        }
+
+        for (InstancePacking packing : values) {
+            if (RequestSupport.isSupportRequestStreamReceiver(packing.getChannel())
+                    && !packing.isRemoved() && packing.isConnectable()) {
                 return packing;
             }
         }

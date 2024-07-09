@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.scheduler.addressing;
 
+import org.egolessness.destino.common.support.RequestSupport;
 import org.egolessness.destino.core.container.ConnectionContainer;
 import org.egolessness.destino.core.container.ContainerFactory;
 import org.egolessness.destino.registration.message.RegistrationKey;
@@ -69,6 +70,16 @@ public class SafetyFirstAddressing extends AbstractAddressing {
 
         for (InstancePacking instancePacking : map.values()) {
             if (connectionContainer.hasIndex(instancePacking.getRegistrationKey())) {
+                if (instancePacking.isRemoved()) {
+                    map.remove(instancePacking.getRegistrationKey());
+                } else if (instancePacking.isConnectable()) {
+                    return instancePacking;
+                }
+            }
+        }
+
+        for (InstancePacking instancePacking : map.values()) {
+            if (RequestSupport.isSupportRequestStreamReceiver(instancePacking.getChannel())) {
                 if (instancePacking.isRemoved()) {
                     map.remove(instancePacking.getRegistrationKey());
                 } else if (instancePacking.isConnectable()) {

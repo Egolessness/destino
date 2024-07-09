@@ -134,6 +134,13 @@ public class SchedulerRequestService extends SchedulerRequestAdapterGrpc.Schedul
     }
 
     @Override
+    public void sendLog(LogLines request, StreamObserver<BoolValue> responseObserver) {
+        logCollector.addLogLines(request.getExecutionKey(), request.getLineList());
+        responseObserver.onNext(BoolValue.of(true));
+        responseObserver.onCompleted();
+    }
+
+    @Override
     public void send(ExecutionCommand command, StreamObserver<Response> responseObserver) {
         Callback<Response> callback = new Callback<Response>() {
             @Override

@@ -695,7 +695,9 @@ public class ExecutionPool implements Runnable, Lucermaire {
             return false;
         }
         info.setExecution(execution.toBuilder().setSupervisorId(current.getId()).build());
+        logCollector.addLogLine(info.getKey(), TransferLogParser.INSTANCE);
         logCollector.addLogLine(info.getKey(), WaitingLogParser.INSTANCE);
+        addExecutionInfo(info);
         addFastChannel(info);
         return true;
     }
@@ -718,19 +720,18 @@ public class ExecutionPool implements Runnable, Lucermaire {
                 lostTarget(executionInfo);
                 return;
             }
-            Member member = members.removeFirst();
-            ListenableFuture<BoolValue> future = clientFactory.getClient(member).transmit(executionInfo.getExecution());
+            SchedulerClient client = clientFactory.getClient(members.removeFirst());
+            ListenableFuture<BoolValue> future = client.transmit(executionInfo.getExecution());
             Futures.addCallback(future, new FutureCallback<BoolValue>() {
                 @Override
                 public void onSuccess(BoolValue result) {
                     if (result.getValue()) {
                         EXECUTIONS.remove(executionInfo.getKey());
-                        logCollector.removeLog(executionInfo.getKey());
+                        sendLog(client, executionInfo.getKey());
                     } else {
                         transmit(executionInfo, members);
                     }
                 }
-
                 @Override
                 public void onFailure(@Nonnull Throwable throwable) {
                     transmit(executionInfo, members);
@@ -740,6 +741,29 @@ public class ExecutionPool implements Runnable, Lucermaire {
             lostTarget(executionInfo);
         }
     }
+
+    private void sendLog(SchedulerClient client, ExecutionKey executionKey) {
+        try {
+            List<LogLine> logLines = logCollector.getLogLines(executionKey);
+            LogLines lines = LogLines.newBuilder().setExecutionKey(executionKey).addAllLine(logLines).build();
+            ListenableFuture<BoolValue> future = client.sendLog(lines);
+            Futures.addCallback(future, new FutureCallback<BoolValue>() {
+                @Override
+                public void onSuccess(BoolValue result) {
+                    if (result.getValue()) {
+                        logCollector.removeLog(executionKey);
+                    }
+                }
+                @Override
+                public void onFailure(@Nonnull Throwable throwable) {
+                    SchedulerLoggers.EXECUTION_LOG.error("Failed to transfer execution log.", throwable);
+                }
+            }, callbackExecutor);
+        } catch (DestinoException e) {
+            SchedulerLoggers.EXECUTION_LOG.error("Failed to transfer execution log.", e);
+        }
+    }
+
 
     public boolean cancel(Execution execution) {
         ExecutionKey executionKey = ExecutionSupport.buildKey(execution);

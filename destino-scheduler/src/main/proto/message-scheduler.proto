@@ -136,6 +136,11 @@ message LogLine {
   string data = 4;
 }
 
+message LogLines {
+  ExecutionKey executionKey = 1;
+  repeated LogLine line = 2;
+}
+
 message ClearKey {
   int32 days = 1;
   int64 time = 2;
@@ -151,6 +156,7 @@ service SchedulerRequestAdapter {
   rpc multiGetExecution(ExecutionKeys) returns (Executions) {};
   rpc feedback(Request) returns (google.protobuf.BoolValue) {};
   rpc transmit(Execution) returns (google.protobuf.BoolValue) {}
+  rpc sendLog(LogLines) returns (google.protobuf.BoolValue) {}
   rpc send(ExecutionCommand) returns (Response) {}
   rpc verify(Execution) returns (Execution) {}
   rpc update(Execution) returns (google.protobuf.Empty) {}
