@@ -119,12 +119,7 @@ public class RegistrationCleanable implements Cleanable, Lucermaire {
             return;
         }
 
-        service.getClusterStore().computeIfPresent(cluster, (key, clu) -> {
-            if (clu.isEmpty()) {
-                return null;
-            }
-            return clu;
-        });
+        service.removeCluster(cluster);
 
         if (!service.isEmpty() || !service.isExpired()) {
             return;

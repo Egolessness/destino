@@ -17,6 +17,9 @@
 package org.egolessness.destino.registration.model;
 
 import org.egolessness.destino.common.constant.DefaultConstants;
+import org.egolessness.destino.common.model.ServiceInstance;
+import org.egolessness.destino.registration.message.InstanceKey;
+import org.egolessness.destino.registration.support.RegistrationSupport;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,6 +63,25 @@ public class Service extends ServiceFate {
         }
 
         return clusters;
+    }
+
+    public void removeCluster(String clusterName) {
+        clusterStore.computeIfPresent(clusterName, (name, cluster) -> {
+            if (cluster.isEmpty()) {
+                return null;
+            }
+            return cluster;
+        });
+    }
+
+    public ServiceCluster addInstance(InstanceKey instanceKey, ServiceInstance instance) {
+        return clusterStore.compute(instance.getCluster(), (clusterName, clusterModel) -> {
+            if (null == clusterModel) {
+                clusterModel = RegistrationSupport.buildCluster(this, clusterName);
+            }
+            clusterModel.addInstance(instanceKey, instance);
+            return clusterModel;
+        });
     }
 
     public boolean isEmpty() {

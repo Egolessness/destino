@@ -91,14 +91,7 @@ public class RegistrationContainer implements Container {
         String serviceName = registrationKey.getServiceName();
         ServiceInstance instance = registration.getInstance();
         Service service = getNamespace(namespace).getService(groupName, serviceName);
-
-        ServiceCluster cluster = service.getClusterStore().compute(instance.getCluster(), (clusterName, clusterModel) -> {
-            if (null == clusterModel) {
-                clusterModel = RegistrationSupport.buildCluster(service, clusterName);
-            }
-            clusterModel.addInstance(registrationKey.getInstanceKey(), instance);
-            return clusterModel;
-        });
+        ServiceCluster cluster = service.addInstance(registrationKey.getInstanceKey(), instance);
         notifier.publish(new InstanceChangedEvent(registrationKey, registration, cluster, ElementOperation.ADD));
     }
 
