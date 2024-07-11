@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.mandatory;
 
+import io.grpc.stub.StreamObserver;
 import org.egolessness.destino.mandatory.model.MandatorySyncData;
 import org.egolessness.destino.mandatory.model.MandatorySyncRecorder;
 import org.egolessness.destino.mandatory.model.VersionKey;
@@ -135,7 +136,9 @@ public class MandatoryDataSynchronizer implements Starter {
                     if (clientOptional.isPresent()) {
                         MandatoryClient client = clientOptional.get();
                         try {
-                            client.syncStream().onNext(syncRequest);
+                            StreamObserver<MandatorySyncRequest> requestStreamObserver = client.syncStream();
+                            requestStreamObserver.onNext(syncRequest);
+                            requestStreamObserver.onCompleted();
                             recorder.setLocalFirstTime(now);
                             recorder.setUndertakeFirstTime(now);
                             recorder.setRemovingKeys(new ArrayList<>());
