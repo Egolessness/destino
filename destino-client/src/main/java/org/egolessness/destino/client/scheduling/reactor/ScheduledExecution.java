@@ -115,7 +115,7 @@ public class ScheduledExecution {
             lastExecutionTime = scheduledTask.getExecutionTime();
         }
 
-        long diffMillis = scheduledTask.getExecutionTime() - System.currentTimeMillis() + 1;
+        long diffMillis = scheduledTask.getExecutionTime() - System.currentTimeMillis();
         if (diffMillis <= 0) {
             return submitNow(executorService, scheduledTask);
         }
@@ -132,6 +132,10 @@ public class ScheduledExecution {
     }
 
     public synchronized Result<Void> submitNow(final ExecutorService executorService, final ScheduledTask scheduledTask) {
+        if (tasks.containsKey(scheduledTask.getExecutionTime())) {
+            return new Result<>(TriggerCode.DUPLICATE, "Execution duplicate.");
+        }
+
         switch (scheduledTask.getBlockedStrategy()) {
             case SERIAL:
                 tasks.put(scheduledTask.getExecutionTime(), scheduledTask);

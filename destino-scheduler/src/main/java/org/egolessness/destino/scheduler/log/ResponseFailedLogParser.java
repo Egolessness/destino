@@ -30,7 +30,7 @@ import java.text.MessageFormat;
  */
 public class ResponseFailedLogParser implements LogParser {
 
-    private static final String MSG_TEMPLATE = "The execution plan has been terminated because the response failed from the instance {0}, code={0}, msg={1}.";
+    private static final String MSG_TEMPLATE = "The execution plan has been terminated because the response failed from the instance {0}, code={1}, msg={2}.";
 
     private final String message;
 

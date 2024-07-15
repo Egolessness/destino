@@ -102,6 +102,7 @@ public class ExecutionPusher {
         Set<String> scheduledSet = new HashSet<>(executions.size());
         ScheduledTriggers.Builder triggersBuilder = ScheduledTriggers.newBuilder();
         for (Execution execution : executions) {
+            scheduledSet.add(execution.getJobName());
             triggersBuilder.addTrigger(ScheduledSupport.getTriggerBuilder(execution));
         }
         Optional<InstancePacking> packingOptional = packingContainer.getPacking(registrationKey, scheduledSet);

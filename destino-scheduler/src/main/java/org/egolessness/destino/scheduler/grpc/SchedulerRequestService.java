@@ -164,7 +164,7 @@ public class SchedulerRequestService extends SchedulerRequestAdapterGrpc.Schedul
         };
         boolean successful = pusher.execute(command.getRegistrationKey(), command.getExecutionList(), callback);
         if (!successful) {
-            responseObserver.onNext(ResponseSupport.unexpected("Non executable."));
+            responseObserver.onNext(ResponseSupport.unexpected("Non executable"));
             responseObserver.onCompleted();
         }
     }
