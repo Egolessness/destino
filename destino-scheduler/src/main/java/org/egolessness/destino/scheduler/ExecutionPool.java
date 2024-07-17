@@ -282,42 +282,42 @@ public class ExecutionPool implements Runnable, Lucermaire {
         return (event, sequence, endOfBatch) -> {
             ExecutionInfo executionInfo = event.getExecutionInfo();
             long executionTime = executionInfo.getExecution().getExecutionTime();
-            firstExecution.compareAndSet(Long.MAX_VALUE, executionTime);
             if (executionTime <= System.currentTimeMillis()) {
                 asyncHandleFastChannelEvent(event);
-            } else {
-                coreExecutor.execute(() -> {
-                    Optional<InstancePacking> packingOptional = selectInstance(executionInfo);
-                    if (packingOptional.isPresent()) {
-                        InstancePacking selected = packingOptional.get();
-                        logCollector.addLogLine(executionInfo.getKey(), new ReachingLogParser(selected));
-                        executionsMap.compute(selected, (key, executionInfos) -> {
-                            if (executionInfos == null) {
-                                executionInfos = new ArrayList<>();
-                            }
-                            executionInfos.add(executionInfo);
-                            return executionInfos;
-                        });
-                    } else {
-                        transmit(executionInfo);
-                    }
-                    if (endOfBatch || firstExecution.get() <= System.currentTimeMillis()) {
-                        synchronized (firstExecution) {
-                            if (endOfBatch || firstExecution.get() <= System.currentTimeMillis()) {
-                                firstExecution.set(Long.MAX_VALUE);
-                                Enumeration<InstancePacking> keyEnum = executionsMap.keys();
-                                while (keyEnum.hasMoreElements()) {
-                                    InstancePacking key = keyEnum.nextElement();
-                                    List<ExecutionInfo> infos = executionsMap.remove(key);
-                                    if (infos != null) {
-                                        this.execute(key, infos);
-                                    }
+                return;
+            }
+            firstExecution.compareAndSet(Long.MAX_VALUE, executionTime);
+            coreExecutor.execute(() -> {
+                Optional<InstancePacking> packingOptional = selectInstance(executionInfo);
+                if (packingOptional.isPresent()) {
+                    InstancePacking selected = packingOptional.get();
+                    logCollector.addLogLine(executionInfo.getKey(), new ReachingLogParser(selected));
+                    executionsMap.compute(selected, (key, executionInfos) -> {
+                        if (executionInfos == null) {
+                            executionInfos = new ArrayList<>();
+                        }
+                        executionInfos.add(executionInfo);
+                        return executionInfos;
+                    });
+                } else {
+                    transmit(executionInfo);
+                }
+                if (endOfBatch || firstExecution.get() <= System.currentTimeMillis()) {
+                    synchronized (firstExecution) {
+                        if (endOfBatch || firstExecution.get() <= System.currentTimeMillis()) {
+                            firstExecution.set(Long.MAX_VALUE);
+                            Enumeration<InstancePacking> keyEnum = executionsMap.keys();
+                            while (keyEnum.hasMoreElements()) {
+                                InstancePacking key = keyEnum.nextElement();
+                                List<ExecutionInfo> infos = executionsMap.remove(key);
+                                if (infos != null) {
+                                    this.execute(key, infos);
                                 }
                             }
                         }
                     }
-                });
-            }
+                }
+            });
         };
     }
 
@@ -328,6 +328,7 @@ public class ExecutionPool implements Runnable, Lucermaire {
             if (packingOptional.isPresent()) {
                 InstancePacking selected = packingOptional.get();
                 logCollector.addLogLine(executionInfo.getKey(), new ReachingLogParser(selected));
+                executionInfo.reaching();
                 this.execute(packingOptional.get(), Collections.singletonList(executionInfo));
             } else {
                 this.transmit(executionInfo);
@@ -492,7 +493,6 @@ public class ExecutionPool implements Runnable, Lucermaire {
             WAITING.add(executionInfo.getKey());
             return;
         }
-        executionInfo.reaching();
         FAST_CHANNEL.publishEvent((event, sequence) -> event.setExecutionInfo(executionInfo));
     }
 
@@ -716,7 +716,7 @@ public class ExecutionPool implements Runnable, Lucermaire {
                 lostTarget(executionInfo);
                 return;
             }
-            if (executionInfo.getExecution().getExecutionTime() - System.currentTimeMillis() > 5000) {
+            if (System.currentTimeMillis() - executionInfo.getExecution().getExecutionTime() > 5000) {
                 lostTarget(executionInfo);
                 return;
             }

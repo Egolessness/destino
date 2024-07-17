@@ -19,7 +19,6 @@ package org.egolessness.destino.core.infrastructure.serialize;
 import org.egolessness.destino.core.infrastructure.serialize.customized.Converter;
 import org.egolessness.destino.core.infrastructure.serialize.customized.CustomizedJsonDeserializer;
 import org.egolessness.destino.core.infrastructure.serialize.customized.CustomizedJsonSerializer;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.egolessness.destino.common.utils.ByteUtils;
 import org.egolessness.destino.common.utils.FunctionUtils;
@@ -55,7 +54,7 @@ public class JacksonSerializer implements Serializer {
 
     @Override
     public <T> List<T> deserializeList(byte[] data, Class<T> cls) {
-        return JsonUtils.toObj(data, new TypeReference<List<T>>() {});
+        return JsonUtils.toList(data, cls);
     }
 
     @Override

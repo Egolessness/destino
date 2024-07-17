@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.type.CollectionType;
 import org.egolessness.destino.common.enumeration.ErrorCode;
 import org.egolessness.destino.common.exception.DestinoRuntimeException;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -29,6 +30,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.util.List;
 
 /**
  * utils of json
@@ -117,6 +119,15 @@ public final class JsonUtils {
     public static <T> T toObj(InputStream inputStream, Type type) {
         try {
             return mapper.readValue(inputStream, mapper.constructType(type));
+        } catch (IOException e) {
+            throw new DestinoRuntimeException(ErrorCode.SERIALIZE_ERROR, e);
+        }
+    }
+
+    public static <T> List<T> toList(byte[] json, Class<T> cls) {
+        try {
+            CollectionType collectionType = mapper.getTypeFactory().constructCollectionType(List.class, cls);
+            return mapper.readValue(json, collectionType);
         } catch (IOException e) {
             throw new DestinoRuntimeException(ErrorCode.SERIALIZE_ERROR, e);
         }

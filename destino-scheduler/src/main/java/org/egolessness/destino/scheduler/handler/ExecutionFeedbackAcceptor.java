@@ -174,7 +174,7 @@ public class ExecutionFeedbackAcceptor implements Runnable {
 
                     long senderId = byteBuffer.getLong(0);
                     long nanos = byteBuffer.getLong(8);
-                    Collection<ExecutionFeedback> feedbacks = serializer.deserialize(it.value());
+                    Collection<ExecutionFeedback> feedbacks = serializer.deserializeList(it.value(), ExecutionFeedback.class);
 
                     if (System.nanoTime() - nanos <= RETRY_THRESHOLD) {
                         if (Objects.equals(senderId, current.getId())) {
@@ -243,7 +243,7 @@ public class ExecutionFeedbackAcceptor implements Runnable {
         }
 
         ByteString value = request.getData().getValue();
-        Collection<ExecutionFeedback> feedbacks = this.serializer.deserialize(value.toByteArray());
+        Collection<ExecutionFeedback> feedbacks = this.serializer.deserializeList(value.toByteArray(), ExecutionFeedback.class);
         if (PredicateUtils.isEmpty(feedbacks)) {
             return false;
         }
