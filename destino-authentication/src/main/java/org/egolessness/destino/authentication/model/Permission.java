@@ -34,13 +34,16 @@ public class Permission implements Value {
     private static final long serialVersionUID = 3194304754635732887L;
 
     @NotNull(message = "Permission domain cannot be null.")
-    private final ConsistencyDomain domain;
+    private ConsistencyDomain domain;
 
-    private final String resource;
+    private String resource;
 
-    private final Set<String> actions;
+    private Set<String> actions;
 
     private Map<String, Permission> children = new LinkedHashMap<>();
+
+    public Permission() {
+    }
 
     public Permission(ConsistencyDomain domain, String resource, Set<String> actions) {
         this.domain = domain;
@@ -69,12 +72,24 @@ public class Permission implements Value {
         return domain;
     }
 
+    public void setDomain(ConsistencyDomain domain) {
+        this.domain = domain;
+    }
+
     public String getResource() {
         return resource;
     }
 
+    public void setResource(String resource) {
+        this.resource = resource;
+    }
+
     public Set<String> getActions() {
         return actions;
+    }
+
+    public void setActions(Set<String> actions) {
+        this.actions = actions;
     }
 
     public void setChildren(Map<String, Permission> children) {
