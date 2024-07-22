@@ -337,6 +337,10 @@ public class ExecutionPool implements Runnable, Lucermaire {
     }
 
     private void execute(InstancePacking packing, List<ExecutionInfo> executionInfos) {
+        for (ExecutionInfo executionInfo : executionInfos) {
+            executionInfo.setLastDest(packing.getRegistrationKey());
+        }
+
         if (packing.isReachable(current.getId())) {
             Callback<Response> callback = buildCallbackForExecutionInfos(packing, executionInfos);
             if (!pusher.execute(packing, executionInfos, callback)) {
