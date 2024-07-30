@@ -85,7 +85,7 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
                 delStorage(key);
             }
         };
-        return Caffeine.newBuilder().softValues()
+        return Caffeine.newBuilder()
                 .expireAfterWrite(validDuration)
                 .scheduler(Scheduler.forScheduledExecutorService(GlobalExecutors.SCHEDULED_DEFAULT))
                 .evictionListener(removalListener)
@@ -171,6 +171,25 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
 
         locals.forEach((key, version) -> {
             long searched = undertaker.search(key);
+
+            if (undertaker.eqCurrent(searched)) {
+                VsData vsData = getVsData(key, version);
+                if (null == vsData) {
+                    return;
+                }
+                for (MandatorySyncData syncData : syncDataMap.values()) {
+                    MandatorySyncRecorder recorder = syncData.getRecorder();
+                    if (version >= recorder.getUndertakeFirstTime()) {
+                        syncData.getUndertakeDataList().add(vsData);
+                        continue;
+                    }
+                    VersionKey versionKey = new VersionKey(version, key.toString());
+                    if (versionKey.compareTo(recorder.getUndertakeAppendFlag()) > 0) {
+                        syncData.getAppendDataMap().put(versionKey, vsData);
+                    }
+                }
+            }
+
             MandatorySyncData syncData = syncDataMap.computeIfAbsent(searched, targetId -> new MandatorySyncData());
             MandatorySyncRecorder recorder = syncData.getRecorder();
 

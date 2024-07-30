@@ -131,6 +131,10 @@ public class MandatoryDataSynchronizer implements Starter {
                         }
                     }
 
+                    if (builder.getAppendCount() + builder.getRemoveCount() == 0) {
+                        continue;
+                    }
+
                     MandatorySyncRequest syncRequest = MandatoryRequestSupport.buildSyncRequest(builder.build());
                     Optional<MandatoryClient> clientOptional = clientFactory.getClient(memberId);
                     if (clientOptional.isPresent()) {

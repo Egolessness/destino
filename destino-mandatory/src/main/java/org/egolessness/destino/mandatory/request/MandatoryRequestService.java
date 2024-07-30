@@ -65,6 +65,7 @@ public class MandatoryRequestService extends MandatoryRequestAdapterGrpc.Mandato
         } catch (Exception e) {
             responseObserver.onNext(ResponseSupport.failed(e.getMessage()));
         }
+        responseObserver.onCompleted();
     }
 
     @Override
@@ -85,6 +86,7 @@ public class MandatoryRequestService extends MandatoryRequestAdapterGrpc.Mandato
         } catch (Exception e) {
             responseObserver.onNext(ResponseSupport.failed(e.getMessage()));
         }
+        responseObserver.onCompleted();
     }
 
     @Override
@@ -95,6 +97,7 @@ public class MandatoryRequestService extends MandatoryRequestAdapterGrpc.Mandato
             public void onNext(MandatorySyncRequest request) {
                 if (!MandatoryRequestSupport.validate(request)) {
                     requestStreamObserver.onNext(ResponseSupport.failed("Token invalid."));
+                    requestStreamObserver.onCompleted();
                     return;
                 }
 
@@ -102,6 +105,8 @@ public class MandatoryRequestService extends MandatoryRequestAdapterGrpc.Mandato
                     StorageDelegate delegate = dataLoader.getStorageDelegate(writeInfo.getCosmos()).orElseThrow(NoSuchDomainException::new);
                     delegate.accept(writeInfo.getAppendList(), writeInfo.getRemoveList());
                 }
+                requestStreamObserver.onNext(ResponseSupport.success());
+                requestStreamObserver.onCompleted();
             }
 
             @Override

@@ -21,6 +21,7 @@ import org.egolessness.destino.core.support.MessageSupport;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.egolessness.destino.common.fixedness.Lucermaire;
 import org.egolessness.destino.common.model.message.Response;
+import org.egolessness.destino.mandatory.MandatoryLoggers;
 import org.egolessness.destino.mandatory.message.*;
 import io.grpc.CallOptions;
 import io.grpc.ManagedChannel;
@@ -57,6 +58,7 @@ public class MandatoryClient implements Lucermaire {
             }
             @Override
             public void onError(Throwable t) {
+                MandatoryLoggers.SYNCHRONIZER.error("sync data error.", t);
             }
 
             @Override

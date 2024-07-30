@@ -100,7 +100,7 @@ public class GrpcHighLevelClient extends RequestHighLevelClient {
             return Objects.nonNull(this.streamObserver);
         } catch (TimeoutException e) {
             LOGGER.error("The GRPC client connect timed-out to server {}.", uri);
-        } catch (DestinoException e) {
+        } catch (Exception e) {
             LOGGER.error("The GRPC client connect failed to server {}.", uri, e);
         }
 
