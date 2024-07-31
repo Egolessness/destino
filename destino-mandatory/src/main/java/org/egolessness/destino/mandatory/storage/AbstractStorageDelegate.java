@@ -80,10 +80,21 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
     }
 
     private Cache<K, Meta> buildCache() {
-        RemovalListener<K, Meta> removalListener = (key, sourceVersion, removalCause) -> {
-            if (key != null) {
-                delStorage(key);
+        RemovalListener<K, Meta> removalListener = (key, meta, removalCause) -> {
+            if (key == null) {
+                return;
             }
+            locals.compute(key, (k, v) -> {
+                if (null == v) {
+                    delStorage(key);
+                    return null;
+                }
+                if (null != meta && v > meta.getVersion()) {
+                    delStorage(key);
+                    return null;
+                }
+                return v;
+            });
         };
         return Caffeine.newBuilder()
                 .expireAfterWrite(validDuration)
@@ -214,7 +225,7 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
             if (!undertaker.isCurrent(key)) {
                 return;
             }
-            VsData vsData = getVsData(key, meta.getVersion());
+            VsData vsData = getVsData(key, meta);
             if (null == vsData) {
                 return;
             }
@@ -248,6 +259,20 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
         }
 
         return syncDataMap;
+    }
+
+    private VsData getVsData(K key, Meta meta) {
+        byte[] bytes = getStorage(key);
+        if (bytes == null) {
+            delLocal(key, meta.getVersion());
+            return null;
+        }
+
+        return VsData.newBuilder().setKey(specifier.transfer(key))
+                .setValue(ByteString.copyFrom(bytes))
+                .setVersion(meta.getVersion())
+                .setSource(meta.getSource())
+                .build();
     }
 
     private VsData getVsData(K key, long version) {
@@ -334,7 +359,16 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
             if (sourceId == undertaker.currentId()) {
                 continue;
             }
-            setAppoint(specifier.restore(key), value, new Meta(sourceId, timestamp), false);
+            K restoreKey = specifier.restore(key);
+            Long computedVersion = locals.computeIfPresent(restoreKey, (k, v) -> {
+                if (timestamp > v) {
+                    return null;
+                }
+                return v;
+            });
+            if (null == computedVersion) {
+                setAppoint(restoreKey, value, new Meta(sourceId, timestamp), false);
+            }
         }
 
         for (VbKey vKey : removeList) {
@@ -381,7 +415,13 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
         AtomicBoolean deleted = new AtomicBoolean();
         locals.computeIfPresent(key, (k, v) -> {
             if (timestamp >= v) {
-                delStorage(k);
+                appoints.compute(k, (k2, v2) -> {
+                    if (null == v2 || timestamp >= v2.getVersion()) {
+                        delStorage(k);
+                        return null;
+                    }
+                    return v2;
+                });
                 deleted.set(true);
                 return null;
             }
@@ -409,6 +449,12 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
         if (searched != undertaker.currentId()) {
             requestBuffer.addRequest(cosmos, searched, specifier.transfer(key), value, meta);
         }
+        appoints.computeIfPresent(key, (k, v) -> {
+           if (meta.getVersion() >= v.getVersion()) {
+               return null;
+           }
+           return v;
+        });
     }
 
     protected void delLocalAndAppointThenBroadcast(K key) {

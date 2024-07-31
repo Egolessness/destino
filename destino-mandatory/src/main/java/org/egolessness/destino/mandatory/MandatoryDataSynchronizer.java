@@ -169,10 +169,6 @@ public class MandatoryDataSynchronizer implements Starter {
     @Override
     public void shutdown() throws DestinoException {
         started.set(false);
-
-        for (MandatoryClient client : clientFactory.getClients()) {
-            client.syncStream().onCompleted();
-        }
     }
 
 }
