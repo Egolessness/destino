@@ -362,6 +362,13 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
             K restoreKey = specifier.restore(key);
             Long computedVersion = locals.computeIfPresent(restoreKey, (k, v) -> {
                 if (timestamp > v) {
+                    appoints.compute(k, (k2, v2) -> {
+                        if (null == v2 || timestamp > v2.getVersion()) {
+                            delStorage(k);
+                            return null;
+                        }
+                        return v2;
+                    });
                     return null;
                 }
                 return v;
