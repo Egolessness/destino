@@ -165,8 +165,11 @@ public class HealthChecker implements Lucermaire, DomainLinker {
         RegistrationKey registrationKey = context.getRegistrationKey();
         Registration registration = context.getRegistration();
 
-        if (RequestSupport.isSupportConnectionListenable(registration.getChannel())
-                && registration.getSource() == undertaker.currentId()) {
+        if (!RequestSupport.isSupportConnectionListenable(registration.getChannel())) {
+            return;
+        }
+
+        if (registration.getSource() == undertaker.currentId()) {
             Optional<Connection> connectionOptional = connectionContainer.getConnectionByIndex(registrationKey);
             if (connectionOptional.isPresent()) {
                 connectionOptional.get().addCloseListener(connection -> healthCheckHandler.onFail(context, true));
@@ -175,6 +178,8 @@ public class HealthChecker implements Lucermaire, DomainLinker {
             }
 
             addContext(context);
+        } else {
+            removeContext(context);
         }
     }
 

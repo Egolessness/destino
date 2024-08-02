@@ -101,11 +101,25 @@ public class ExecutionAlarm {
         Execution execution = executionInfo.getExecution();
         RegistrationKey registrationKey = executionInfo.getLastDest();
         SchedulerInfo schedulerInfo = executionInfo.getContext().getSchedulerInfo();
+
+        String namespace, groupName, serviceName, instanceInfo;
+        if (null != registrationKey) {
+            namespace = registrationKey.getNamespace();
+            groupName = registrationKey.getGroupName();
+            serviceName = registrationKey.getServiceName();
+            instanceInfo = RegistrationSupport.getInstanceInfo(registrationKey.getInstanceKey());
+        } else {
+            namespace = schedulerInfo.getNamespace();
+            groupName = schedulerInfo.getGroupName();
+            serviceName = schedulerInfo.getServiceName();
+            instanceInfo = "None";
+        }
+
         return MessageFormat.format(alarmTemp, ALARM_TITLE,
-                NAMESPACE_DISPLAY, registrationKey.getNamespace(),
-                GROUP_DISPLAY, registrationKey.getGroupName(),
-                SERVICE_DISPLAY, registrationKey.getServiceName(),
-                TARGET_INSTANCE_DISPLAY, RegistrationSupport.getInstanceInfo(registrationKey.getInstanceKey()),
+                NAMESPACE_DISPLAY, namespace,
+                GROUP_DISPLAY, groupName,
+                SERVICE_DISPLAY, serviceName,
+                TARGET_INSTANCE_DISPLAY, instanceInfo,
                 SCHEDULER_NAME_DISPLAY, schedulerInfo.getName(),
                 SCHEMA_DISPLAY, getSchema(execution),
                 EXECUTION_DISPLAY, formatExecutionTime(execution.getExecutionTime()),

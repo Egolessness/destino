@@ -898,6 +898,7 @@ public class ExecutionPool implements Runnable, Lucermaire {
         executionInfo.setProcess(Process.LOST);
         publishCompletedEvent(executionInfo.getKey());
         logCollector.addLogLine(executionInfo.getKey(), LostLogParser.INSTANCE);
+        executionAlarm.send(executionInfo, LostLogParser.INSTANCE.getMessage());
     }
 
     private void publishCompletedEvent(ExecutionKey executionKey) {

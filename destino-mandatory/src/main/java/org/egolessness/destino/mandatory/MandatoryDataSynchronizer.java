@@ -139,10 +139,9 @@ public class MandatoryDataSynchronizer implements Starter {
                     Optional<MandatoryClient> clientOptional = clientFactory.getClient(memberId);
                     if (clientOptional.isPresent()) {
                         MandatoryClient client = clientOptional.get();
+                        StreamObserver<MandatorySyncRequest> requestStreamObserver = client.syncStream();
                         try {
-                            StreamObserver<MandatorySyncRequest> requestStreamObserver = client.syncStream();
                             requestStreamObserver.onNext(syncRequest);
-                            requestStreamObserver.onCompleted();
                             recorder.setLocalFirstTime(now);
                             recorder.setUndertakeFirstTime(now);
                             recorder.setRemovingKeys(new ArrayList<>());
@@ -156,6 +155,8 @@ public class MandatoryDataSynchronizer implements Starter {
                                 recorder.getFailCounter().set(0);
                             }
                             MandatoryLoggers.SYNCHRONIZER.warn("Failed to sync storage data to server-{}.", memberId, throwable);
+                        } finally {
+                            requestStreamObserver.onCompleted();
                         }
                     }
                 }
