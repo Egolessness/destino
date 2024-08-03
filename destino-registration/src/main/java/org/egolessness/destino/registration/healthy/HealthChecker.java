@@ -327,8 +327,11 @@ public class HealthChecker implements Lucermaire, DomainLinker {
 
     private void removeContext(final HealthCheckContext context) {
         Map<RegistrationKey, HealthCheckContext> clusters = contexts.get(context.getCluster());
-        if (clusters != null) {
-            clusters.remove(context.getRegistrationKey());
+        if (null != clusters) {
+            HealthCheckContext removed = clusters.remove(context.getRegistrationKey());
+            if (null != removed) {
+                removed.setCancel(true);
+            }
         }
     }
 
