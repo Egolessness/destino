@@ -100,6 +100,9 @@ public class ExecutionFeedbackAcceptor implements Runnable {
     private Notifier notifier;
 
     @Inject
+    private ExecutionAlarm executionAlarm;
+
+    @Inject
     @Named("SchedulerCallbackExecutor")
     private ExecutorService callbackExecutor;
 
@@ -293,8 +296,11 @@ public class ExecutionFeedbackAcceptor implements Runnable {
                 try {
                     Execution execution = executionStorage.get(executionKey);
                     if (execution != null) {
-                        ExecutionInfo info = ExecutionInfo.of(execution, latestProcess);
-                        notifier.publish(new ExecutionCompletedEvent(info));
+                        executionInfo = ExecutionInfo.of(execution, latestProcess);
+                        notifier.publish(new ExecutionCompletedEvent(executionInfo));
+                        if (latestProcess == Process.FAILED || latestProcess == Process.TIMEOUT) {
+                            executionAlarm.send(executionInfo, latestMessage);
+                        }
                     }
                 } catch (StorageException ignored) {
                 }

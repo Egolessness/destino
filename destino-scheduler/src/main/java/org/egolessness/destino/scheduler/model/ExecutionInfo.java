@@ -199,10 +199,12 @@ public class ExecutionInfo {
         } else if (lastDest != null) {
             reb = RegistrationKey.newBuilder().setNamespace(lastDest.getNamespace());
         } else {
-            reb = RegistrationKey.newBuilder();
+            return builder.build();
         }
         if (lastDest != null) {
             reb.setInstanceKey(lastDest.getInstanceKey());
+        } else {
+            reb.setInstanceKey(builder.getDest().getInstanceKey());
         }
         builder.setDest(reb);
         return builder.build();

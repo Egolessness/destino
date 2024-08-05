@@ -72,12 +72,12 @@ public class CleanerManager implements Runnable, Starter {
 
     @Override
     public void run() {
-        try {
-            for (Cleanable cleanable : cleanableList) {
+        for (Cleanable cleanable : cleanableList) {
+            try {
                 cleanable.clean();
+            } catch (Exception e) {
+                Loggers.SERVER.warn("An error occurred while clean something.", e);
             }
-        } catch (Exception e) {
-            Loggers.SERVER.warn("An error occurred while clean something.", e);
         }
     }
 

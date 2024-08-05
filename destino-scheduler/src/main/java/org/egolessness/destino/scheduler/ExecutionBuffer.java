@@ -18,6 +18,7 @@ package org.egolessness.destino.scheduler;
 
 import org.egolessness.destino.core.container.ContainerFactory;
 import org.egolessness.destino.scheduler.container.SchedulerContainer;
+import org.egolessness.destino.scheduler.message.Process;
 import org.egolessness.destino.scheduler.model.ExecutionInfo;
 import org.egolessness.destino.scheduler.model.SchedulerContext;
 import org.egolessness.destino.scheduler.model.event.ExecutionCompletedEvent;
@@ -107,7 +108,7 @@ public class ExecutionBuffer implements Lucermaire {
         if (executionInfo == null) {
             return;
         }
-        if (executionInfo.getContext() == null) {
+        if (executionInfo.getProcess().getNumber() <= Process.WAITING_VALUE && executionInfo.getContext() == null) {
             Optional<SchedulerContext> contextOptional = schedulerContainer.find(executionInfo.getExecution().getSchedulerId());
             contextOptional.ifPresent(executionInfo::setContext);
         }

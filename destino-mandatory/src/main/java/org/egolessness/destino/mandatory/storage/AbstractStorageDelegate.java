@@ -465,14 +465,16 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
     }
 
     protected void delLocalAndAppointThenBroadcast(K key) {
-        Long removedVersion = locals.remove(key);
+        locals.remove(key);
         long searched = undertaker.search(key);
         ByteString keyBytes = specifier.transfer(key);
         long version = System.currentTimeMillis();
 
-        if (removedVersion == null) {
-            Meta removed = appoints.remove(key);
-            if (removed != null) {
+        Meta removed = appoints.remove(key);
+        if (null != removed) {
+            if (removed.getSource() == undertaker.currentId()) {
+                removingKeys.put(key, version);
+            } else {
                 requestBuffer.addRequest(cosmos, removed.getSource(), keyBytes, version, false);
                 if (removed.getSource() == searched) {
                     return;
@@ -490,13 +492,15 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
 
         Map<Long, List<VbKey>> removeMap = new HashMap<>(keys.size());
         for (K key : keys) {
-            Long removedVersion = locals.remove(key);
+            locals.remove(key);
             long searched = undertaker.search(key);
             byte[] keyBytes = specifier.transfer(key).toByteArray();
 
-            if (removedVersion == null) {
-                Meta removed = appoints.remove(key);
-                if (removed != null) {
+            Meta removed = appoints.remove(key);
+            if (null != removed) {
+                if (removed.getSource() == undertaker.currentId()) {
+                    removingKeys.put(key, version);
+                } else {
                     VbKey vbKey = VbKey.newBuilder().setKey(ByteString.copyFrom(keyBytes)).setVersion(version)
                             .setBroadcast(false).build();
                     removeMap.computeIfAbsent(removed.getSource(), k -> new ArrayList<>()).add(vbKey);

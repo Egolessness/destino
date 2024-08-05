@@ -18,6 +18,8 @@ package org.egolessness.destino.server.processor;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import org.egolessness.destino.common.infrastructure.CustomizedServiceLoader;
+import org.egolessness.destino.core.infrastructure.notify.subscriber.Subscriber;
 import org.egolessness.destino.core.spi.Postprocessor;
 import org.egolessness.destino.core.infrastructure.InetRefresher;
 import org.egolessness.destino.core.infrastructure.notify.Notifier;
@@ -41,7 +43,9 @@ public class PluginPostprocessor implements Postprocessor {
     public void process() {
         injector.getInstance(CleanerManager.class).start();
         injector.getInstance(InetRefresher.class).start();
-        injector.getInstance(Notifier.class).start();
+        Notifier notifier = injector.getInstance(Notifier.class);
+        CustomizedServiceLoader.load(Subscriber.class).forEach(notifier::subscribe);
+        notifier.start();
     }
 
 }

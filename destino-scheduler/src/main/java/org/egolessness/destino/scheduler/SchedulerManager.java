@@ -17,6 +17,7 @@
 package org.egolessness.destino.scheduler;
 
 import org.egolessness.destino.scheduler.handler.ExecutionFeedbackAcceptor;
+import org.egolessness.destino.scheduler.handler.ExecutionOutdatedCleaner;
 import org.egolessness.destino.scheduler.repository.storage.ExecutionStorage;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -60,6 +61,9 @@ public class SchedulerManager implements Starter {
     private ExecutionLogCollector executionLogCollector;
 
     @Inject
+    private ExecutionOutdatedCleaner executionOutdatedCleaner;
+
+    @Inject
     @Named("SchedulerTriggerExecutor")
     private ScheduledExecutorService triggerExecutor;
 
@@ -80,7 +84,7 @@ public class SchedulerManager implements Starter {
             this.commonExecutor.scheduleAtFixedRate(this.feedbackAcceptor, 3, 2, TimeUnit.SECONDS);
             this.commonExecutor.scheduleAtFixedRate(this.executionStorage::sync, 10, 1, TimeUnit.SECONDS);
             this.commonExecutor.scheduleAtFixedRate(this.executionLogCollector, 1, 1, TimeUnit.SECONDS);
-            this.commonExecutor.scheduleAtFixedRate(this.executionPool::handleOutdatedExecutionInfo, 10, 30, TimeUnit.SECONDS);
+            this.commonExecutor.scheduleAtFixedRate(this.executionOutdatedCleaner, 10, 30, TimeUnit.SECONDS);
             this.commonExecutor.scheduleAtFixedRate(this.executionBuffer::sendToAllServer, 1, 5, TimeUnit.SECONDS);
             this.commonExecutor.scheduleAtFixedRate(this.executionBuffer::failedRetry, 30, 30, TimeUnit.SECONDS);
         } else {
@@ -94,7 +98,7 @@ public class SchedulerManager implements Starter {
         this.executionLogCollector.shutdown();
         this.schedulerDispatcher.shutdown();
         this.executionBuffer.shutdown();
-        this.executionPool.shutdown();
+        this.executionOutdatedCleaner.shutdown();
         ThreadUtils.shutdownThreadPool(this.commonExecutor);
         ThreadUtils.shutdownThreadPool(this.triggerExecutor);
     }

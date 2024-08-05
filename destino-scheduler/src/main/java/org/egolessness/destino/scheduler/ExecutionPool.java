@@ -42,8 +42,6 @@ import com.lmax.disruptor.YieldingWaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 import org.egolessness.destino.common.fixedness.Callback;
-import org.egolessness.destino.common.fixedness.Lucermaire;
-import org.egolessness.destino.common.enumeration.ExecutedCode;
 import org.egolessness.destino.common.exception.DestinoException;
 import org.egolessness.destino.common.executor.SimpleThreadFactory;
 import org.egolessness.destino.common.model.Script;
@@ -86,11 +84,9 @@ import static org.egolessness.destino.scheduler.SchedulerMessages.ALARM_REASON_O
  * @author zsmjwk@outlook.com (wangkang)
  */
 @Singleton
-public class ExecutionPool implements Runnable, Lucermaire {
+public class ExecutionPool implements Runnable {
 
     private final static long advanceMillis = 200;
-
-    private final static long outdatedMillis = Duration.ofHours(2).toMillis();
 
     private final Comparator<ExecutionKey> comparator = ExecutionSupport.executionKeyComparator();
 
@@ -801,14 +797,16 @@ public class ExecutionPool implements Runnable, Lucermaire {
             return executionInfo;
         }
 
-        executionInfo.upProcess(process);
+        if (executionInfo.upProcess(process)) {
+            if (process.getNumber() > Process.EXECUTING_VALUE) {
+                publishCompletedEvent(executionKey);
+            } else {
+                notifier.publish(new ExecutionCompletedEvent(executionInfo));
+            }
+        }
 
         if (process == Process.FAILED || process == Process.TIMEOUT) {
             executionAlarm.send(executionInfo, message);
-        }
-
-        if (process.getNumber() > Process.EXECUTING_VALUE) {
-            publishCompletedEvent(executionKey);
         }
 
         return executionInfo;
@@ -882,6 +880,10 @@ public class ExecutionPool implements Runnable, Lucermaire {
         return EXECUTIONS.get(executionKey);
     }
 
+    public ExecutionInfo removeExecutionInfo(ExecutionKey executionKey) {
+        return EXECUTIONS.remove(executionKey);
+    }
+
     private boolean retryable(Process process, ExecutionInfo executionInfo) {
         if (process != Process.FAILED && process != Process.TIMEOUT) {
             return false;
@@ -901,9 +903,9 @@ public class ExecutionPool implements Runnable, Lucermaire {
         executionAlarm.send(executionInfo, LostLogParser.INSTANCE.getMessage());
     }
 
-    private void publishCompletedEvent(ExecutionKey executionKey) {
+    public void publishCompletedEvent(ExecutionKey executionKey) {
         long delayMillis = executionKey.getExecutionTime() - System.currentTimeMillis();
-        ExecutionInfo executionInfo = EXECUTIONS.get(executionKey);
+        ExecutionInfo executionInfo = getExecutionInfo(executionKey);
         if (executionInfo != null && !executionInfo.isSynced() && executionInfo.getExecution() != null) {
             notifier.publish(new ExecutionCompletedEvent(executionInfo));
         }
@@ -911,64 +913,13 @@ public class ExecutionPool implements Runnable, Lucermaire {
             logCollector.removeLog(executionKey);
         }
         if (delayMillis > 0) {
-            this.wheelTimer.newTimeout(timeout -> EXECUTIONS.remove(executionKey), delayMillis, TimeUnit.MILLISECONDS);
+            this.wheelTimer.newTimeout(timeout -> removeExecutionInfo(executionKey), delayMillis, TimeUnit.MILLISECONDS);
         } else {
-            EXECUTIONS.remove(executionKey);
+            removeExecutionInfo(executionKey);
         }
     }
 
-    public void handleOutdatedExecutionInfo() {
-        handleOutdatedExecutionInfo(false);
+    public ConcurrentHashMap<ExecutionKey, ExecutionInfo> getExecutions() {
+        return EXECUTIONS;
     }
-
-    public void handleOutdatedExecutionInfo(boolean defaultRemoveWhenOutdated) {
-        EXECUTIONS.forEachValue(100, executionInfo -> {
-            int processStep = executionInfo.getProcess().getNumber();
-            long executionTime = executionInfo.getExecution().getExecutionTime();
-
-            if (processStep > Process.REACHED_VALUE) {
-                if (executionTime < System.currentTimeMillis() - 5000) {
-                    publishCompletedEvent(executionInfo.getKey());
-                } else {
-                    notifier.publish(new ExecutionCompletedEvent(executionInfo));
-                }
-                return;
-            }
-
-            if (System.currentTimeMillis() - executionInfo.getLastActiveTime() > outdatedMillis) {
-                if (defaultRemoveWhenOutdated) {
-                    publishCompletedEvent(executionInfo.getKey());
-                    return;
-                }
-                pusher.state(executionInfo, new Callback<Response>() {
-                    @Override
-                    public void onResponse(Response response) {
-                        if (ResponseSupport.isSuccess(response)) {
-                            Integer stateCode = ResponseSupport.dataDeserialize(response, int.class);
-                            if (stateCode == null ||
-                                    (stateCode != ExecutedCode.WAITING.getCode() && stateCode != ExecutedCode.EXECUTING.getCode())
-                            ) {
-                                publishCompletedEvent(executionInfo.getKey());
-                            } else {
-                                executionInfo.refreshLastActiveTime();
-                            }
-                        } else {
-                            publishCompletedEvent(executionInfo.getKey());
-                        }
-                    }
-
-                    @Override
-                    public void onThrowable(Throwable e) {
-                        publishCompletedEvent(executionInfo.getKey());
-                    }
-                });
-            }
-        });
-    }
-
-    @Override
-    public void shutdown() throws DestinoException {
-        handleOutdatedExecutionInfo(true);
-    }
-
 }
