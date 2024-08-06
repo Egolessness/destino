@@ -34,7 +34,6 @@ import org.egolessness.destino.common.fixedness.Lucermaire;
 import org.egolessness.destino.common.exception.DestinoException;
 import org.egolessness.destino.core.enumration.ServerMode;
 import org.egolessness.destino.core.exception.StorageException;
-import org.egolessness.destino.core.infrastructure.notify.Notifier;
 import org.egolessness.destino.core.infrastructure.notify.subscriber.Subscriber;
 import org.egolessness.destino.core.message.ConsistencyDomain;
 import org.egolessness.destino.core.message.Cosmos;
@@ -59,7 +58,7 @@ import java.util.concurrent.*;
  * @author zsmjwk@outlook.com (wangkang)
  */
 @Singleton
-public class ExecutionBuffer implements Lucermaire {
+public class ExecutionBuffer implements Lucermaire, Subscriber<ExecutionCompletedEvent> {
 
     final static int BATCH_SEND_SIZE = 2000;
 
@@ -82,7 +81,7 @@ public class ExecutionBuffer implements Lucermaire {
     @Inject
     public ExecutionBuffer(ExecutionStorage executionStorage, ExecutionRepository executionRepository,
                            @Named("SchedulerCommonExecutor") ScheduledExecutorService executorService,
-                           RocksDBStorageFactoryImpl storageFactory, Notifier notifier, ServerMode mode,
+                           RocksDBStorageFactoryImpl storageFactory, ServerMode mode,
                            ContainerFactory containerFactory) throws StorageException {
         this.executionStorage = executionStorage;
         this.executionRepository = executionRepository;
@@ -92,7 +91,6 @@ public class ExecutionBuffer implements Lucermaire {
         StorageOptions storageOptions = StorageOptions.newBuilder().writeAsync(true).flushAsync(true).build();
         Cosmos tmpCosmos = CosmosSupport.buildCosmos(ConsistencyDomain.SCHEDULER, this.getClass());
         this.failedStorage = storageFactory.create(tmpCosmos, ExecutionKeySpecifier.INSTANCE, storageOptions);
-        notifier.subscribe(this.buildSubscriber());
         if (mode.isDistributed()) {
             this.buffer = new LinkedBlockingQueue<>(100000);
         } else {
@@ -100,8 +98,9 @@ public class ExecutionBuffer implements Lucermaire {
         }
     }
 
-    private Subscriber<ExecutionCompletedEvent> buildSubscriber() {
-        return event -> {if (event != null) add(event.getExecutionInfo());};
+    @Override
+    public void apply(ExecutionCompletedEvent event) {
+        if (event != null) add(event.getExecutionInfo());
     }
 
     public void add(@Nullable ExecutionInfo executionInfo) {
@@ -113,11 +112,11 @@ public class ExecutionBuffer implements Lucermaire {
             contextOptional.ifPresent(executionInfo::setContext);
         }
         Execution execution = executionInfo.toLatestExecution();
-        if (mode.isMonolithic()) {
-            return;
-        }
         try {
             executionStorage.completeExecution(executionInfo.getKey(), execution);
+            if (mode.isMonolithic()) {
+                return;
+            }
             boolean offered = buffer.offer(execution, 2, TimeUnit.SECONDS);
             if (!offered) {
                 ExecutionKey executionKey = executionInfo.getKey();
@@ -167,7 +166,7 @@ public class ExecutionBuffer implements Lucermaire {
             it.seekToFirst();
             while (it.isValid()) {
                 try {
-                    executionMap.put(ExecutionKey.parseFrom(it.key()), Execution.parseFrom(it.value()));
+                    executionMap.put(ExecutionKeySpecifier.INSTANCE.restore(it.key()), Execution.parseFrom(it.value()));
                 } catch (InvalidProtocolBufferException ignored) {
                     try {
                         failedStorage.delByKeyBytes(it.key());

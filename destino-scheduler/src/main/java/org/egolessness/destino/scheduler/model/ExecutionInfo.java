@@ -192,7 +192,10 @@ public class ExecutionInfo {
     }
 
     public Execution toLatestExecution() {
-        Execution.Builder builder = execution.toBuilder().setProcess(process).setActualExecutedTime(actualExecutedTime);
+        Execution.Builder builder = execution.toBuilder().setProcess(process);
+        if (actualExecutedTime > 0) {
+            builder.setActualExecutedTime(actualExecutedTime);
+        }
         RegistrationKey.Builder reb;
         if (schedulerContext != null) {
             reb = ExecutionSupport.buildRegistrationKey(schedulerContext.getSchedulerInfo());

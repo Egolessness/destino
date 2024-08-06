@@ -96,8 +96,10 @@ public class RpcResourceRegistry extends RequestProcessorRegistry implements Res
                         Object result = method.invoke(resource, parameterGetter.get(data, headers));
                         return responseAnalyzer.analysis(result);
                     } catch (InvocationTargetException e) {
+                        Loggers.RPC.error("Rpc resource invoke error.", e.getCause());
                         return ResponseSupport.failed(e.getCause().getMessage());
                     } catch (Exception e) {
+                        Loggers.RPC.error("Rpc resource invoke error.", e);
                         return ResponseSupport.failed("Internal Server Error.");
                     }
                 });

@@ -785,10 +785,14 @@ public class ExecutionPool implements Runnable {
         return cancelled;
     }
 
-    public ExecutionInfo upProcess(ExecutionKey executionKey, Process process, String message) {
+    public ExecutionInfo upProcess(ExecutionKey executionKey, long actualExecutedTime, Process process, String message) {
         ExecutionInfo executionInfo = getExecutionInfo(executionKey);
         if (executionInfo == null) {
             return null;
+        }
+
+        if (actualExecutedTime > 0) {
+            executionInfo.setActualExecutedTime(actualExecutedTime);
         }
 
         if (retryable(process, executionInfo)) {

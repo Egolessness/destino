@@ -466,11 +466,10 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
 
     protected void delLocalAndAppointThenBroadcast(K key) {
         locals.remove(key);
+        Meta removed = appoints.remove(key);
         long searched = undertaker.search(key);
         ByteString keyBytes = specifier.transfer(key);
         long version = System.currentTimeMillis();
-
-        Meta removed = appoints.remove(key);
         if (null != removed) {
             if (removed.getSource() == undertaker.currentId()) {
                 removingKeys.put(key, version);
@@ -493,10 +492,10 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
         Map<Long, List<VbKey>> removeMap = new HashMap<>(keys.size());
         for (K key : keys) {
             locals.remove(key);
+            Meta removed = appoints.remove(key);
             long searched = undertaker.search(key);
             byte[] keyBytes = specifier.transfer(key).toByteArray();
 
-            Meta removed = appoints.remove(key);
             if (null != removed) {
                 if (removed.getSource() == undertaker.currentId()) {
                     removingKeys.put(key, version);

@@ -44,7 +44,7 @@ public class PluginPostprocessor implements Postprocessor {
         injector.getInstance(CleanerManager.class).start();
         injector.getInstance(InetRefresher.class).start();
         Notifier notifier = injector.getInstance(Notifier.class);
-        CustomizedServiceLoader.load(Subscriber.class).forEach(notifier::subscribe);
+        CustomizedServiceLoader.load(Subscriber.class, injector::getInstance).forEach(notifier::subscribe);
         notifier.start();
     }
 

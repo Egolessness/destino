@@ -81,12 +81,16 @@ public class NamespacePersistentStorage implements PersistentKvStorage<Namespace
 
     @Override
     public void set(@Nonnull String key, byte[] value) throws StorageException {
-        save(key, value);
-        baseKvStorage.set(key, value);
+        NamespaceInfo saved = save(key, value);
+        NamespaceSubject subject = new NamespaceSubject();
+        subject.setMode(WriteMode.ADD);
+        subject.setDesc(saved.getDesc());
+        subject.setTime(saved.getCreateTime());
+        baseKvStorage.set(key, serialize(subject));
         registrationContainer.addNamespace(key);
     }
 
-    private void save(String key, byte[] value) throws StorageException {
+    private NamespaceInfo save(String key, byte[] value) throws StorageException {
         NamespaceSubject subject = deserialize(value);
         if (subject == null || subject.getMode() == null) {
             throw new StorageException(Errors.STORAGE_WRITE_INVALID, "Data invalid.");
@@ -98,15 +102,19 @@ public class NamespacePersistentStorage implements PersistentKvStorage<Namespace
                 throw new StorageException(Errors.STORAGE_WRITE_FAILED,
                         RegistrationMessages.NAMESPACE_ADD_DUPLICATE_NAME.getValue());
             }
-            return;
+            return namespaceInfo;
         }
 
         if (subject.getMode() == WriteMode.UPDATE) {
             NamespaceInfo namespaceInfo = new NamespaceInfo(key, subject.getDesc(), subject.getTime());
-            if (!namespaceContainer.update(namespaceInfo)) {
+            NamespaceInfo updated = namespaceContainer.update(namespaceInfo);
+            if (null == updated) {
                 throw new StorageException(Errors.STORAGE_WRITE_FAILED, "Namespace does not exist.");
             }
+            return updated;
         }
+
+        throw new StorageException(Errors.STORAGE_WRITE_FAILED, "Mode unsupported.");
     }
 
     @Override

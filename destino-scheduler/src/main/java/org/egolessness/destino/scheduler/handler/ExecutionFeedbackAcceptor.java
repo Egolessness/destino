@@ -227,11 +227,21 @@ public class ExecutionFeedbackAcceptor implements Runnable {
         Map<ExecutionKey, ExecutionProcess> processMap = new HashMap<>();
         for (ExecutionFeedback feedback : feedbacks) {
             Process process = executedCodeToProcess(feedback.getCode());
+
+            long actualExecutedTime = 0;
+            if (process == Process.EXECUTING) {
+                actualExecutedTime = feedback.getRecordTime();
+            }
+
             ExecutionKey executionKey = ExecutionSupport.buildKey(feedback.getExecutionTime(), feedback.getSchedulerId());
+
+            ExecutionProcess executionProcess = ExecutionProcess.newBuilder().setExecutionKey(executionKey)
+                    .setActualExecutedTime(actualExecutedTime).setProcess(process)
+                    .setMessage(feedback.getMessage()).build();
+
             processMap.compute(executionKey, (key, pro) -> {
                 if (pro == null || process.getNumber() > pro.getProcessValue()) {
-                    return ExecutionProcess.newBuilder().setExecutionKey(executionKey)
-                            .setProcess(process).setMessage(feedback.getMessage()).build();
+                    return executionProcess;
                 }
                 return pro;
             });
@@ -263,16 +273,14 @@ public class ExecutionFeedbackAcceptor implements Runnable {
 
             Process latestProcess = Process.INIT;
             String latestMessage = PredicateUtils.emptyString();
+            long actualExecutedTime = 0;
 
             List<LogLine> logLines = new ArrayList<>(values.size());
 
             for (ExecutionFeedback feedback : values) {
                 Process process = executedCodeToProcess(feedback.getCode());
                 if (process == Process.EXECUTING) {
-                    ExecutionInfo executionInfo = executionPool.getExecutionInfo(executionKey);
-                    if (executionInfo != null) {
-                        executionInfo.setActualExecutedTime(feedback.getRecordTime());
-                    }
+                    actualExecutedTime = feedback.getRecordTime();
                 } else if (process == Process.CANCELLED) {
                     executionLogCollector.removeLog(executionKey);
                     continue;
@@ -291,12 +299,15 @@ public class ExecutionFeedbackAcceptor implements Runnable {
 
             executionLogCollector.addLogLines(executionKey, logLines);
 
-            ExecutionInfo executionInfo = executionPool.upProcess(executionKey, latestProcess, latestMessage);
+            ExecutionInfo executionInfo = executionPool.upProcess(executionKey, actualExecutedTime, latestProcess, latestMessage);
             if (executionInfo == null) {
                 try {
                     Execution execution = executionStorage.get(executionKey);
                     if (execution != null) {
                         executionInfo = ExecutionInfo.of(execution, latestProcess);
+                        if (actualExecutedTime > 0) {
+                            executionInfo.setActualExecutedTime(actualExecutedTime);
+                        }
                         notifier.publish(new ExecutionCompletedEvent(executionInfo));
                         if (latestProcess == Process.FAILED || latestProcess == Process.TIMEOUT) {
                             executionAlarm.send(executionInfo, latestMessage);

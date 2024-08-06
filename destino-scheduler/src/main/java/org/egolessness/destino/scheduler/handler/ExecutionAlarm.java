@@ -18,6 +18,8 @@ package org.egolessness.destino.scheduler.handler;
 
 import org.egolessness.destino.common.model.message.ScheduledMode;
 import org.egolessness.destino.core.Loggers;
+import org.egolessness.destino.core.container.ContainerFactory;
+import org.egolessness.destino.scheduler.container.SchedulerContainer;
 import org.egolessness.destino.scheduler.message.Execution;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -29,6 +31,7 @@ import org.egolessness.destino.registration.message.RegistrationKey;
 import org.egolessness.destino.scheduler.SchedulerMessages;
 import org.egolessness.destino.scheduler.model.Contact;
 import org.egolessness.destino.scheduler.model.ExecutionInfo;
+import org.egolessness.destino.scheduler.model.SchedulerContext;
 import org.egolessness.destino.scheduler.model.SchedulerInfo;
 import static org.egolessness.destino.registration.RegistrationMessages.*;
 import static org.egolessness.destino.scheduler.SchedulerMessages.*;
@@ -42,6 +45,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
@@ -57,27 +61,40 @@ public class ExecutionAlarm {
 
     private final ExecutorService coreExecutor;
 
+    private final SchedulerContainer schedulerContainer;
+
     private final String alarmTemp = loadContentTemplate();
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Inject
-    public ExecutionAlarm(Alarm alarm, @Named("SchedulerAlarmExecutor") ExecutorService coreExecutor) {
+    public ExecutionAlarm(Alarm alarm, ContainerFactory containerFactory, @Named("SchedulerAlarmExecutor") ExecutorService coreExecutor) {
         this.alarm = alarm;
+        this.schedulerContainer = containerFactory.getContainer(SchedulerContainer.class);
         this.coreExecutor = coreExecutor;
     }
 
     public void send(ExecutionInfo executionInfo, String reason) {
-        SchedulerInfo schedulerInfo = executionInfo.getContext().getSchedulerInfo();
+        SchedulerContext context = executionInfo.getContext();
+        if (null == context) {
+            Optional<SchedulerContext> contextOptional = schedulerContainer.find(executionInfo.getExecution().getSchedulerId());
+            if (!contextOptional.isPresent()) {
+                return;
+            }
+            context = contextOptional.get();
+        }
+
+        SchedulerInfo schedulerInfo = context.getSchedulerInfo();
         Contact contact = schedulerInfo.getContact();
         if (contact == null || PredicateUtils.isEmpty(contact.getEmails()) || !schedulerInfo.isEmailAlarmEnabled()) {
             return;
         }
 
+        String subject = getSubject(schedulerInfo.getName());
+        String content = getContent(executionInfo, context, reason);
+
         coreExecutor.execute(() -> {
             try {
-                String subject = getSubject(schedulerInfo.getName());
-                String content = getContent(executionInfo, reason);
                 alarm.sendEmail(contact.getEmails(), Collections.emptyList(), subject, content);
             } catch (Exception e) {
                 Loggers.ALARM.warn("Alarm send failed.", e);
@@ -97,10 +114,10 @@ public class ExecutionAlarm {
         return new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining());
     }
 
-    private String getContent(ExecutionInfo executionInfo, String reason) {
+    private String getContent(ExecutionInfo executionInfo, SchedulerContext context, String reason) {
         Execution execution = executionInfo.getExecution();
         RegistrationKey registrationKey = executionInfo.getLastDest();
-        SchedulerInfo schedulerInfo = executionInfo.getContext().getSchedulerInfo();
+        SchedulerInfo schedulerInfo = context.getSchedulerInfo();
 
         String namespace, groupName, serviceName, instanceInfo;
         if (null != registrationKey) {

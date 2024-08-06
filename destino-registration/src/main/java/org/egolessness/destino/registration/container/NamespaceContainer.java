@@ -48,11 +48,11 @@ public class NamespaceContainer implements Container {
         return namespaces.putIfAbsent(info.getName(), info) == null;
     }
 
-    public boolean update(final NamespaceInfo info) {
+    public NamespaceInfo update(final NamespaceInfo info) {
         return namespaces.computeIfPresent(info.getName(), (k, v) -> {
             v.setDesc(info.getDesc());
             return v;
-        }) != null;
+        });
     }
 
     public synchronized void remove(final String name) {

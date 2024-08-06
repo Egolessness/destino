@@ -109,7 +109,8 @@ message ExecutionMerge {
 message ExecutionProcess {
   ExecutionKey executionKey = 1;
   Process process = 2;
-  string message = 3;
+  int64 actualExecutedTime = 3;
+  string message = 4;
 }
 
 message ExecutionProcesses {

@@ -112,9 +112,10 @@ public class ExecutionDecree implements AtomicDecree {
                 if (Objects.equals(key, ExecutionRepository.PROCESS_TO_KEY)) {
                     ExecutionProcesses executionProcesses = ExecutionProcesses.parseFrom(value);
                     for (ExecutionProcess executionProcess : executionProcesses.getExecutionProcessList()) {
-                        Execution updated =  storage.updateProcess(executionProcess.getExecutionKey(), executionProcess.getProcess());
+                        Execution updated = storage.updateProcess(executionProcess.getExecutionKey(), executionProcess.getProcess());
                         if (updated.getSupervisorId() == current.getId()) {
-                            executionPool.upProcess(executionProcess.getExecutionKey(), updated.getProcess(), executionProcess.getMessage());
+                            executionPool.upProcess(executionProcess.getExecutionKey(), executionProcess.getActualExecutedTime(),
+                                    updated.getProcess(), executionProcess.getMessage());
                         }
                     }
                     return ResponseSupport.success();
