@@ -22,7 +22,6 @@ import org.egolessness.destino.registration.support.RegistrationSupport;
 import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.common.model.ServiceInstance;
 import org.egolessness.destino.common.support.BeanValidator;
-import org.egolessness.destino.common.utils.PredicateUtils;
 import org.egolessness.destino.core.enumration.Errors;
 import org.egolessness.destino.core.container.ContainerFactory;
 import org.egolessness.destino.core.exception.StorageException;
@@ -34,17 +33,12 @@ import org.egolessness.destino.core.storage.kv.DomainKvStorage;
 import org.egolessness.destino.core.storage.kv.KvStorage;
 import org.egolessness.destino.core.storage.specifier.MetaSpecifier;
 import org.egolessness.destino.core.storage.specifier.Specifier;
-import org.egolessness.destino.registration.message.InstanceKey;
 import org.egolessness.destino.registration.message.RegistrationKey;
 import org.egolessness.destino.registration.model.Registration;
-import org.egolessness.destino.registration.model.Service;
-import org.egolessness.destino.registration.model.ServiceCluster;
 
 import javax.annotation.Nonnull;
 import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * abstract registration storage
@@ -67,57 +61,7 @@ public abstract class AbstractRegistrationStorage implements DomainKvStorage<Reg
 
     @Override
     public byte[] get(@Nonnull String key) throws StorageException {
-        byte[] bytes = getBaseStorage().get(key);
-        if (Objects.nonNull(bytes)) {
-            return bytes;
-        }
-
-        RegistrationKey registrationKey = specifier.restore(key);
-        if (!RegistrationSupport.validate(registrationKey)) {
-            return null;
-        }
-
-        Optional<Service> serviceOptional = registrationContainer.findService(registrationKey.getNamespace(),
-                registrationKey.getGroupName(), registrationKey.getServiceName());
-        if (!serviceOptional.isPresent()) {
-            return null;
-        }
-
-        Service service = serviceOptional.get();
-        InstanceKey instanceKey = registrationKey.getInstanceKey();
-        if (RegistrationSupport.isEmpty(instanceKey)) {
-            return serializer.serialize(service);
-        }
-
-        Stream<ServiceCluster> clusterStream;
-        if (PredicateUtils.isNotEmpty(instanceKey.getCluster())) {
-            ServiceCluster serviceCluster = service.getClusterStore().get(instanceKey.getCluster());
-            if (Objects.isNull(serviceCluster)) {
-                return serializer.serialize(Collections.emptyList());
-            }
-            clusterStream = Stream.of(serviceCluster);
-        } else {
-            clusterStream = service.getClusterStore().values().stream();
-        }
-
-        Stream<ServiceInstance> instancesStream;
-        if (instanceKey.hasMode()) {
-            instancesStream = clusterStream.map(cluster -> cluster.locationIfPresent(instanceKey.getMode()))
-                    .filter(PredicateUtils::isNotEmpty).flatMap(instanceMap -> instanceMap.values().stream());
-        } else {
-            instancesStream = clusterStream.flatMap(cluster ->
-                    cluster.getInstances().stream());
-        }
-
-        if (PredicateUtils.isNotEmpty(instanceKey.getIp())) {
-            instancesStream = instancesStream.filter(ins -> Objects.equals(ins.getIp(), instanceKey.getIp()));
-        }
-
-        if (instanceKey.getPort() > 0) {
-            instancesStream = instancesStream.filter(ins -> Objects.equals(ins.getPort(), instanceKey.getPort()));
-        }
-
-        return serializer.serialize(instancesStream.collect(Collectors.toList()));
+        return getBaseStorage().get(key);
     }
 
     @Override

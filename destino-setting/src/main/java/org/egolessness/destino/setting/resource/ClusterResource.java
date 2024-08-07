@@ -17,6 +17,7 @@
 package org.egolessness.destino.setting.resource;
 
 import org.egolessness.destino.common.model.request.ServerCheckRequest;
+import org.egolessness.destino.core.Loggers;
 import org.egolessness.destino.core.annotation.Rpc;
 import org.egolessness.destino.core.annotation.RpcFocus;
 import org.egolessness.destino.setting.resource.converter.MemberRequestConverter;
@@ -59,11 +60,14 @@ public class ClusterResource implements Resource {
     @Get("/check")
     @RequestConverter(MemberRequestConverter.class)
     public Result<Void> check(@Nullable @RpcFocus ServerCheckRequest ignored) {
-        if (clusterFacade.isAvailable()) {
-            return Result.success();
-        } else {
-            return Result.failed("Service unavailable.");
+        try {
+            if (clusterFacade.isAvailable()) {
+                return Result.success();
+            }
+        } catch (Exception e) {
+            Loggers.SERVER.info("Server check failed: {}", e.getMessage());
         }
+        return Result.failed("Service unavailable.");
     }
 
     @Get("/members")
