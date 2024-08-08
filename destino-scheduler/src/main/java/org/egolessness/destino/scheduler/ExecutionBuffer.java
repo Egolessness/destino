@@ -158,7 +158,7 @@ public class ExecutionBuffer implements Lucermaire, Subscriber<ExecutionComplete
         }
     }
 
-    private boolean readFailed() throws Exception {
+    private boolean readFailedExecutions() throws Exception {
         boolean endFlag = true;
         Map<ExecutionKey, Execution> executionMap = new HashMap<>();
 
@@ -167,11 +167,14 @@ public class ExecutionBuffer implements Lucermaire, Subscriber<ExecutionComplete
             while (it.isValid()) {
                 try {
                     executionMap.put(ExecutionKeySpecifier.INSTANCE.restore(it.key()), Execution.parseFrom(it.value()));
-                } catch (InvalidProtocolBufferException ignored) {
+                } catch (InvalidProtocolBufferException e) {
+                    SchedulerLoggers.EXECUTION.warn("Invalid data when read failed executions.", e);
                     try {
                         failedStorage.delByKeyBytes(it.key());
                     } catch (StorageException ignored2) {
                     }
+                } finally {
+                    it.next();
                 }
                 if (executionMap.size() >= BATCH_SEND_SIZE) {
                     endFlag = false;
@@ -209,7 +212,7 @@ public class ExecutionBuffer implements Lucermaire, Subscriber<ExecutionComplete
     public void failedRetry() {
         for (int i = 0; i < 100; i++) {
             try {
-                if (readFailed()) {
+                if (readFailedExecutions()) {
                     break;
                 }
             } catch (Exception e) {

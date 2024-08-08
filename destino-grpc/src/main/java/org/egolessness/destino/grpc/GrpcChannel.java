@@ -94,21 +94,24 @@ public class GrpcChannel {
 
     public GrpcStub createStub(final URI uri) {
         int port = uri.getPort();
+        RequestSchema schema = RequestSchema.findById(uri.getScheme());
         if (port < 0) {
-            port = RequestSchema.findById(uri.getScheme()).getDefaultPort();
+            port = schema.getDefaultPort();
         }
 
-        ManagedChannel managedChannel = ManagedChannelBuilder.forAddress(uri.getHost(), port)
+        ManagedChannelBuilder<?> channelBuilder = ManagedChannelBuilder.forAddress(uri.getHost(), port)
                 .executor(GrpcExecutors.REQUEST)
                 .compressorRegistry(CompressorRegistry.getDefaultInstance())
                 .decompressorRegistry(DecompressorRegistry.getDefaultInstance())
                 .maxInboundMessageSize(getMaxInboundMessageSize())
                 .keepAliveTime(getKeepAliveMillis(), TimeUnit.MILLISECONDS)
-                .keepAliveTimeout(getKeepAliveTimeoutMillis(), TimeUnit.MILLISECONDS)
-                .usePlaintext()
-                .build();
+                .keepAliveTimeout(getKeepAliveTimeoutMillis(), TimeUnit.MILLISECONDS);
 
-        return new GrpcStub(uri, managedChannel);
+        if (schema.isSecure()) {
+            return new GrpcStub(uri, channelBuilder.build());
+        }
+
+        return new GrpcStub(uri, channelBuilder.usePlaintext().build());
     }
 
     private StreamObserver<Any> buildResponseStream(Callback<Response> callback, RequestProcessorRegistry registry) {

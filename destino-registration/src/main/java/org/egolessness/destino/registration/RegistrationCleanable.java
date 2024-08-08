@@ -84,8 +84,9 @@ public class RegistrationCleanable implements Cleanable, Lucermaire {
                     String groupName = instanceInfo.getGroupName();
                     String serviceName = instanceInfo.getServiceName();
                     String cluster = instanceInfo.getCluster();
-                    remove(instanceInfo);
-                    process(namespace, groupName, serviceName, cluster);
+                    if (process(namespace, groupName, serviceName, cluster)) {
+                        remove(instanceInfo);
+                    }
                 }
             } catch (Exception e) {
                 logger.warn("An error occurred while clean service.", e);
@@ -93,36 +94,40 @@ public class RegistrationCleanable implements Cleanable, Lucermaire {
         }
     }
 
-    public void process(String namespaceName, String groupName, String serviceName, String cluster) throws StorageException {
+    public boolean process(String namespaceName, String groupName, String serviceName, String cluster) throws StorageException {
         Optional<Namespace> namespaceOptional = registrationContainer.findNamespace(namespaceName);
         if (!namespaceOptional.isPresent()) {
-            return;
+            return true;
         }
         Namespace namespace = namespaceOptional.get();
 
         Map<String, Service> serviceMap = namespace.getGroupOrNull(groupName);
         if (Objects.isNull(serviceMap)) {
-            return;
+            return true;
         }
 
         Service service = serviceMap.get(serviceName);
         if (Objects.isNull(service)) {
-            return;
+            return true;
         }
 
         ServiceCluster serviceCluster = service.getClusterStore().get(cluster);
         if (Objects.isNull(serviceCluster)) {
-            return;
+            return true;
         }
 
         if (!serviceCluster.isEmpty()) {
-            return;
+            return true;
         }
 
         service.removeCluster(cluster);
 
-        if (!service.isEmpty() || !service.isExpired()) {
-            return;
+        if (!service.isEmpty()) {
+            return true;
+        }
+
+        if (!service.isExpired()) {
+            return false;
         }
 
         boolean removed = namespace.removeService(groupName, serviceName);
@@ -130,6 +135,8 @@ public class RegistrationCleanable implements Cleanable, Lucermaire {
             ServiceKey serviceKey = RegistrationSupport.buildServiceKey(namespaceName, serviceName, groupName);
             storageGalaxy.getServicePersistentStorage().getBaseKvStorage().del(ServiceKeySpecifier.INSTANCE.transfer(serviceKey));
         }
+
+        return removed;
     }
 
     @Override

@@ -280,7 +280,11 @@ public class ExecutionFeedbackAcceptor implements Runnable {
             for (ExecutionFeedback feedback : values) {
                 Process process = executedCodeToProcess(feedback.getCode());
                 if (process == Process.EXECUTING) {
-                    actualExecutedTime = feedback.getRecordTime();
+                    if (actualExecutedTime == 0) {
+                        actualExecutedTime = feedback.getRecordTime();
+                    } else {
+                        actualExecutedTime = Long.min(actualExecutedTime, feedback.getRecordTime());
+                    }
                 } else if (process == Process.CANCELLED) {
                     executionLogCollector.removeLog(executionKey);
                     continue;
@@ -305,9 +309,7 @@ public class ExecutionFeedbackAcceptor implements Runnable {
                     Execution execution = executionStorage.get(executionKey);
                     if (execution != null) {
                         executionInfo = ExecutionInfo.of(execution, latestProcess);
-                        if (actualExecutedTime > 0) {
-                            executionInfo.setActualExecutedTime(actualExecutedTime);
-                        }
+                        executionInfo.setActualExecutedTime(actualExecutedTime);
                         notifier.publish(new ExecutionCompletedEvent(executionInfo));
                         if (latestProcess == Process.FAILED || latestProcess == Process.TIMEOUT) {
                             executionAlarm.send(executionInfo, latestMessage);

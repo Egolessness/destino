@@ -73,6 +73,7 @@ public class ExecutionInfo {
 
     public ExecutionInfo(Execution execution, Process process) {
         this.execution = execution;
+        this.actualExecutedTime = execution.getActualExecutedTime();
         this.process = process;
         this.key = ExecutionSupport.buildKey(execution);
     }
@@ -152,7 +153,11 @@ public class ExecutionInfo {
     }
 
     public void setActualExecutedTime(long actualExecutedTime) {
-        this.actualExecutedTime = actualExecutedTime;
+        if (this.actualExecutedTime == 0) {
+            this.actualExecutedTime = actualExecutedTime;
+        } else if (actualExecutedTime > 0 && actualExecutedTime < this.actualExecutedTime) {
+            this.actualExecutedTime = actualExecutedTime;
+        }
     }
 
     public boolean isForwardLimit() {

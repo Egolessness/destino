@@ -127,12 +127,18 @@ public class ExecutionStorage implements SnapshotOperation, DomainLinker, Storag
         }
     }
 
-    public Execution updateProcess(ExecutionKey executionKey, Process process) throws StorageException {
+    public Execution updateProcess(ExecutionKey executionKey, long actualExecutedTime, Process process) throws StorageException {
         return updateTo(executionKey, execution -> {
+            Execution.Builder builder = execution.toBuilder();
             if (execution.getProcessValue() < process.getNumber()) {
-                return execution.toBuilder().setProcess(process).build();
+                builder.setProcess(process);
             }
-            return execution;
+            if (execution.getActualExecutedTime() == 0) {
+                builder.setActualExecutedTime(actualExecutedTime);
+            } else if (actualExecutedTime > 0 && actualExecutedTime < execution.getActualExecutedTime()) {
+                builder.setActualExecutedTime(actualExecutedTime);
+            }
+            return builder.build();
         });
     }
 

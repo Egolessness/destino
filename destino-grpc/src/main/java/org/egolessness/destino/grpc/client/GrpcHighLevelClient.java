@@ -71,7 +71,7 @@ public class GrpcHighLevelClient extends RequestHighLevelClient {
             @Override
             public void onThrowable(Throwable e) {
                 if (stateChange(RUNNING, UNHEALTHY)) {
-                    LOGGER.info("The GRPC client is connecting to the next server.");
+                    LOGGER.warn("The GRPC client is connecting to the next server.", e);
                     connectNext();
                 }
             }

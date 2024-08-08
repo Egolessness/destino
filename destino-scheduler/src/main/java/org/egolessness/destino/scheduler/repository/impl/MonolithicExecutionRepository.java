@@ -69,7 +69,8 @@ public class MonolithicExecutionRepository implements ExecutionRepository {
     @Override
     public void processTo(ExecutionProcesses executionProcesses, Duration timeout) throws DestinoException {
         for (ExecutionProcess executionProcess : executionProcesses.getExecutionProcessList()) {
-            Execution updated = storage.updateProcess(executionProcess.getExecutionKey(), executionProcess.getProcess());
+            Execution updated = storage.updateProcess(executionProcess.getExecutionKey(),
+                    executionProcess.getActualExecutedTime(), executionProcess.getProcess());
             executionPool.upProcess(executionProcess.getExecutionKey(), executionProcess.getActualExecutedTime(),
                     updated.getProcess(), executionProcess.getMessage());
         }

@@ -791,9 +791,7 @@ public class ExecutionPool implements Runnable {
             return null;
         }
 
-        if (actualExecutedTime > 0) {
-            executionInfo.setActualExecutedTime(actualExecutedTime);
-        }
+        executionInfo.setActualExecutedTime(actualExecutedTime);
 
         if (retryable(process, executionInfo)) {
             logCollector.addLogLine(executionInfo.getKey(), WaitingAgainLogParser.INSTANCE);
