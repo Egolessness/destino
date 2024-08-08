@@ -123,6 +123,11 @@ public class NamespacePersistentStorage implements PersistentKvStorage<Namespace
         baseKvStorage.del(key);
     }
 
+    @Override
+    public void del(@Nonnull String key, byte[] value) throws StorageException {
+        del(key);
+    }
+
     @Nonnull
     @Override
     public List<String> keys() throws StorageException {

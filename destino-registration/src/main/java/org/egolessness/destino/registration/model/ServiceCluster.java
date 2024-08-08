@@ -24,6 +24,7 @@ import org.egolessness.destino.registration.message.InstanceKey;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -39,32 +40,33 @@ public class ServiceCluster extends ServiceClusterFate {
 
     private final Service service;
 
-    private final Map<InstanceKey, ServiceInstance>[] modes = new Map[RegistrationSupport.getAvailableModes().length];
+    private final Map<InstanceKey, Registration>[] modes = new Map[RegistrationSupport.getAvailableModes().length];
 
     public ServiceCluster(Service service, String name) {
         this.service = service;
         this.setName(name);
     }
 
-    public Map<InstanceKey, ServiceInstance> locationIfPresent(InstanceMode mode) {
+    public Map<InstanceKey, Registration> locationIfPresent(InstanceMode mode) {
         return modes[mode.getNumber()];
     }
 
-    public Map<InstanceKey, ServiceInstance> location(InstanceMode mode) {
+    public Map<InstanceKey, Registration> location(InstanceMode mode) {
         int modeIndex = mode.getNumber();
-        Map<InstanceKey, ServiceInstance> instances = modes[modeIndex];
-        if (Objects.isNull(instances)) {
+        Map<InstanceKey, Registration> registrationMap = modes[modeIndex];
+        if (Objects.isNull(registrationMap)) {
             synchronized (this) {
                 if (Objects.isNull(modes[modeIndex])) {
                     return modes[modeIndex] = new ConcurrentHashMap<>();
                 }
             }
         }
-        return instances;
+        return registrationMap;
     }
 
     public Set<ServiceInstance> getInstances() {
-        return Stream.of(modes).filter(Objects::nonNull).flatMap(m -> m.values().stream()).collect(Collectors.toSet());
+        return Stream.of(modes).filter(Objects::nonNull).flatMap(m -> m.values().stream().map(Registration::getInstance))
+                .collect(Collectors.toSet());
     }
 
     public int getInstanceCount() {
@@ -72,33 +74,48 @@ public class ServiceCluster extends ServiceClusterFate {
     }
 
     public ServiceInstance getInstance(InstanceKey instanceKey) {
-        Map<InstanceKey, ServiceInstance> instances = locationIfPresent(instanceKey.getMode());
-        if (instances == null) {
+        Map<InstanceKey, Registration> registrationMap = locationIfPresent(instanceKey.getMode());
+        if (null == registrationMap) {
             return null;
         }
-        return instances.get(instanceKey);
+        Registration registration = registrationMap.get(instanceKey);
+        if (null == registration) {
+            return null;
+        }
+        return registration.getInstance();
     }
 
     public boolean containsInstance(InstanceKey instanceKey) {
-        Map<InstanceKey, ServiceInstance> instanceMap = modes[instanceKey.getMode().getNumber()];
-        return Objects.nonNull(instanceMap) && instanceMap.containsKey(instanceKey);
+        Map<InstanceKey, Registration> registrationMap = modes[instanceKey.getMode().getNumber()];
+        return Objects.nonNull(registrationMap) && registrationMap.containsKey(instanceKey);
     }
 
-    public void replaceInstances(InstanceMode mode, Collection<ServiceInstance> instances) {
-        Map<InstanceKey, ServiceInstance> instanceMap = (modes[mode.getNumber()] = new ConcurrentHashMap<>());
-        for (ServiceInstance instance : instances) {
-            instanceMap.put(RegistrationSupport.buildInstanceKey(instance), instance);
+    public Registration addInstance(InstanceKey instanceKey, Registration registration) {
+        InstanceMode instanceMode = RegistrationSupport.toInstanceMode(registration.getInstance().getMode());
+        return location(instanceMode).put(instanceKey, registration);
+    }
+
+    public Optional<Registration> removeInstance(InstanceKey instanceKey) {
+        Map<InstanceKey, Registration> registrationMap = modes[instanceKey.getMode().getNumber()];
+        if (null != registrationMap) {
+            return Optional.ofNullable(registrationMap.remove(instanceKey));
         }
+        return Optional.empty();
     }
 
-    public ServiceInstance addInstance(InstanceKey instanceKey, ServiceInstance instance) {
-        return location(RegistrationSupport.toInstanceMode(instance.getMode())).put(instanceKey, instance);
-    }
-
-    public Optional<ServiceInstance> removeInstance(InstanceKey instanceKey) {
-        Map<InstanceKey, ServiceInstance> instanceMap = modes[instanceKey.getMode().getNumber()];
-        if (instanceMap != null) {
-            return Optional.ofNullable(instanceMap.remove(instanceKey));
+    public Optional<Registration> removeInstance(InstanceKey instanceKey, long version, Runnable removingFunc) {
+        Map<InstanceKey, Registration> registrationMap = modes[instanceKey.getMode().getNumber()];
+        if (null != registrationMap) {
+            AtomicReference<Registration> deleted = new AtomicReference<>();
+            registrationMap.computeIfPresent(instanceKey, (key, registration) -> {
+                if (version >= registration.getVersion()) {
+                    removingFunc.run();
+                    deleted.set(registration);
+                    return null;
+                }
+                return registration;
+            });
+            return Optional.ofNullable(deleted.get());
         }
         return Optional.empty();
     }
@@ -110,13 +127,13 @@ public class ServiceCluster extends ServiceClusterFate {
     public ServiceInstance getInstanceOrNull(String ip, int port) {
         for (RegisterMode mode : RegistrationSupport.getAvailableModes()) {
             InstanceMode instanceMode = RegistrationSupport.toInstanceMode(mode);
-            Map<InstanceKey, ServiceInstance> instanceMap = locationIfPresent(instanceMode);
-            if (Objects.isNull(instanceMap)) {
+            Map<InstanceKey, Registration> registrationMap = locationIfPresent(instanceMode);
+            if (Objects.isNull(registrationMap)) {
                 continue;
             }
-            ServiceInstance instance = instanceMap.get(RegistrationSupport.buildInstanceKey(getName(), mode, ip, port));
-            if (Objects.nonNull(instance)) {
-                return instance;
+            Registration registration = registrationMap.get(RegistrationSupport.buildInstanceKey(getName(), mode, ip, port));
+            if (Objects.nonNull(registration)) {
+                return registration.getInstance();
             }
         }
         return null;
@@ -126,7 +143,7 @@ public class ServiceCluster extends ServiceClusterFate {
         return service;
     }
 
-    public Map<InstanceKey, ServiceInstance>[] getModes() {
+    public Map<InstanceKey, Registration>[] getModes() {
         return modes;
     }
 

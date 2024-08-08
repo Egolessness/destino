@@ -111,6 +111,11 @@ public class SettingStorage implements PersistentKvStorage<byte[]> {
         throw new StorageException(Errors.STORAGE_DELETE_FAILED, "Not implement.");
     }
 
+    @Override
+    public void del(@Nonnull String key, byte[] value) throws StorageException {
+        throw new StorageException(Errors.STORAGE_DELETE_FAILED, "Not implement.");
+    }
+
     @Nonnull
     @Override
     public List<String> keys() throws StorageException {

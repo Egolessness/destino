@@ -71,8 +71,18 @@ public class MonolithicKvRepository implements KvRepository<byte[]> {
     }
 
     @Override
+    public void del(String key, byte[] value, Duration timeout) throws DestinoException, TimeoutException {
+        domainKvStorage.del(key, value);
+    }
+
+    @Override
     public void multiDel(String[] keys, Duration timeout) throws DestinoException {
         domainKvStorage.mDel(Lists.newArrayList(keys));
+    }
+
+    @Override
+    public void multiDel(Map<String, byte[]> data, Duration timeout) throws DestinoException, TimeoutException {
+        domainKvStorage.mDel(data);
     }
 
     @Override
@@ -134,10 +144,34 @@ public class MonolithicKvRepository implements KvRepository<byte[]> {
     }
 
     @Override
+    public CompletableFuture<Void> del(String key, byte[] value) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        try {
+            domainKvStorage.del(key, value);
+            future.complete(null);
+        } catch (StorageException e) {
+            future.completeExceptionally(e);
+        }
+        return future;
+    }
+
+    @Override
     public CompletableFuture<Void> multiDel(String... keys) {
         CompletableFuture<Void> future = new CompletableFuture<>();
         try {
             domainKvStorage.mDel(Lists.newArrayList(keys));
+            future.complete(null);
+        } catch (StorageException e) {
+            future.completeExceptionally(e);
+        }
+        return future;
+    }
+
+    @Override
+    public CompletableFuture<Void> multiDel(Map<String, byte[]> data) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        try {
+            domainKvStorage.mDel(data);
             future.complete(null);
         } catch (StorageException e) {
             future.completeExceptionally(e);

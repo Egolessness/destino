@@ -63,7 +63,7 @@ public class DocDecree implements Decree {
     @Override
     public Response write(WriteRequest request) {
         try {
-            Map<Long, byte[]> docs = MessageSupport.convertDocMap(request.getDataList());
+            Map<Long, byte[]> docs = MessageSupport.convertDocMap(request.getEntityList());
 
             List<byte[]> result;
             if (request.hasMode() && request.getMode() == WriteMode.UPDATE) {

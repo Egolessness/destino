@@ -109,6 +109,11 @@ public class RocksDBStorage<K> implements SnapshotKvStorage<K, byte[]> {
         delByKeyBytes(specifier.transfer(key));
     }
 
+    @Override
+    public void del(@Nonnull K key, byte[] value) throws StorageException {
+        throw new StorageException(Errors.STORAGE_DELETE_FAILED, "Unsupported operation.");
+    }
+
     public void delByKeyBytes(@Nonnull byte[] key) throws StorageException {
         try {
             context.getDb().delete(getCfHandle(), writeOptions, key);

@@ -42,14 +42,6 @@ public class InstanceChangedEvent implements MonoEvent, ElementOperationEvent {
 
     private final ElementOperation operation;
 
-    public InstanceChangedEvent(RegistrationKey registrationKey, ServiceInstance instance,
-                                ServiceCluster cluster, ElementOperation operation) {
-        this.registrationKey = registrationKey;
-        this.registration = new Registration(instance);
-        this.cluster = cluster;
-        this.operation = operation;
-    }
-
     public InstanceChangedEvent(RegistrationKey registrationKey, Registration registration,
                                 ServiceCluster cluster, ElementOperation operation) {
         this.registrationKey = registrationKey;

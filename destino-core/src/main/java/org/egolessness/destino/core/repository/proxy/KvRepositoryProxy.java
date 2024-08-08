@@ -86,8 +86,7 @@ public class KvRepositoryProxy<T> implements KvRepository<T>, InvocationHandler 
 
     @Override
     public void multiSet(Map<String, T> data, Duration timeout) throws DestinoException, TimeoutException {
-        Map<String, byte[]> bytesMap = convertBytesMap(data);
-        repository.multiSet(bytesMap, timeout);
+        repository.multiSet(convertBytesMap(data), timeout);
     }
 
     @Override
@@ -96,8 +95,18 @@ public class KvRepositoryProxy<T> implements KvRepository<T>, InvocationHandler 
     }
 
     @Override
+    public void del(String key, T value, Duration timeout) throws DestinoException, TimeoutException {
+        repository.del(key, serializable.serialize(value), timeout);
+    }
+
+    @Override
     public void multiDel(String[] keys, Duration timeout) throws DestinoException, TimeoutException {
         repository.multiDel(keys, timeout);
+    }
+
+    @Override
+    public void multiDel(Map<String, T> data, Duration timeout) throws DestinoException, TimeoutException {
+        repository.multiDel(convertBytesMap(data), timeout);
     }
 
     @Override
@@ -126,8 +135,18 @@ public class KvRepositoryProxy<T> implements KvRepository<T>, InvocationHandler 
     }
 
     @Override
+    public CompletableFuture<Void> del(String key, T value) {
+        return repository.del(key, serializable.serialize(value));
+    }
+
+    @Override
     public CompletableFuture<Void> multiDel(String... keys) {
         return repository.multiDel(keys);
+    }
+
+    @Override
+    public CompletableFuture<Void> multiDel(Map<String, T> data) {
+        return repository.multiDel(convertBytesMap(data));
     }
 
     @Override

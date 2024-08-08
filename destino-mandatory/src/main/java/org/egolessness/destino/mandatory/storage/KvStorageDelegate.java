@@ -106,6 +106,11 @@ public class KvStorageDelegate<T> extends AbstractStorageDelegate<String> implem
     }
 
     @Override
+    public void del(@Nonnull String key, byte[] value) throws StorageException {
+        delLocalAndAppointThenBroadcast(key, value);
+    }
+
+    @Override
     public void mDel(@Nonnull Collection<String> keys) throws StorageException {
         storage.mDel(keys);
         delLocalAndAppointThenBroadcast(keys);

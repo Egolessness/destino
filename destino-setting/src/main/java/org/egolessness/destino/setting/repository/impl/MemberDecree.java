@@ -81,22 +81,22 @@ public class MemberDecree implements AtomicDecree, StorageSerializable<Member> {
         try {
             switch (request.getMode()) {
                 case ADD:
-                    for (WriteData data : request.getDataList()) {
-                        MemberWithBytes memberWithBytes = storage.register(storage.deserialize(data.getValue().toByteArray()));
+                    for (Entity entity : request.getEntityList()) {
+                        MemberWithBytes memberWithBytes = storage.register(storage.deserialize(entity.getValue().toByteArray()));
                         return ResponseSupport.success(memberWithBytes.getValue());
                     }
                     break;
                 case UPDATE:
-                    for (WriteData data : request.getDataList()) {
-                        long memberId = LongSpecifier.INSTANCE.restore(data.getKey().toByteArray());
-                        Member member = storage.deserialize(data.getValue().toByteArray());
+                    for (Entity entity : request.getEntityList()) {
+                        long memberId = LongSpecifier.INSTANCE.restore(entity.getKey().toByteArray());
+                        Member member = storage.deserialize(entity.getValue().toByteArray());
                         MemberWithBytes memberWithBytes = storage.update(memberId, member);
                         return ResponseSupport.success(memberWithBytes.getValue());
                     }
                 case PATCH:
-                    for (WriteData data : request.getDataList()) {
-                        long memberId = LongSpecifier.INSTANCE.restore(data.getKey().toByteArray());
-                        NodeState nodeState = storage.getSerializer().deserialize(data.getValue().toByteArray(), NodeState.class);
+                    for (Entity entity : request.getEntityList()) {
+                        long memberId = LongSpecifier.INSTANCE.restore(entity.getKey().toByteArray());
+                        NodeState nodeState = storage.getSerializer().deserialize(entity.getValue().toByteArray(), NodeState.class);
                         storage.updateState(memberId, nodeState);
                     }
                     return ResponseSupport.success();

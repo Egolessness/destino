@@ -58,8 +58,8 @@ public class ProtocolRequestSupport {
         return buildSearchRequest(cosmos, byteStrings);
     }
 
-    public static WriteData buildWriteData(ByteString key, ByteString value) {
-        return WriteData.newBuilder().setKey(key).setValue(value).build();
+    public static Entity buildEntity(ByteString key, ByteString value) {
+        return Entity.newBuilder().setKey(key).setValue(value).build();
     }
 
     public static WriteRequest buildWriteRequest(final Cosmos cosmos, final String key, byte[] value) {
@@ -67,29 +67,29 @@ public class ProtocolRequestSupport {
     }
 
     public static WriteRequest buildWriteRequest(final Cosmos cosmos, final String key, ByteString value) {
-        return buildWriteRequest(cosmos, buildWriteData(ByteString.copyFromUtf8(key), value));
+        return buildWriteRequest(cosmos, buildEntity(ByteString.copyFromUtf8(key), value));
     }
 
     public static WriteRequest buildWriteRequest(final Cosmos cosmos, final Map<String, byte[]> data) {
-        List<WriteData> dataList = new ArrayList<>(data.size());
-        data.forEach((key, value) -> dataList.add(buildWriteData(ByteString.copyFromUtf8(key), ByteString.copyFrom(value))));
-        return buildWriteRequest(cosmos, dataList, null);
+        List<Entity> entities = new ArrayList<>(data.size());
+        data.forEach((key, value) -> entities.add(buildEntity(ByteString.copyFromUtf8(key), ByteString.copyFrom(value))));
+        return buildWriteRequest(cosmos, entities, null);
     }
 
-    public static WriteRequest buildWriteRequest(final Cosmos cosmos, final WriteData... dataArray) {
-        return buildWriteRequest(cosmos, Lists.newArrayList(dataArray), null);
+    public static WriteRequest buildWriteRequest(final Cosmos cosmos, final Entity... entities) {
+        return buildWriteRequest(cosmos, Lists.newArrayList(entities), null);
     }
 
-    public static WriteRequest buildWriteRequest(final Cosmos cosmos, List<WriteData> dataList, @Nullable WriteMode writeMode) {
+    public static WriteRequest buildWriteRequest(final Cosmos cosmos, List<Entity> entities, @Nullable WriteMode writeMode) {
         long timestamp = System.currentTimeMillis();
-        String keysJoin = dataList.stream().map(WriteData::getKey).map(ByteString::toStringUtf8)
+        String keysJoin = entities.stream().map(Entity::getKey).map(ByteString::toStringUtf8)
                 .sorted().collect(Collectors.joining());
         String token = SecuritySupport.createServerToken(timestamp, cosmos.toString(), SecurityUtils.md5Hex(keysJoin));
         WriteRequest.Builder builder = WriteRequest.newBuilder()
                 .setToken(token)
                 .setTimestamp(timestamp)
                 .setCosmos(cosmos)
-                .addAllData(dataList);
+                .addAllEntity(entities);
         if (writeMode != null) {
             builder.setMode(writeMode);
         }
@@ -99,45 +99,55 @@ public class ProtocolRequestSupport {
     public static WriteRequest buildWriteRequestWithWriteMode(final Cosmos cosmos, final Long id, final byte[] value,
                                                               final WriteMode writeMode) {
         ByteString key = ByteString.copyFrom(LongSpecifier.INSTANCE.transfer(id));
-        WriteData writeData = buildWriteData(key, ByteString.copyFrom(value));
-        List<WriteData> dataList = Collections.singletonList(writeData);
-        return buildWriteRequest(cosmos, dataList, writeMode);
+        Entity entity = buildEntity(key, ByteString.copyFrom(value));
+        List<Entity> entities = Collections.singletonList(entity);
+        return buildWriteRequest(cosmos, entities, writeMode);
     }
 
     public static WriteRequest buildWriteRequestWithWriteMode(final Cosmos cosmos, final Map<Long, byte[]> data,
                                                               final WriteMode writeMode) {
-        List<WriteData> dataList = new ArrayList<>(data.size());
+        List<Entity> entities = new ArrayList<>(data.size());
         data.forEach((id, value) -> {
             ByteString key = ByteString.copyFrom(LongSpecifier.INSTANCE.transfer(id));
-            dataList.add(buildWriteData(key, ByteString.copyFrom(value)));
+            entities.add(buildEntity(key, ByteString.copyFrom(value)));
         });
-        return buildWriteRequest(cosmos, dataList, writeMode);
+        return buildWriteRequest(cosmos, entities, writeMode);
+    }
+
+    public static DeleteRequest.Builder getDeleteRequestBuilder(final Cosmos cosmos, final long timestamp, final String identity) {
+        String token = SecuritySupport.createServerToken(timestamp, cosmos.toString(), SecurityUtils.md5Hex(identity));
+        return DeleteRequest.newBuilder()
+                .setTimestamp(timestamp)
+                .setCosmos(cosmos)
+                .setToken(token);
+    }
+
+    public static DeleteRequest.Builder getDeleteRequestBuilder(final Cosmos cosmos, final String identity) {
+        return getDeleteRequestBuilder(cosmos, System.currentTimeMillis(), identity);
     }
 
     public static DeleteRequest buildDeleteRequest(final Cosmos cosmos, final String... keys) {
-        long timestamp = System.currentTimeMillis();
         List<ByteString> keyByteStrings = Stream.of(keys).map(ByteString::copyFromUtf8)
                 .collect(Collectors.toList());
         String keysJoin = Mark.EMPTY.join(keys);
-        String token = SecuritySupport.createServerToken(timestamp, cosmos.toString(), SecurityUtils.md5Hex(keysJoin));
-        return DeleteRequest.newBuilder()
-                .setTimestamp(timestamp)
-                .setCosmos(cosmos)
-                .addAllKey(keyByteStrings)
-                .setToken(token)
-                .build();
+        return getDeleteRequestBuilder(cosmos, keysJoin).addAllKey(keyByteStrings).build();
+    }
+
+    public static DeleteRequest buildDeleteRequest(final Cosmos cosmos, final Map<String, byte[]> data) {
+        List<Entity> entities = new ArrayList<>(data.size());
+        data.forEach((key, value) -> entities.add(buildEntity(ByteString.copyFromUtf8(key), ByteString.copyFrom(value))));
+        String keysJoin = entities.stream().map(Entity::getKey).map(ByteString::toStringUtf8).collect(Collectors.joining());
+        return getDeleteRequestBuilder(cosmos, keysJoin).addAllEntity(entities).build();
+    }
+
+    public static DeleteRequest buildDeleteRequest(final Cosmos cosmos, String key, byte[] value) {
+        Entity entity = buildEntity(ByteString.copyFromUtf8(key), ByteString.copyFrom(value));
+        return getDeleteRequestBuilder(cosmos, key).addEntity(entity).build();
     }
 
     public static DeleteRequest buildDeleteRequest(final Cosmos cosmos, final ByteString... keys) {
-        long timestamp = System.currentTimeMillis();
         String keysJoin = Stream.of(keys).map(ByteString::toStringUtf8).collect(Collectors.joining());
-        String token = SecuritySupport.createServerToken(timestamp, cosmos.toString(), SecurityUtils.md5Hex(keysJoin));
-        return DeleteRequest.newBuilder()
-                .setTimestamp(timestamp)
-                .setCosmos(cosmos)
-                .addAllKey(Arrays.asList(keys))
-                .setToken(token)
-                .build();
+        return getDeleteRequestBuilder(cosmos, keysJoin).addAllKey(Arrays.asList(keys)).build();
     }
 
     public static DeleteRequest buildDeleteRequest(final Cosmos cosmos, final Long... ids) {
@@ -149,12 +159,7 @@ public class ProtocolRequestSupport {
         List<ByteString> keyByteStrings = ids.stream().map(LongSpecifier.INSTANCE::transfer).map(ByteString::copyFrom)
                 .collect(Collectors.toList());
         String keysJoin = Mark.EMPTY.join(ids);
-        String token = SecuritySupport.createServerToken(timestamp, cosmos.toString(), SecurityUtils.md5Hex(keysJoin));
-        DeleteRequest.Builder builder = DeleteRequest.newBuilder()
-                .setTimestamp(timestamp)
-                .setCosmos(cosmos)
-                .addAllKey(keyByteStrings)
-                .setToken(token);
+        DeleteRequest.Builder builder = getDeleteRequestBuilder(cosmos, timestamp, keysJoin).addAllKey(keyByteStrings);
         if (deleteMode != null) {
             builder.setMode(deleteMode);
         }
@@ -173,7 +178,7 @@ public class ProtocolRequestSupport {
     }
 
     public static boolean validate(final WriteRequest request) {
-        String keysJoin = request.getDataList().stream().map(WriteData::getKey)
+        String keysJoin = request.getEntityList().stream().map(Entity::getKey)
                 .map(ByteString::toStringUtf8).collect(Collectors.joining());
         String[] encodeArray = new String[]{request.getCosmos().toString(), SecurityUtils.md5Hex(keysJoin)};
         return System.currentTimeMillis() - request.getTimestamp() <= requestTimeValidDiff &&
@@ -181,7 +186,15 @@ public class ProtocolRequestSupport {
     }
 
     public static boolean validate(final DeleteRequest request) {
-        return validate(request.getKeyList(), request.getCosmos(), request.getTimestamp(), request.getToken());
+        List<ByteString> keyList;
+        if (request.getKeyCount() > 0) {
+            keyList = request.getKeyList();
+        } else if (request.getEntityCount() > 0) {
+            keyList = request.getEntityList().stream().map(Entity::getKey).collect(Collectors.toList());
+        } else {
+            keyList = Collections.emptyList();
+        }
+        return validate(keyList, request.getCosmos(), request.getTimestamp(), request.getToken());
     }
 
     public static boolean validate(final MemberRequest request) {

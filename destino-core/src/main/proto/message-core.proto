@@ -32,7 +32,7 @@ message Cosmos {
   string subdomain = 2;
 }
 
-message WriteData {
+message Entity {
   bytes key = 1;
   bytes value = 2;
 }
@@ -48,7 +48,7 @@ message WriteRequest {
   string token = 1;
   int64 timestamp = 2;
   Cosmos cosmos = 3;
-  repeated WriteData data = 4;
+  repeated Entity entity = 4;
   optional WriteMode mode = 5;
 }
 
@@ -57,7 +57,8 @@ message DeleteRequest {
   int64 timestamp = 2;
   Cosmos cosmos = 3;
   repeated bytes key = 4;
-  optional DeleteMode mode = 5;
+  repeated Entity entity = 5;
+  optional DeleteMode mode = 6;
 }
 
 message MemberRequest {

@@ -36,10 +36,6 @@ public class MemoryStorage<K, V> implements KvStorage<K, V> {
         this.storage = new ConcurrentSkipListMap<>(comparator);
     }
 
-    public MemoryStorage(ConcurrentSkipListMap<K, V> storage) {
-        this.storage = storage;
-    }
-
     @Override
     public V get(@Nonnull K key) throws StorageException {
         return storage.get(key);
@@ -53,6 +49,16 @@ public class MemoryStorage<K, V> implements KvStorage<K, V> {
     @Override
     public void del(@Nonnull K key) {
         storage.remove(key);
+    }
+
+    @Override
+    public void del(@Nonnull K key, V value) throws StorageException {
+        storage.computeIfPresent(key, (k, v) -> {
+            if (Objects.equals(v, value)) {
+                return null;
+            }
+            return v;
+        });
     }
 
     @Nonnull

@@ -51,10 +51,18 @@ public interface KvStorage<K, V> {
     }
     
     void del(@Nonnull K key) throws StorageException;
+
+    void del(@Nonnull K key, V value) throws StorageException;
     
     default void mDel(@Nonnull Collection<K> keys) throws StorageException {
         for (K key : keys) {
-            del(key);
+            this.del(key);
+        }
+    }
+
+    default void mDel(@Nonnull Map<K, V> data) throws StorageException {
+        for (Map.Entry<K, V> entry : data.entrySet()) {
+            this.del(entry.getKey(), entry.getValue());
         }
     }
     

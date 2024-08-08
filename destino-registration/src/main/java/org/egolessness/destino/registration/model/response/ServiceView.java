@@ -18,6 +18,7 @@ package org.egolessness.destino.registration.model.response;
 
 import org.egolessness.destino.common.model.ServiceInstance;
 import org.egolessness.destino.registration.message.InstanceKey;
+import org.egolessness.destino.registration.model.Registration;
 import org.egolessness.destino.registration.model.Service;
 import org.egolessness.destino.registration.model.ServiceCluster;
 
@@ -74,13 +75,13 @@ public class ServiceView implements Serializable {
         int instanceCount = 0;
         int healthyInstanceCount = 0;
         for (ServiceCluster cluster : clusters.values()) {
-            for (Map<InstanceKey, ServiceInstance> instances : cluster.getModes()) {
-                if (instances == null) {
+            for (Map<InstanceKey, Registration> registrationMap : cluster.getModes()) {
+                if (null == registrationMap) {
                     continue;
                 }
-                for (ServiceInstance instance : instances.values()) {
+                for (Registration registration : registrationMap.values()) {
                     instanceCount ++;
-                    if (instance.isHealthy()) {
+                    if (registration.getInstance().isHealthy()) {
                         healthyInstanceCount ++;
                     }
                 }

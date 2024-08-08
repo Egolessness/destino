@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.mandatory.storage;
 
+import org.egolessness.destino.common.utils.ByteUtils;
 import org.egolessness.destino.mandatory.model.MandatorySyncData;
 import org.egolessness.destino.mandatory.model.MandatorySyncRecorder;
 import org.egolessness.destino.mandatory.model.VersionKey;
@@ -42,6 +43,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -327,7 +330,7 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
             K key = specifier.restore(vKey.getKey());
             boolean broadcast = vKey.getBroadcast();
 
-            if (delLocal(key, timestamp)) {
+            if (delLocal(key, timestamp) > -1) {
                 long searched = undertaker.search(keyString);
                 if (searched != undertaker.currentId()) {
                     requestBuffer.addRequest(cosmos, searched, vKey.getKey(), timestamp, true);
@@ -336,7 +339,7 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
                 continue;
             }
 
-            if (delAppoint(key, timestamp)) {
+            if (null != delAppoint(key, timestamp)) {
                 if (broadcast || undertaker.isCurrent(keyString)) {
                     removingKeys.put(key, timestamp);
                 }
@@ -406,20 +409,47 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
         return saved.get();
     }
 
-    private boolean delAppoint(K key, long timestamp) {
-        AtomicBoolean deleted = new AtomicBoolean();
+    private Meta delAppoint(K key, long timestamp) {
+        AtomicReference<Meta> deleted = new AtomicReference<>();
         appoints.computeIfPresent(key, (k, v) -> {
             if (timestamp >= v.getVersion()) {
-                deleted.set(true);
+                deleted.set(v);
                 return null;
             }
             return v;
         });
-        return deleted.get();
+        Meta meta = deleted.get();
+        if (null == meta) {
+            return null;
+        }
+
+        if (meta.getSource() != undertaker.currentId()) {
+            ByteString keyBytes = specifier.transfer(key);
+            requestBuffer.addRequest(cosmos, meta.getSource(), keyBytes, timestamp, false);
+        }
+        return meta;
     }
 
-    private boolean delLocal(K key, long timestamp) {
-        AtomicBoolean deleted = new AtomicBoolean();
+    private Meta delAppoint(K key, byte[] value) {
+        AtomicReference<Meta> deleted = new AtomicReference<>();
+        appoints.computeIfPresent(key, (k, v) -> {
+            byte[] storage = getStorage(key);
+            if (!Arrays.equals(storage, value)) {
+                return v;
+            }
+            deleted.set(v);
+            return null;
+        });
+        Meta meta = deleted.get();
+        if (null != meta && meta.getSource() != undertaker.currentId()) {
+            ByteString keyBytes = specifier.transfer(key);
+            requestBuffer.addRequest(cosmos, meta.getSource(), keyBytes, meta.getVersion(), false);
+        }
+        return meta;
+    }
+
+    private long delLocal(K key, long timestamp) {
+        AtomicLong deleted = new AtomicLong(-1);
         locals.computeIfPresent(key, (k, v) -> {
             if (timestamp >= v) {
                 appoints.compute(k, (k2, v2) -> {
@@ -429,12 +459,40 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
                     }
                     return v2;
                 });
-                deleted.set(true);
+                deleted.set(timestamp);
                 return null;
             }
             return v;
         });
-        return deleted.get();
+        long deletedVersion = deleted.get();
+        if (deletedVersion >= 0) {
+            removingKeys.put(key, deletedVersion);
+        }
+        return deletedVersion;
+    }
+
+    private long delLocal(K key, byte[] value) {
+        AtomicLong deleted = new AtomicLong(-1);
+        locals.computeIfPresent(key, (k, v) -> {
+            byte[] storage = getStorage(k);
+            if (!Arrays.equals(storage, value)) {
+                return v;
+            }
+            appoints.compute(k, (k2, v2) -> {
+                if (null == v2 || v >= v2.getVersion()) {
+                    delStorage(k);
+                    return null;
+                }
+                return v2;
+            });
+            deleted.set(v);
+            return null;
+        });
+        long deletedVersion = deleted.get();
+        if (deletedVersion >= 0) {
+            removingKeys.put(key, deletedVersion);
+        }
+        return deletedVersion;
     }
 
     protected void setLocalThenBroadcast(K key, byte[] value) {
@@ -483,6 +541,32 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
 
         if (searched != undertaker.currentId()) {
             requestBuffer.addRequest(cosmos, searched, keyBytes, version, true);
+        }
+    }
+
+    protected void delLocalAndAppointThenBroadcast(K key, byte[] value) {
+        if (ByteUtils.isEmpty(value)) {
+            return;
+        }
+
+        long localRemoveVersion;
+        Meta appointRemoveMeta;
+        if (typeIsMeta) {
+            appointRemoveMeta = getMeta(value);
+            localRemoveVersion = delLocal(key, appointRemoveMeta.getVersion());
+            delAppoint(key, appointRemoveMeta.getVersion());
+        } else {
+            localRemoveVersion = delLocal(key, value);
+            appointRemoveMeta = delAppoint(key, value);
+        }
+
+        ByteString keyBytes = specifier.transfer(key);
+        long searched = undertaker.search(key);
+
+        if (null != appointRemoveMeta && appointRemoveMeta.getSource() != searched) {
+            requestBuffer.addRequest(cosmos, searched, keyBytes, appointRemoveMeta.getVersion(), false);
+        } else if (localRemoveVersion > -1 && searched != undertaker.currentId()) {
+            requestBuffer.addRequest(cosmos, searched, keyBytes, localRemoveVersion, false);
         }
     }
 

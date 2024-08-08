@@ -51,11 +51,6 @@ public class ClusteredKvRepository implements KvRepository<byte[]> {
         this.cosmos = CosmosSupport.buildCosmos(storage.domain(), storage.type());
     }
 
-    public ClusteredKvRepository(Cosmos cosmos, ConsistencyProtocol protocol) {
-        this.protocol = protocol;
-        this.cosmos = cosmos;
-    }
-
     @Override
     public byte[] get(String key, Duration timeout) throws DestinoException, TimeoutException {
         try {
@@ -86,58 +81,32 @@ public class ClusteredKvRepository implements KvRepository<byte[]> {
 
     @Override
     public void set(String key, byte[] value, Duration timeout) throws DestinoException, TimeoutException {
-        try {
-            set(key, value).get(timeout.toMillis(), TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            throw new DestinoException(Errors.PROTOCOL_WRITE_FAIL, e.getMessage());
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof DestinoException) {
-                throw (DestinoException) e.getCause();
-            }
-            throw new DestinoException(Errors.PROTOCOL_WRITE_FAIL, e.getMessage());
-        }
+        handleWriteFuture(set(key, value), timeout);
     }
 
     @Override
     public void multiSet(Map<String, byte[]> data, Duration timeout) throws DestinoException, TimeoutException {
-        try {
-            multiSet(data).get(timeout.toMillis(), TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            throw new DestinoException(Errors.PROTOCOL_WRITE_FAIL, e.getMessage());
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof DestinoException) {
-                throw (DestinoException) e.getCause();
-            }
-            throw new DestinoException(Errors.PROTOCOL_WRITE_FAIL, e.getMessage());
-        }
+        handleWriteFuture(multiSet(data), timeout);
     }
 
     @Override
     public void del(String key, Duration timeout) throws DestinoException, TimeoutException {
-        try {
-            del(key).get(timeout.toMillis(), TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            throw new DestinoException(Errors.PROTOCOL_DELETE_FAIL, e.getMessage());
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof DestinoException) {
-                throw (DestinoException) e.getCause();
-            }
-            throw new DestinoException(Errors.PROTOCOL_DELETE_FAIL, e.getMessage());
-        }
+        handleDeleteFuture(del(key), timeout);
+    }
+
+    @Override
+    public void del(String key, byte[] value, Duration timeout) throws DestinoException, TimeoutException {
+        handleDeleteFuture(del(key, value), timeout);
     }
 
     @Override
     public void multiDel(String[] keys, Duration timeout) throws DestinoException, TimeoutException {
-        try {
-            multiDel(keys).get(timeout.toMillis(), TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            throw new DestinoException(Errors.PROTOCOL_DELETE_FAIL, e.getMessage());
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof DestinoException) {
-                throw (DestinoException) e.getCause();
-            }
-            throw new DestinoException(Errors.PROTOCOL_DELETE_FAIL, e.getMessage());
-        }
+        handleDeleteFuture(multiDel(keys), timeout);
+    }
+
+    @Override
+    public void multiDel(Map<String, byte[]> data, Duration timeout) throws DestinoException, TimeoutException {
+        handleDeleteFuture(multiDel(data), timeout);
     }
 
     @Override
@@ -167,25 +136,13 @@ public class ClusteredKvRepository implements KvRepository<byte[]> {
     @Override
     public CompletableFuture<Void> set(String key, byte[] value) {
         WriteRequest request = ProtocolRequestSupport.buildWriteRequest(cosmos, key, value);
-        return write(request);
+        return sendWriteRequest(request);
     }
 
     @Override
     public CompletableFuture<Void> multiSet(Map<String, byte[]> data) {
         WriteRequest request = ProtocolRequestSupport.buildWriteRequest(cosmos, data);
-        return write(request);
-    }
-
-    private CompletableFuture<Void> write(WriteRequest request) {
-        return protocol.write(request).thenCompose(response -> {
-            CompletableFuture<Void> composeFuture = new CompletableFuture<>();
-            if (ResponseSupport.isSuccess(response)) {
-                composeFuture.complete(null);
-                return composeFuture;
-            }
-            composeFuture.completeExceptionally(new DestinoException(response.getCode(), response.getMsg()));
-            return composeFuture;
-        });
+        return sendWriteRequest(request);
     }
 
     @Override
@@ -194,17 +151,21 @@ public class ClusteredKvRepository implements KvRepository<byte[]> {
     }
 
     @Override
+    public CompletableFuture<Void> del(String key, byte[] value) {
+        DeleteRequest request = ProtocolRequestSupport.buildDeleteRequest(cosmos, key, value);
+        return sendDeleteRequest(request);
+    }
+
+    @Override
     public CompletableFuture<Void> multiDel(String... keys) {
         DeleteRequest request = ProtocolRequestSupport.buildDeleteRequest(cosmos, keys);
-        return protocol.delete(request).thenCompose(response -> {
-            CompletableFuture<Void> composeFuture = new CompletableFuture<>();
-            if (ResponseSupport.isSuccess(response)) {
-                composeFuture.complete(null);
-                return composeFuture;
-            }
-            composeFuture.completeExceptionally(new DestinoException(response.getCode(), response.getMsg()));
-            return composeFuture;
-        });
+        return sendDeleteRequest(request);
+    }
+
+    @Override
+    public CompletableFuture<Void> multiDel(Map<String, byte[]> data) {
+        DeleteRequest request = ProtocolRequestSupport.buildDeleteRequest(cosmos, data);
+        return sendDeleteRequest(request);
     }
 
     @Override
@@ -216,4 +177,57 @@ public class ClusteredKvRepository implements KvRepository<byte[]> {
     public Cosmos cosmos() {
         return cosmos;
     }
+
+    private CompletableFuture<Void> sendWriteRequest(WriteRequest request) {
+        return protocol.write(request).thenCompose(response -> {
+            CompletableFuture<Void> composeFuture = new CompletableFuture<>();
+            if (ResponseSupport.isSuccess(response)) {
+                composeFuture.complete(null);
+                return composeFuture;
+            }
+            composeFuture.completeExceptionally(new DestinoException(response.getCode(), response.getMsg()));
+            return composeFuture;
+        });
+    }
+
+    private CompletableFuture<Void> sendDeleteRequest(DeleteRequest request) {
+        return protocol.delete(request).thenCompose(response -> {
+            CompletableFuture<Void> composeFuture = new CompletableFuture<>();
+            if (ResponseSupport.isSuccess(response)) {
+                composeFuture.complete(null);
+                return composeFuture;
+            }
+            composeFuture.completeExceptionally(new DestinoException(response.getCode(), response.getMsg()));
+            return composeFuture;
+        });
+    }
+
+    private void handleWriteFuture(CompletableFuture<Void> future, Duration timeout)
+            throws DestinoException, TimeoutException {
+        try {
+            future.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            throw new DestinoException(Errors.PROTOCOL_WRITE_FAIL, e.getMessage());
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof DestinoException) {
+                throw (DestinoException) e.getCause();
+            }
+            throw new DestinoException(Errors.PROTOCOL_WRITE_FAIL, e.getMessage());
+        }
+    }
+
+    private void handleDeleteFuture(CompletableFuture<Void> future, Duration timeout)
+            throws DestinoException, TimeoutException {
+        try {
+            future.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            throw new DestinoException(Errors.PROTOCOL_DELETE_FAIL, e.getMessage());
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof DestinoException) {
+                throw (DestinoException) e.getCause();
+            }
+            throw new DestinoException(Errors.PROTOCOL_DELETE_FAIL, e.getMessage());
+        }
+    }
+
 }

@@ -62,7 +62,7 @@ public class KvDecree implements Decree {
 
     @Override
     public Response write(WriteRequest request) {
-        Map<String, byte[]> data = MessageSupport.convertKvMap(request.getDataList());
+        Map<String, byte[]> data = MessageSupport.convertKvMap(request.getEntityList());
         try {
             storage.mSet(data);
             return ResponseSupport.success();
@@ -74,8 +74,14 @@ public class KvDecree implements Decree {
     @Override
     public Response delete(DeleteRequest request) {
         try {
-            List<String> keys = MessageSupport.buildKeyList(request.getKeyList());
-            storage.mDel(keys);
+            if (request.getKeyCount() > 0) {
+                List<String> keys = MessageSupport.buildKeyList(request.getKeyList());
+                storage.mDel(keys);
+            }
+            if (request.getEntityCount() > 0) {
+                Map<String, byte[]> data = MessageSupport.convertKvMap(request.getEntityList());
+                storage.mDel(data);
+            }
             return ResponseSupport.success();
         } catch (StorageException e) {
             return ResponseSupport.of(e.getErrCode(), e.getErrMsg());

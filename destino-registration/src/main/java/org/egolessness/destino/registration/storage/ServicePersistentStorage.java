@@ -153,6 +153,11 @@ public class ServicePersistentStorage implements PersistentKvStorage<ServiceSubj
         }
     }
 
+    @Override
+    public void del(@Nonnull String key, byte[] value) throws StorageException {
+        del(key);
+    }
+
     @Nonnull
     @Override
     public List<String> keys() throws StorageException {

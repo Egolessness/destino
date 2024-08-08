@@ -19,7 +19,6 @@ package org.egolessness.destino.core.storage.kv;
 import org.egolessness.destino.core.exception.SnapshotException;
 import org.egolessness.destino.core.exception.StorageException;
 import org.egolessness.destino.core.fixedness.SnapshotOperation;
-import org.egolessness.destino.core.storage.kv.KvStorage;
 import org.egolessness.destino.core.utils.FileUtils;
 import org.egolessness.destino.core.enumration.Errors;
 import org.apache.commons.lang.ArrayUtils;
@@ -103,6 +102,23 @@ public class FileStorage implements KvStorage<String, byte[]>, SnapshotOperation
             FileUtils.deleteFile(BASE_DIR, key);
         } finally {
             lock.unlockRead(stamp);
+        }
+    }
+
+    @Override
+    public void del(@Nonnull String key, byte[] value) throws StorageException {
+        long stamp = lock.writeLock();
+        try {
+            File file = getFile(key);
+            if (!file.exists()) {
+                return;
+            }
+            byte[] bytes = FileUtils.readFileToBytes(file);
+            if (Arrays.equals(bytes, value)) {
+                FileUtils.deleteFile(BASE_DIR, key);
+            }
+        } finally {
+            lock.unlockWrite(stamp);
         }
     }
 

@@ -90,9 +90,9 @@ public class ExecutionDecree implements AtomicDecree {
     @Override
     public Response write(WriteRequest request) {
         try {
-            for (WriteData data : request.getDataList()) {
-                String key = data.getKey().toStringUtf8();
-                ByteString value = data.getValue();
+            for (Entity entity : request.getEntityList()) {
+                String key = entity.getKey().toStringUtf8();
+                ByteString value = entity.getValue();
                 if (Objects.equals(key, ExecutionRepository.SUBMIT_KEY)) {
                     ExecutionMerge executionMerge = ExecutionMerge.parseFrom(value);
                     Executions submitted = executionMerger.submit(executionMerge);

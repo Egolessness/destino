@@ -89,9 +89,8 @@ public class RegistrationContainer implements Container {
         String namespace = registrationKey.getNamespace();
         String groupName = registrationKey.getGroupName();
         String serviceName = registrationKey.getServiceName();
-        ServiceInstance instance = registration.getInstance();
         Service service = getNamespace(namespace).getService(groupName, serviceName);
-        ServiceCluster cluster = service.addInstance(registrationKey.getInstanceKey(), instance);
+        ServiceCluster cluster = service.addInstance(registrationKey.getInstanceKey(), registration);
         notifier.publish(new InstanceChangedEvent(registrationKey, registration, cluster, ElementOperation.ADD));
     }
 
@@ -102,7 +101,7 @@ public class RegistrationContainer implements Container {
         ServiceInstance instance = registration.getInstance();
         ServiceCluster cluster = getNamespace(namespace).getCluster(groupName, serviceName, instance.getCluster());
         if (cluster.containsInstance(registrationKey.getInstanceKey())) {
-            cluster.addInstance(registrationKey.getInstanceKey(), instance);
+            cluster.addInstance(registrationKey.getInstanceKey(), registration);
             notifier.publish(new InstanceChangedEvent(registrationKey, registration, cluster, ElementOperation.UPDATE));
         }
     }
@@ -113,12 +112,32 @@ public class RegistrationContainer implements Container {
         String serviceName = registrationKey.getServiceName();
         InstanceKey instanceKey = registrationKey.getInstanceKey();
         Optional<ServiceCluster> clusterOptional = findCluster(namespace, groupName, serviceName, instanceKey.getCluster());
-        clusterOptional.ifPresent(cluster -> {
-            Optional<ServiceInstance> removeInstanceOptional = cluster.removeInstance(instanceKey);
-            removeInstanceOptional.ifPresent(removeInstance ->
-                    notifier.publish(new InstanceChangedEvent(registrationKey, removeInstance, cluster, ElementOperation.REMOVE))
-            );
-        });
+        if (!clusterOptional.isPresent()) {
+            return;
+        }
+
+        ServiceCluster cluster = clusterOptional.get();
+        Optional<Registration> removedOptional = cluster.removeInstance(instanceKey);
+        removedOptional.ifPresent(removed ->
+                notifier.publish(new InstanceChangedEvent(registrationKey, removed, cluster, ElementOperation.REMOVE))
+        );
+    }
+
+    public void removeInstance(final RegistrationKey registrationKey, long version, Runnable removingFunc) {
+        String namespace = registrationKey.getNamespace();
+        String groupName = registrationKey.getGroupName();
+        String serviceName = registrationKey.getServiceName();
+        InstanceKey instanceKey = registrationKey.getInstanceKey();
+        Optional<ServiceCluster> clusterOptional = findCluster(namespace, groupName, serviceName, instanceKey.getCluster());
+        if (!clusterOptional.isPresent()) {
+            return;
+        }
+
+        ServiceCluster cluster = clusterOptional.get();
+        Optional<Registration> removedOptional = cluster.removeInstance(instanceKey, version, removingFunc);
+        removedOptional.ifPresent(removed ->
+                notifier.publish(new InstanceChangedEvent(registrationKey, removed, cluster, ElementOperation.REMOVE))
+        );
     }
 
     public void setHealthy(final RegistrationKey registrationKey, boolean healthy) {

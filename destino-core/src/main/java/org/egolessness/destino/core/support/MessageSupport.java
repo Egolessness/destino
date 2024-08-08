@@ -20,7 +20,7 @@ import org.egolessness.destino.common.utils.PredicateUtils;
 import com.google.protobuf.*;
 import org.egolessness.destino.core.message.BytesList;
 import org.egolessness.destino.core.message.MapInfo;
-import org.egolessness.destino.core.message.WriteData;
+import org.egolessness.destino.core.message.Entity;
 import org.egolessness.destino.core.storage.specifier.LongSpecifier;
 import io.grpc.MethodDescriptor;
 
@@ -71,19 +71,19 @@ public class MessageSupport {
         return result;
     }
 
-    public static Map<String, byte[]> convertKvMap(List<WriteData> dataList) {
-        Map<String, byte[]> result = new HashMap<>(dataList.size());
-        for (WriteData writeData : dataList) {
-            result.put(writeData.getKey().toStringUtf8(), writeData.getValue().toByteArray());
+    public static Map<String, byte[]> convertKvMap(List<Entity> entities) {
+        Map<String, byte[]> result = new HashMap<>(entities.size());
+        for (Entity entity : entities) {
+            result.put(entity.getKey().toStringUtf8(), entity.getValue().toByteArray());
         }
         return result;
     }
 
-    public static Map<Long, byte[]> convertDocMap(List<WriteData> dataList) {
-        Map<Long, byte[]> result = new HashMap<>(dataList.size());
-        for (WriteData writeData : dataList) {
-            Long id = LongSpecifier.INSTANCE.restore(writeData.getKey().toByteArray());
-            result.put(id, writeData.getValue().toByteArray());
+    public static Map<Long, byte[]> convertDocMap(List<Entity> entities) {
+        Map<Long, byte[]> result = new HashMap<>(entities.size());
+        for (Entity entity : entities) {
+            Long id = LongSpecifier.INSTANCE.restore(entity.getKey().toByteArray());
+            result.put(id, entity.getValue().toByteArray());
         }
         return result;
     }

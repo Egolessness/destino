@@ -112,6 +112,11 @@ public class MetaHealthyEvanescentStorage implements EvanescentKvStorage<MetaHea
         storage.remove(key);
     }
 
+    @Override
+    public void del(@Nonnull String key, byte[] value) throws StorageException {
+        storage.remove(key);
+    }
+
     @Nonnull
     @Override
     public List<String> keys() throws StorageException {

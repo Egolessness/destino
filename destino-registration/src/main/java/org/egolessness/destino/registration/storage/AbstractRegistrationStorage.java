@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.registration.storage;
 
+import org.egolessness.destino.common.utils.ByteUtils;
 import org.egolessness.destino.registration.container.RegistrationContainer;
 import org.egolessness.destino.registration.storage.specifier.RegistrationKeySpecifier;
 import org.egolessness.destino.registration.support.RegistrationSupport;
@@ -35,6 +36,8 @@ import org.egolessness.destino.core.storage.specifier.MetaSpecifier;
 import org.egolessness.destino.core.storage.specifier.Specifier;
 import org.egolessness.destino.registration.message.RegistrationKey;
 import org.egolessness.destino.registration.model.Registration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.nio.ByteBuffer;
@@ -46,6 +49,8 @@ import java.util.*;
  * @author zsmjwk@outlook.com (wangkang)
  */
 public abstract class AbstractRegistrationStorage implements DomainKvStorage<Registration> {
+
+    protected final Logger logger = LoggerFactory.getLogger(AbstractRegistrationStorage.class);
 
     protected final RegistrationContainer registrationContainer;
 
@@ -88,6 +93,27 @@ public abstract class AbstractRegistrationStorage implements DomainKvStorage<Reg
     public void del(@Nonnull String key) throws StorageException {
         getBaseStorage().del(key);
         removeInstanceForContainer(key);
+    }
+
+    @Override
+    public void del(@Nonnull String key, byte[] value) throws StorageException {
+        RegistrationKey registrationKey = specifier.restore(key);
+        if (!RegistrationSupport.validate(registrationKey)) {
+            throw new StorageException(Errors.STORAGE_WRITE_INVALID, "Registration key is invalid.");
+        }
+
+        if (ByteUtils.isEmpty(value) || value.length <= 20) {
+            throw new StorageException(Errors.STORAGE_WRITE_INVALID, "Registration value is invalid.");
+        }
+
+        Meta meta = MetaSpecifier.INSTANCE.restore(ByteBuffer.wrap(value));
+        registrationContainer.removeInstance(registrationKey, meta.getVersion(), () -> {
+            try {
+                getBaseStorage().del(key);
+            } catch (StorageException e) {
+                logger.error("Failed to remove registration info in storage.", e);
+            }
+        });
     }
 
     protected void removeInstanceForContainer(@Nonnull String key) throws StorageException {
@@ -133,7 +159,7 @@ public abstract class AbstractRegistrationStorage implements DomainKvStorage<Reg
 
     @Override
     public Registration deserialize(byte[] bytes) {
-        if (bytes.length <= 20) {
+        if (ByteUtils.isEmpty(bytes) || bytes.length <= 20) {
             return null;
         }
         ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);

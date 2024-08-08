@@ -41,7 +41,11 @@ public interface KvRepository<T> extends CosmosLinker {
 
     void del(String key, Duration timeout) throws DestinoException, TimeoutException;
 
+    void del(String key, T value, Duration timeout) throws DestinoException, TimeoutException;
+
     void multiDel(String[] keys, Duration timeout) throws DestinoException, TimeoutException;
+
+    void multiDel(Map<String, T> data, Duration timeout) throws DestinoException, TimeoutException;
 
     CompletableFuture<T> get(String key);
 
@@ -53,7 +57,11 @@ public interface KvRepository<T> extends CosmosLinker {
 
     CompletableFuture<Void> del(String key);
 
+    CompletableFuture<Void> del(String key, T value);
+
     CompletableFuture<Void> multiDel(String... keys);
+
+    CompletableFuture<Void> multiDel(Map<String, T> data);
 
     boolean isAvailable();
 
