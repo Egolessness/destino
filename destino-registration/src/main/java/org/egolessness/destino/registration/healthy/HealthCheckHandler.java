@@ -105,8 +105,10 @@ public class HealthCheckHandler implements DomainLinker {
         Duration deathTimeout = InstanceSupport.getDeathTimeout(instance);
         int failedCount = beatInfo.failedIncrement();
 
-        if (System.currentTimeMillis() - beatInfo.getLastBeat() > deathTimeout.toMillis()) {
-            repositorySelector.select(instance.getMode()).del(specifier.transfer(context.getRegistrationKey()));
+        if (System.currentTimeMillis() - beatInfo.getLastBeat() > deathTimeout.toMillis()
+                && beatInfo.getLastBeat() > registration.getVersion()) {
+            String registrationKeyString = specifier.transfer(context.getRegistrationKey());
+            repositorySelector.select(instance.getMode()).del(registrationKeyString, registration);
             logger.info("Instance {} has removed.", getInstanceInfo(context));
             return;
         }
