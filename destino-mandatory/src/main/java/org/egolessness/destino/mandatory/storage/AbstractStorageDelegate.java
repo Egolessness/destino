@@ -423,7 +423,9 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
             return null;
         }
 
-        if (meta.getSource() != undertaker.currentId()) {
+        if (meta.getSource() == undertaker.currentId()) {
+            removingKeys.put(key, timestamp);
+        } else {
             ByteString keyBytes = specifier.transfer(key);
             requestBuffer.addRequest(cosmos, meta.getSource(), keyBytes, timestamp, false);
         }
@@ -441,7 +443,13 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
             return null;
         });
         Meta meta = deleted.get();
-        if (null != meta && meta.getSource() != undertaker.currentId()) {
+        if (null == meta) {
+            return null;
+        }
+
+        if (meta.getSource() == undertaker.currentId()) {
+            removingKeys.put(key, meta.getVersion());
+        } else {
             ByteString keyBytes = specifier.transfer(key);
             requestBuffer.addRequest(cosmos, meta.getSource(), keyBytes, meta.getVersion(), false);
         }

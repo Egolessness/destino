@@ -16,7 +16,9 @@
 
 package org.egolessness.destino.registration.storage;
 
+import org.egolessness.destino.core.enumration.ElementOperation;
 import org.egolessness.destino.registration.container.RegistrationContainer;
+import org.egolessness.destino.registration.model.event.ServiceChangedEvent;
 import org.egolessness.destino.registration.storage.specifier.ServiceKeySpecifier;
 import org.egolessness.destino.registration.support.RegistrationSupport;
 import org.egolessness.destino.core.Loggers;
@@ -112,13 +114,16 @@ public class ServicePersistentStorage implements PersistentKvStorage<ServiceSubj
                         throw new StorageException(Errors.STORAGE_WRITE_FAILED,
                                 RegistrationMessages.SERVICE_ADD_DUPLICATE_NAME.getValue());
                     }
+                    notifier.publish(new ServiceChangedEvent(service, ElementOperation.ADD));
                     return;
                 case UPDATE:
                     if (originOrCreated == service) {
+                        notifier.publish(new ServiceChangedEvent(service, ElementOperation.UPDATE));
                         return;
                     }
                     boolean originHealthCheck = originOrCreated.isHealthCheck();
                     RegistrationSupport.updateService(originOrCreated, service);
+                    notifier.publish(new ServiceChangedEvent(service, ElementOperation.UPDATE));
                     if (originHealthCheck && !service.isHealthCheck()) {
                         notifier.publish(new HealthCheckChangedEvent(service));
                     } else if (!originHealthCheck && service.isHealthCheck()) {
@@ -143,6 +148,7 @@ public class ServicePersistentStorage implements PersistentKvStorage<ServiceSubj
                     service.setExpiredMillis(3000);
                 }
                 boolean deleted = namespace.removeService(serviceKey.getGroupName(), serviceKey.getServiceName());
+                notifier.publish(new ServiceChangedEvent(service, ElementOperation.REMOVE));
                 if (!deleted) {
                     throw new StorageException(RegistrationErrors.SERVICE_DELETE_HAS_INSTANCES,
                             "Safety deleting, because of the service has instances.");

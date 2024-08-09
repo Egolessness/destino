@@ -46,7 +46,9 @@ public class KvStorageDelegate<T> extends AbstractStorageDelegate<String> implem
         try {
             storage.set(key, value);
             return true;
-        } catch (StorageException e) {
+        } catch (UnsupportedOperationException e) {
+            return false;
+        } catch (Exception e) {
             MandatoryLoggers.MANDATORY.warn("Failed to set data into kv-storage, cosmos:{}, key:{}, value:{}",
                     cosmos, key, value, e);
             return false;
@@ -57,7 +59,7 @@ public class KvStorageDelegate<T> extends AbstractStorageDelegate<String> implem
     public byte[] getStorage(String key) {
         try {
             return storage.get(key);
-        } catch (StorageException e) {
+        } catch (Exception e) {
             MandatoryLoggers.MANDATORY.warn("Failed to get data from kv-storage, cosmos:{}, key:{}",
                     cosmos, key, e);
             return null;
@@ -68,7 +70,7 @@ public class KvStorageDelegate<T> extends AbstractStorageDelegate<String> implem
     public void delStorage(String key) {
         try {
             storage.del(key);
-        } catch (StorageException e) {
+        } catch (Exception e) {
             MandatoryLoggers.MANDATORY.warn("Failed to delete data from kv-storage, cosmos:{}, key:{}",
                     cosmos, key, e);
         }

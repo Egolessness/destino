@@ -16,10 +16,7 @@
 
 package org.egolessness.destino.registration.container;
 
-import org.egolessness.destino.registration.model.Namespace;
-import org.egolessness.destino.registration.model.Registration;
-import org.egolessness.destino.registration.model.Service;
-import org.egolessness.destino.registration.model.ServiceCluster;
+import org.egolessness.destino.registration.model.*;
 import com.google.inject.Inject;
 import org.egolessness.destino.common.exception.DestinoRuntimeException;
 import org.egolessness.destino.core.container.Container;
@@ -31,7 +28,6 @@ import org.egolessness.destino.core.infrastructure.notify.Notifier;
 import org.egolessness.destino.common.model.ServiceInstance;
 import org.egolessness.destino.registration.model.event.InstanceChangedEvent;
 import org.egolessness.destino.registration.setting.RegistrationSetting;
-import org.egolessness.destino.registration.support.RegistrationSupport;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,10 +75,10 @@ public class RegistrationContainer implements Container {
         return findCluster(namespace, groupName, serviceName, cluster).map(clu -> clu.getInstanceOrNull(ip, port));
     }
 
-    public Optional<ServiceInstance> findInstance(final RegistrationKey registrationKey) {
+    public Optional<Registration> findRegistration(final RegistrationKey registrationKey) {
         return findCluster(registrationKey.getNamespace(), registrationKey.getGroupName(),
                 registrationKey.getServiceName(), registrationKey.getInstanceKey().getCluster())
-                .map(cluster -> cluster.getInstance(registrationKey.getInstanceKey()));
+                .map(cluster -> cluster.getRegistration(registrationKey.getInstanceKey()));
     }
 
     public void addInstance(final RegistrationKey registrationKey, final Registration registration) {
@@ -140,8 +136,14 @@ public class RegistrationContainer implements Container {
         );
     }
 
-    public void setHealthy(final RegistrationKey registrationKey, boolean healthy) {
-        findInstance(registrationKey).ifPresent(instance -> instance.setHealthy(healthy));
+    public Optional<Registration> setHealthy(final RegistrationKey registrationKey, MetaHealthy metaHealthy) {
+        Optional<Registration> registrationOptional = findRegistration(registrationKey);
+        registrationOptional.ifPresent(registration -> {
+            if (metaHealthy.getVersion() >= registration.getVersion()) {
+                registration.getInstance().setHealthy(metaHealthy.isHealthy());
+            }
+        });
+        return registrationOptional;
     }
 
     public Namespace getNamespace(final String namespace) {

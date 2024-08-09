@@ -229,7 +229,17 @@ public class PackingContainer implements Container {
 
         if (Objects.nonNull(schedulerMap)) {
             int parallelismThreshold = 100;
-            schedulerMap.forEachValue(parallelismThreshold, packingMap -> packingMap.remove(registrationKey));
+            schedulerMap.forEach(parallelismThreshold, (k, packingMap) -> {
+                packingMap.remove(registrationKey);
+                if (packingMap.isEmpty()) {
+                    schedulerMap.computeIfPresent(k, (k2, v2) -> {
+                        if (v2.isEmpty()) {
+                            return null;
+                        }
+                        return v2;
+                    });
+                }
+            });
             SCHEDULES.computeIfPresent(key, (k, v) -> {
                 if (v.isEmpty()) {
                     return null;

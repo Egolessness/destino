@@ -108,7 +108,9 @@ public class HealthCheckHandler implements DomainLinker {
         if (System.currentTimeMillis() - beatInfo.getLastBeat() > deathTimeout.toMillis()
                 && beatInfo.getLastBeat() > registration.getVersion()) {
             String registrationKeyString = specifier.transfer(context.getRegistrationKey());
+            MetaHealthy metaHealthy = new MetaHealthy(registration.getSource(), registration.getVersion(), false);
             repositorySelector.select(instance.getMode()).del(registrationKeyString, registration);
+            metaHealthyRepository.del(registrationKeyString, metaHealthy);
             logger.info("Instance {} has removed.", getInstanceInfo(context));
             return;
         }

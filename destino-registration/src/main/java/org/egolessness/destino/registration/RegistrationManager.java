@@ -37,6 +37,7 @@ import org.egolessness.destino.core.infrastructure.notify.subscriber.Subscriber;
 import org.egolessness.destino.core.enumration.ElementOperation;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import org.egolessness.destino.registration.model.event.ServiceChangedEvent;
 import org.egolessness.destino.registration.publisher.ServicePublisher;
 
 import java.util.Optional;
@@ -77,8 +78,22 @@ public class RegistrationManager implements Starter {
 
     @Override
     public void start() {
+        this.subscribeServiceChangedEvent();
         this.subscribeInstanceChangedEvent();
         this.servicePublisher.start();
+    }
+
+    private void subscribeServiceChangedEvent() {
+        notifier.subscribe((Subscriber<ServiceChangedEvent>) event -> {
+            Service service = event.getService();
+            if (service.isEmpty() && service.getExpiredMillis() > 0) {
+                String namespace = service.getNamespace();
+                String serviceName = service.getServiceName();
+                String groupName = service.getGroupName();
+                ServiceInstanceInfo instanceInfo = new ServiceInstanceInfo(namespace, groupName, serviceName, null);
+                registrationCleanable.add(instanceInfo);
+            }
+        });
     }
 
     private void subscribeInstanceChangedEvent() {

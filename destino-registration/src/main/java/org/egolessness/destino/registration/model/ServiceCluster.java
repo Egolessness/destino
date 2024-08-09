@@ -73,16 +73,12 @@ public class ServiceCluster extends ServiceClusterFate {
         return Stream.of(modes).filter(Objects::nonNull).mapToInt(Map::size).sum();
     }
 
-    public ServiceInstance getInstance(InstanceKey instanceKey) {
+    public Registration getRegistration(InstanceKey instanceKey) {
         Map<InstanceKey, Registration> registrationMap = locationIfPresent(instanceKey.getMode());
         if (null == registrationMap) {
             return null;
         }
-        Registration registration = registrationMap.get(instanceKey);
-        if (null == registration) {
-            return null;
-        }
-        return registration.getInstance();
+        return registrationMap.get(instanceKey);
     }
 
     public boolean containsInstance(InstanceKey instanceKey) {

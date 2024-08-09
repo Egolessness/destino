@@ -17,6 +17,7 @@
 package org.egolessness.destino.registration.storage;
 
 import org.egolessness.destino.registration.container.RegistrationContainer;
+import org.egolessness.destino.registration.model.Registration;
 import org.egolessness.destino.registration.storage.specifier.RegistrationKeySpecifier;
 import com.google.inject.Inject;
 import com.linecorp.armeria.internal.shaded.caffeine.cache.Cache;
@@ -37,10 +38,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * evanescent storage of service instance healthy.
@@ -103,8 +101,12 @@ public class MetaHealthyEvanescentStorage implements EvanescentKvStorage<MetaHea
     public void set(@Nonnull String key, byte[] value) throws StorageException {
         RegistrationKey registrationKey = specifier.restore(key);
         MetaHealthy metaHealthy = deserialize(value);
-        registrationContainer.setHealthy(registrationKey, metaHealthy.isHealthy());
-        storage.put(key, value);
+        Optional<Registration> registrationOptional =  registrationContainer.setHealthy(registrationKey, metaHealthy);
+        if (registrationOptional.isPresent() && metaHealthy.getVersion() >= registrationOptional.get().getVersion()) {
+            storage.put(key, value);
+        } else {
+            throw new UnsupportedOperationException();
+        }
     }
 
     @Override

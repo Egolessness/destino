@@ -16,6 +16,8 @@
 
 package org.egolessness.destino.registration;
 
+import com.google.inject.Singleton;
+import org.egolessness.destino.common.utils.PredicateUtils;
 import org.egolessness.destino.registration.container.RegistrationContainer;
 import org.egolessness.destino.registration.model.Namespace;
 import org.egolessness.destino.registration.model.Service;
@@ -45,6 +47,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author zsmjwk@outlook.com (wangkang)
  */
+@Singleton
 public class RegistrationCleanable implements Cleanable, Lucermaire {
 
     private final Logger logger = LoggerFactory.getLogger(RegistrationCleanable.class);
@@ -111,16 +114,14 @@ public class RegistrationCleanable implements Cleanable, Lucermaire {
             return true;
         }
 
-        ServiceCluster serviceCluster = service.getClusterStore().get(cluster);
-        if (Objects.isNull(serviceCluster)) {
-            return true;
+        if (PredicateUtils.isNotEmpty(cluster)) {
+            ServiceCluster serviceCluster = service.getClusterStore().get(cluster);
+            if (Objects.nonNull(serviceCluster)) {
+                if (serviceCluster.isEmpty()) {
+                    service.removeCluster(cluster);
+                }
+            }
         }
-
-        if (!serviceCluster.isEmpty()) {
-            return true;
-        }
-
-        service.removeCluster(cluster);
 
         if (!service.isEmpty()) {
             return true;
