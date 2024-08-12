@@ -66,9 +66,7 @@ public abstract class AbstractRegistrationStorage implements DomainKvStorage<Reg
 
     @Override
     public byte[] get(@Nonnull String key) throws StorageException {
-        RegistrationKey registrationKey = specifier.restore(key);
-        Optional<Registration> registrationOptional = registrationContainer.findRegistration(registrationKey);
-        return registrationOptional.map(this::serialize).orElse(null);
+        return getBaseStorage().get(key);
     }
 
     @Override

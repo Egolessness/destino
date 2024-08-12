@@ -16,7 +16,9 @@
 
 package org.egolessness.destino.mandatory;
 
-import io.grpc.stub.StreamObserver;
+import com.google.common.util.concurrent.ListenableFuture;
+import org.egolessness.destino.common.model.message.Response;
+import org.egolessness.destino.common.support.ResponseSupport;
 import org.egolessness.destino.mandatory.model.MandatorySyncData;
 import org.egolessness.destino.mandatory.model.MandatorySyncRecorder;
 import org.egolessness.destino.mandatory.model.VersionKey;
@@ -35,6 +37,7 @@ import org.egolessness.destino.mandatory.storage.StorageDelegate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -132,6 +135,8 @@ public class MandatoryDataSynchronizer implements Starter {
                     }
 
                     if (builder.getAppendCount() + builder.getRemoveCount() == 0) {
+                        recorder.setUndertakeAppendFlag(lastVersionKey);
+                        recorder.setLocalAppendFlag(lastVersionKey);
                         continue;
                     }
 
@@ -139,14 +144,16 @@ public class MandatoryDataSynchronizer implements Starter {
                     Optional<MandatoryClient> clientOptional = clientFactory.getClient(memberId);
                     if (clientOptional.isPresent()) {
                         MandatoryClient client = clientOptional.get();
-                        StreamObserver<MandatorySyncRequest> requestStreamObserver = client.syncStream();
                         try {
-                            requestStreamObserver.onNext(syncRequest);
-                            recorder.setLocalFirstTime(now);
-                            recorder.setUndertakeFirstTime(now);
-                            recorder.setRemovingKeys(new ArrayList<>());
-                            recorder.setUndertakeAppendFlag(lastVersionKey);
-                            recorder.setLocalAppendFlag(lastVersionKey);
+                            ListenableFuture<Response> future = client.sync(syncRequest);
+                            Response response = future.get(3000, TimeUnit.MILLISECONDS);
+                            if (ResponseSupport.isSuccess(response)) {
+                                recorder.setLocalFirstTime(now);
+                                recorder.setUndertakeFirstTime(now);
+                                recorder.setRemovingKeys(new ArrayList<>());
+                                recorder.setUndertakeAppendFlag(lastVersionKey);
+                                recorder.setLocalAppendFlag(lastVersionKey);
+                            }
                         } catch (Throwable throwable) {
                             int failCount = recorder.getFailCounter().incrementAndGet();
                             if (failCount > 5) {
@@ -155,8 +162,6 @@ public class MandatoryDataSynchronizer implements Starter {
                                 recorder.getFailCounter().set(0);
                             }
                             MandatoryLoggers.SYNCHRONIZER.warn("Failed to sync storage data to server-{}.", memberId, throwable);
-                        } finally {
-                            requestStreamObserver.onCompleted();
                         }
                     }
                 }

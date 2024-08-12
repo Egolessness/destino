@@ -54,7 +54,7 @@ message MandatoryLoadResponse {
 service MandatoryRequestAdapter {
   rpc write (MandatoryWriteRequest) returns (Response) {
   }
-  rpc sync (stream MandatorySyncRequest) returns (Response) {
+  rpc sync (MandatorySyncRequest) returns (Response) {
   }
   rpc load (MandatoryLoadRequest) returns (Response) {
   }

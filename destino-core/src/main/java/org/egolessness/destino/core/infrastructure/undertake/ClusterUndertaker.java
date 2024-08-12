@@ -30,6 +30,7 @@ import com.google.inject.Singleton;
 import javax.annotation.Nonnull;
 import java.util.Observable;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -75,7 +76,7 @@ public class ClusterUndertaker implements Undertaker {
         return this.memberContainer.loadRegisteredMembers().stream()
                 .filter(this::matchAvailable)
                 .map(Member::getId)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toCollection(TreeSet::new));
     }
 
     @Override

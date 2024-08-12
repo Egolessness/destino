@@ -21,13 +21,11 @@ import org.egolessness.destino.core.support.MessageSupport;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.egolessness.destino.common.fixedness.Lucermaire;
 import org.egolessness.destino.common.model.message.Response;
-import org.egolessness.destino.mandatory.MandatoryLoggers;
 import org.egolessness.destino.mandatory.message.*;
 import io.grpc.CallOptions;
 import io.grpc.ManagedChannel;
 import io.grpc.MethodDescriptor;
 import io.grpc.stub.ClientCalls;
-import io.grpc.stub.StreamObserver;
 
 /**
  * mandatory exclusive request client.
@@ -51,22 +49,6 @@ public class MandatoryClient implements Lucermaire {
         this.contextPath = contextPath;
     }
 
-    private StreamObserver<Response> buildSyncServerStream() {
-        return new StreamObserver<Response>() {
-            @Override
-            public void onNext(Response response) {
-            }
-            @Override
-            public void onError(Throwable t) {
-                MandatoryLoggers.SYNCHRONIZER.error("sync data error.", t);
-            }
-
-            @Override
-            public void onCompleted() {
-            }
-        };
-    }
-
     public ListenableFuture<Response> write(MandatoryWriteRequest request) {
         return ClientCalls.futureUnaryCall(channel.newCall(this.getWriteMethod(), CallOptions.DEFAULT), request);
     }
@@ -75,9 +57,8 @@ public class MandatoryClient implements Lucermaire {
         return ClientCalls.futureUnaryCall(channel.newCall(this.getLoadMethod(), CallOptions.DEFAULT), request);
     }
 
-    public StreamObserver<MandatorySyncRequest> syncStream() {
-        return ClientCalls.asyncClientStreamingCall(channel.newCall(this.getSyncMethod(), CallOptions.DEFAULT),
-                buildSyncServerStream());
+    public ListenableFuture<Response> sync(MandatorySyncRequest request) {
+        return ClientCalls.futureUnaryCall(channel.newCall(this.getSyncMethod(), CallOptions.DEFAULT), request);
     }
 
     public MethodDescriptor<MandatoryWriteRequest, Response> getWriteMethod() {

@@ -25,7 +25,6 @@ import org.egolessness.destino.common.support.ResponseSupport;
 import org.egolessness.destino.mandatory.MandatoryDataLoader;
 import org.egolessness.destino.mandatory.message.*;
 import org.egolessness.destino.mandatory.storage.StorageDelegate;
-import io.grpc.stub.ServerCallStreamObserver;
 import io.grpc.stub.StreamObserver;
 
 import java.rmi.AccessException;
@@ -90,51 +89,19 @@ public class MandatoryRequestService extends MandatoryRequestAdapterGrpc.Mandato
     }
 
     @Override
-    public StreamObserver<MandatorySyncRequest> sync(StreamObserver<Response> requestStreamObserver) {
-        return new StreamObserver<MandatorySyncRequest>() {
+    public void sync(MandatorySyncRequest request, StreamObserver<Response> responseObserver) {
+        if (!MandatoryRequestSupport.validate(request)) {
+            responseObserver.onNext(ResponseSupport.failed("Token invalid."));
+            responseObserver.onCompleted();
+            return;
+        }
 
-            @Override
-            public void onNext(MandatorySyncRequest request) {
-                if (!MandatoryRequestSupport.validate(request)) {
-                    requestStreamObserver.onNext(ResponseSupport.failed("Token invalid."));
-                    requestStreamObserver.onCompleted();
-                    return;
-                }
-
-                for (WriteInfo writeInfo : request.getDataList()) {
-                    StorageDelegate delegate = dataLoader.getStorageDelegate(writeInfo.getCosmos()).orElseThrow(NoSuchDomainException::new);
-                    delegate.accept(writeInfo.getAppendList(), writeInfo.getRemoveList());
-                }
-                requestStreamObserver.onNext(ResponseSupport.success());
-                requestStreamObserver.onCompleted();
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                if (requestStreamObserver instanceof ServerCallStreamObserver) {
-                    ServerCallStreamObserver<Response> serverCallStreamObserver = ((ServerCallStreamObserver<Response>) requestStreamObserver);
-                    if (!serverCallStreamObserver.isCancelled()) {
-                        try {
-                            serverCallStreamObserver.onCompleted();
-                        } catch (Throwable ignore) {
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onCompleted() {
-                if (requestStreamObserver instanceof ServerCallStreamObserver) {
-                    ServerCallStreamObserver<Response> serverCallStreamObserver = ((ServerCallStreamObserver<Response>) requestStreamObserver);
-                    if (!serverCallStreamObserver.isCancelled()) {
-                        try {
-                            serverCallStreamObserver.onCompleted();
-                        } catch (Throwable ignore) {
-                        }
-                    }
-                }
-            }
-        };
+        for (WriteInfo writeInfo : request.getDataList()) {
+            StorageDelegate delegate = dataLoader.getStorageDelegate(writeInfo.getCosmos()).orElseThrow(NoSuchDomainException::new);
+            delegate.accept(writeInfo.getAppendList(), writeInfo.getRemoveList());
+        }
+        responseObserver.onNext(ResponseSupport.success());
+        responseObserver.onCompleted();
     }
 
 }
