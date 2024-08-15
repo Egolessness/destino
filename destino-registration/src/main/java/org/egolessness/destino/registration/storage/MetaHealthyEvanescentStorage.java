@@ -102,7 +102,7 @@ public class MetaHealthyEvanescentStorage implements EvanescentKvStorage<MetaHea
         RegistrationKey registrationKey = specifier.restore(key);
         MetaHealthy metaHealthy = deserialize(value);
         Optional<Registration> registrationOptional =  registrationContainer.setHealthy(registrationKey, metaHealthy);
-        if (registrationOptional.isPresent() && metaHealthy.getVersion() >= registrationOptional.get().getVersion()) {
+        if (registrationOptional.isPresent() && metaHealthy.getVersion() == registrationOptional.get().getVersion()) {
             storage.put(key, value);
         } else {
             throw new UnsupportedOperationException();
