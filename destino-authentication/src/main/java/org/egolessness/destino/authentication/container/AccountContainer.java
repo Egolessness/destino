@@ -96,7 +96,7 @@ public class AccountContainer implements Container {
     private void changePassword(Account account, String password, long modifiedTime) {
         account.setModifiedTime(modifiedTime);
         if (isChangedForPassword(account, password)) {
-            account.setPassword(account.getPassword());
+            account.setPassword(password);
             incrementMelody(account);
         }
     }
