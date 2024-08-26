@@ -82,28 +82,31 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
         this.requestBuffer.putBackFlow(cosmos, this::write);
     }
 
+    private void delStorageWithLocalCheck(K key, Meta meta) {
+        locals.compute(key, (k, v) -> {
+            if (null == v) {
+                delStorage(key);
+                return null;
+            }
+            if (null != meta && v > meta.getVersion()) {
+                delStorage(key);
+                return null;
+            }
+            return v;
+        });
+    }
+
     private Cache<K, Meta> buildCache() {
         RemovalListener<K, Meta> removalListener = (key, meta, removalCause) -> {
             if (key == null) {
                 return;
             }
-            locals.compute(key, (k, v) -> {
-                if (null == v) {
-                    delStorage(key);
-                    return null;
-                }
-                if (null != meta && v > meta.getVersion()) {
-                    delStorage(key);
-                    return null;
-                }
-                return v;
-            });
+            delStorageWithLocalCheck(key, meta);
         };
         return Caffeine.newBuilder()
                 .expireAfterWrite(validDuration)
                 .scheduler(Scheduler.forScheduledExecutorService(GlobalExecutors.SCHEDULED_DEFAULT))
                 .evictionListener(removalListener)
-                .removalListener(removalListener)
                 .build();
     }
 
@@ -118,7 +121,8 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
     @Override
     public void refresh() {
         locals.forEach((key, version) -> {
-            long searched = undertaker.search(key);
+            ByteString transferredKey = specifier.transfer(key);
+            long searched = undertaker.search(transferredKey.toStringUtf8());
             if (searched == undertaker.currentId()) {
                 return;
             }
@@ -126,7 +130,7 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
             byte[] value = getStorage(key);
             if (value != null) {
                 Meta meta = new Meta(undertaker.currentId(), version);
-                requestBuffer.addRequest(cosmos, searched, specifier.transfer(key), value, meta);
+                requestBuffer.addRequest(cosmos, searched, transferredKey, value, meta);
             }
         });
     }
@@ -136,34 +140,16 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
         List<VsData> all = new ArrayList<>(appoints.size() + locals.size());
 
         appoints.forEach((key, meta) -> {
-            long version = meta.getVersion();
-            long sourceId = meta.getSource();
-            byte[] value = getStorage(key);
-            if (value != null) {
-                VsData vsData = VsData.newBuilder()
-                        .setKey(specifier.transfer(key))
-                        .setValue(ByteString.copyFrom(value))
-                        .setSource(sourceId)
-                        .setVersion(version)
-                        .build();
+            VsData vsData = getVsData(key, meta);
+            if (null != vsData) {
                 all.add(vsData);
-            } else {
-                delAppoint(key, meta.getVersion());
             }
         });
 
         locals.forEach((key, version) -> {
-            byte[] value = getStorage(key);
-            if (value != null) {
-                VsData vsData = VsData.newBuilder()
-                        .setKey(specifier.transfer(key))
-                        .setValue(ByteString.copyFrom(value))
-                        .setSource(undertaker.currentId())
-                        .setVersion(version)
-                        .build();
+            VsData vsData = getVsData(key, version);
+            if (null != vsData) {
                 all.add(vsData);
-            } else {
-                delLocal(key, version);
             }
         });
 
@@ -184,7 +170,8 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
 
 
         locals.forEach((key, version) -> {
-            long searched = undertaker.search(key);
+            ByteString transferredKey = specifier.transfer(key);
+            long searched = undertaker.search(transferredKey.toStringUtf8());
 
             if (undertaker.eqCurrent(searched)) {
                 VsData vsData = getVsData(key, version);
@@ -225,7 +212,8 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
         });
 
         appoints.forEach((key, meta) -> {
-            if (!undertaker.isCurrent(key)) {
+            ByteString transferredKey = specifier.transfer(key);
+            if (!undertaker.isCurrent(transferredKey.toStringUtf8())) {
                 return;
             }
             VsData vsData = getVsData(key, meta);
@@ -267,7 +255,7 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
     private VsData getVsData(K key, Meta meta) {
         byte[] bytes = getStorage(key);
         if (bytes == null) {
-            delLocal(key, meta.getVersion());
+            delAppoint(key, meta.getVersion());
             return null;
         }
 
@@ -414,6 +402,7 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
         appoints.computeIfPresent(key, (k, v) -> {
             if (timestamp >= v.getVersion()) {
                 deleted.set(v);
+                delStorageWithLocalCheck(k, v);
                 return null;
             }
             return v;
@@ -440,6 +429,7 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
                 return v;
             }
             deleted.set(v);
+            delStorageWithLocalCheck(k, v);
             return null;
         });
         Meta meta = deleted.get();
@@ -518,9 +508,10 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
         }
 
         locals.put(key, meta.getVersion());
-        long searched = undertaker.search(key);
+        ByteString transferredKey = specifier.transfer(key);
+        long searched = undertaker.search(transferredKey.toStringUtf8());
         if (searched != undertaker.currentId()) {
-            requestBuffer.addRequest(cosmos, searched, specifier.transfer(key), value, meta);
+            requestBuffer.addRequest(cosmos, searched, transferredKey, value, meta);
         }
         appoints.computeIfPresent(key, (k, v) -> {
            if (meta.getVersion() >= v.getVersion()) {
@@ -533,14 +524,14 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
     protected void delLocalAndAppointThenBroadcast(K key) {
         locals.remove(key);
         Meta removed = appoints.remove(key);
-        long searched = undertaker.search(key);
-        ByteString keyBytes = specifier.transfer(key);
+        ByteString transferredKey = specifier.transfer(key);
+        long searched = undertaker.search(transferredKey.toStringUtf8());
         long version = System.currentTimeMillis();
         if (null != removed) {
             if (removed.getSource() == undertaker.currentId()) {
                 removingKeys.put(key, version);
             } else {
-                requestBuffer.addRequest(cosmos, removed.getSource(), keyBytes, version, false);
+                requestBuffer.addRequest(cosmos, removed.getSource(), transferredKey, version, false);
                 if (removed.getSource() == searched) {
                     return;
                 }
@@ -548,7 +539,7 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
         }
 
         if (searched != undertaker.currentId()) {
-            requestBuffer.addRequest(cosmos, searched, keyBytes, version, true);
+            requestBuffer.addRequest(cosmos, searched, transferredKey, version, true);
         }
     }
 
@@ -569,7 +560,7 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
         }
 
         ByteString keyBytes = specifier.transfer(key);
-        long searched = undertaker.search(key);
+        long searched = undertaker.search(keyBytes.toStringUtf8());
 
         if (null != appointRemoveMeta && appointRemoveMeta.getSource() != searched) {
             requestBuffer.addRequest(cosmos, searched, keyBytes, appointRemoveMeta.getVersion(), false);
@@ -584,15 +575,15 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
         Map<Long, List<VbKey>> removeMap = new HashMap<>(keys.size());
         for (K key : keys) {
             locals.remove(key);
+            ByteString transferredKey = specifier.transfer(key);
             Meta removed = appoints.remove(key);
-            long searched = undertaker.search(key);
-            byte[] keyBytes = specifier.transfer(key).toByteArray();
+            long searched = undertaker.search(transferredKey.toStringUtf8());
 
             if (null != removed) {
                 if (removed.getSource() == undertaker.currentId()) {
                     removingKeys.put(key, version);
                 } else {
-                    VbKey vbKey = VbKey.newBuilder().setKey(ByteString.copyFrom(keyBytes)).setVersion(version)
+                    VbKey vbKey = VbKey.newBuilder().setKey(transferredKey).setVersion(version)
                             .setBroadcast(false).build();
                     removeMap.computeIfAbsent(removed.getSource(), k -> new ArrayList<>()).add(vbKey);
                     if (removed.getSource() == searched) {
@@ -602,7 +593,7 @@ public abstract class AbstractStorageDelegate<K> implements StorageDelegate {
             }
 
             if (searched != undertaker.currentId()) {
-                VbKey vbKey = VbKey.newBuilder().setKey(ByteString.copyFrom(keyBytes)).setVersion(version)
+                VbKey vbKey = VbKey.newBuilder().setKey(transferredKey).setVersion(version)
                         .setBroadcast(true).build();
                 removeMap.computeIfAbsent(searched, k -> new ArrayList<>()).add(vbKey);
             }

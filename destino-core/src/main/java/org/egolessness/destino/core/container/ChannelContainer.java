@@ -81,7 +81,6 @@ public class ChannelContainer implements Container {
                 .maximumSize(10000)
                 .scheduler(Scheduler.forScheduledExecutorService(GlobalExecutors.SCHEDULED_DEFAULT))
                 .removalListener(removalListener)
-                .evictionListener(removalListener)
                 .build(loader);
     }
 
