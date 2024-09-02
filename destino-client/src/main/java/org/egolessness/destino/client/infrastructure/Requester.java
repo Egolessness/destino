@@ -189,6 +189,7 @@ public class Requester implements Lucermaire {
             CallbackSupport.triggerThrowable(callback, e);
             throw new DestinoException(e.getErrCode(), e.getErrMsg(), e);
         } catch (TimeoutException e) {
+            CallbackSupport.triggerThrowable(callback, e);
             throw new DestinoException(ErrorCode.REQUEST_TIMEOUT, e.getMessage(), e);
         } catch (Throwable e) {
             CallbackSupport.triggerThrowable(callback, e);

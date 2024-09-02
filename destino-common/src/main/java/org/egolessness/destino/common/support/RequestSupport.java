@@ -123,8 +123,7 @@ public class RequestSupport {
     public static Map<String, String> commonHeaders() {
         Map<String, String> headers = new HashMap<>();
         headers.put(HEADER_TIMESTAMP, Long.toString(System.currentTimeMillis()));
-        headers.put(HEADER_SOURCE, NetUtils.localIP());
-        headers.put(HEADER_PLATFORM, CommonConstants.PLATFORM_JAVA);
+        headers.put(HEADER_SOURCE, "SDK#" + NetUtils.localIP());
         headers.put(HEADER_VERSION, ProjectSupport.getVersion());
         return headers;
     }

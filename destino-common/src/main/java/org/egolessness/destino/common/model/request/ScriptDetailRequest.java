@@ -27,7 +27,7 @@ import java.io.Serializable;
  *
  * @author zsmjwk@outlook.com (wangkang)
  */
-@Http(value = "/api/script/{id}", method = HttpMethod.GET)
+@Http(value = "/api/script/{id}/{version}", method = HttpMethod.GET)
 public class ScriptDetailRequest implements Serializable {
 
     private static final long serialVersionUID = -8127414554601221600L;

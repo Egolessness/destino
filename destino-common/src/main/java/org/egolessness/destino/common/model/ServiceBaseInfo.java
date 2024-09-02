@@ -31,14 +31,14 @@ public class ServiceBaseInfo implements Serializable {
 
     private static final long serialVersionUID = 3260047511947231482L;
 
-    @Size(max=300, message="The namespace length should range from 1 to 1000")
+    @Size(max=300, message="The namespace length should range from 1 to 300")
     protected String namespace;
 
-    @Size(max=300, message="The group name length should range from 1 to 1000")
+    @Size(max=300, message="The group name length should range from 1 to 300")
     protected String groupName;
 
     @NotBlank(message = "Service name must be not null")
-    @Size(min=1, max=300, message="the service name length should range from 1 to 1000")
+    @Size(min=1, max=300, message="the service name length should range from 1 to 300")
     protected String serviceName;
 
     public ServiceBaseInfo() {

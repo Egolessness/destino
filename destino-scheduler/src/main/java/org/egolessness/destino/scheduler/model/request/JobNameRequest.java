@@ -30,13 +30,13 @@ public class JobNameRequest implements Serializable {
 
     private static final long serialVersionUID = 3156799327194305625L;
 
-    @Size(max=300, message="The namespace length should range from 1 to 1000")
+    @Size(max=300, message="The namespace length should range from 1 to 300")
     protected String namespace;
 
-    @Size(max=300, message="The group name length should range from 1 to 1000")
+    @Size(max=300, message="The group name length should range from 1 to 300")
     protected String groupName;
 
-    @Size(min=1, max=300, message="the service name length should range from 1 to 1000")
+    @Size(min=1, max=300, message="the service name length should range from 1 to 300")
     protected String serviceName;
 
     @Size(max=100)

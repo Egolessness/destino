@@ -17,6 +17,7 @@
 package org.egolessness.destino.client.common;
 
 import org.egolessness.destino.client.common.support.AppNameGetter;
+import org.egolessness.destino.common.constant.CommonConstants;
 import org.egolessness.destino.common.support.RequestSupport;
 
 import java.util.HashMap;
@@ -30,8 +31,7 @@ import java.util.Map;
 public enum Headers {
 
     APP(RequestSupport.HEADER_APP_NAME, AppNameGetter.getAppName()),
-    SOURCE(RequestSupport.HEADER_SOURCE, "SDK"),
-    PLATFORM(RequestSupport.HEADER_PLATFORM, "JAVA");
+    PLATFORM(RequestSupport.HEADER_PLATFORM, CommonConstants.PLATFORM_JAVA);
 
     private final String key;
 

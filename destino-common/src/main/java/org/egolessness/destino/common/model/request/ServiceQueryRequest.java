@@ -34,11 +34,11 @@ public class ServiceQueryRequest extends PageParam {
     private static final long serialVersionUID = -318519065363233107L;
 
     @Param("namespace")
-    @Size(min = 1, max=300, message="The namespace length should range from 1 to 1000")
+    @Size(min = 1, max=300, message="The namespace length should range from 1 to 300")
     private String namespace;
 
     @Param("groupName")
-    @Size(min = 1, max=300, message="The group name length should range from 1 to 1000")
+    @Size(min = 1, max=300, message="The group name length should range from 1 to 300")
     private String groupName;
 
     public ServiceQueryRequest() {

@@ -272,7 +272,12 @@ public class SchedulerStorage implements PersistentDocStorage<SchedulerSeam> {
                     SchedulerInfo schedulerInfo = getSerializer().deserialize(entry.getValue(), SchedulerInfo.class);
                     schedulerInfo.setId(entry.getKey());
                     schedulerContainer.add(schedulerInfo);
-                } catch (Exception ignored) {
+                    Script script = schedulerInfo.getScript();
+                    if (script != null && PredicateUtils.isNotEmpty(script.getContent())) {
+                        scriptStorage.set(new ScriptKey(entry.getKey(), script.getVersion()), getSerializer().serialize(script));
+                    }
+                } catch (Exception e) {
+                    Loggers.STORAGE.error("Failed to load scheduler-info from local storage.", e);
                 }
             }
         } catch (StorageException e) {
