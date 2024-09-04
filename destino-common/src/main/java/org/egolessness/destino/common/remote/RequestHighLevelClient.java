@@ -29,6 +29,7 @@ import org.egolessness.destino.common.model.request.ServerCheckRequest;
 import org.egolessness.destino.common.support.CallbackSupport;
 import org.egolessness.destino.common.support.RequestSupport;
 import org.egolessness.destino.common.support.ResponseSupport;
+import org.egolessness.destino.common.utils.PredicateUtils;
 import org.egolessness.destino.common.utils.ThreadUtils;
 import org.egolessness.destino.common.model.message.Request;
 import org.egolessness.destino.common.model.message.Response;
@@ -123,9 +124,12 @@ public abstract class RequestHighLevelClient implements RequestClient {
     
     public void changeAddresses(Picker<URI> addressGetter) {
         Objects.requireNonNull(addressGetter);
+        if (PredicateUtils.isEmpty(addressGetter.list())) {
+            return;
+        }
         URI current = ADDRESS_PICKER.current();
+        ADDRESS_PICKER = addressGetter;
         if (!addressGetter.list().contains(current)) {
-            ADDRESS_PICKER = addressGetter;
             LOGGER.info("The {} client has detected a change in the server list and is connecting to the next server, the currently connected server {}", channel(), current);
             connectAsync(RequestHighLevelClient::connectNext);
         }
