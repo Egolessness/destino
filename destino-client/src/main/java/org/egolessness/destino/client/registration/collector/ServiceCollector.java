@@ -21,7 +21,7 @@ import org.egolessness.destino.client.common.Reporters;
 import org.egolessness.destino.client.logging.DestinoLoggers;
 import org.egolessness.destino.client.infrastructure.ExecutorCreator;
 import org.egolessness.destino.client.infrastructure.backup.BackupDataConverter;
-import org.egolessness.destino.client.infrastructure.backup.DataBackup;
+import org.egolessness.destino.client.infrastructure.backup.DataBackupEngine;
 import org.egolessness.destino.common.enumeration.Mark;
 import org.egolessness.destino.common.enumeration.SystemProperties;
 import org.egolessness.destino.common.fixedness.Cancellable;
@@ -61,7 +61,7 @@ public class ServiceCollector implements Lucermaire {
 
     private final Map<ServiceBaseInfo, Map<AbstractList<String>, List<Listener<Service>>>> LISTENER_STORE;
 
-    private final DataBackup<Service> DATA_BACKUP;
+    private final DataBackupEngine<Service> DATA_BACKUP;
 
     private final ServiceFailover SERVICE_FAILOVER;
 
@@ -69,7 +69,7 @@ public class ServiceCollector implements Lucermaire {
 
     public ServiceCollector(final DestinoProperties properties)
     {
-        this.DATA_BACKUP = new DataBackup<>(Leaves.REGISTER, getBackupPath(properties), buildBackupDataConvert());
+        this.DATA_BACKUP = new DataBackupEngine<>(Leaves.REGISTER, getBackupPath(properties), buildBackupDataConvert());
         this.DATA_BACKUP.setEnabled(properties.getBackupProperties().isEnabled());
 
         if (properties.getBackupProperties().isLoadOnStart()) {

@@ -31,7 +31,7 @@ import java.util.*;
  *
  * @author zsmjwk@outlook.com (wangkang)
  */
-public class DataBackup<T> {
+public class DataBackupEngine<T> {
 
     private boolean enabled = true;
 
@@ -41,13 +41,13 @@ public class DataBackup<T> {
     
     private final String backupPath;
     
-    public DataBackup(Leaves leaves, String backupPath, BackupDataConverter<T> convert) {
+    public DataBackupEngine(Leaves leaves, String backupPath, BackupDataConverter<T> convert) {
         this.leaves = leaves;
         this.backupPath = backupPath;
         this.convert = convert;
     }
 
-    private File makeDirExists(String dir) {
+    private void makeDirExists(String dir) {
         File file = new File(dir);
 
         if (!file.exists()) {
@@ -55,8 +55,6 @@ public class DataBackup<T> {
                 throw new IllegalStateException("failed to create cache dir: " + dir);
             }
         }
-
-        return file;
     }
 
     public void save(T t) {
@@ -106,16 +104,13 @@ public class DataBackup<T> {
 
             for (File file : files) {
                 if (file.isDirectory()) {
-                    if (!file.isFile()) {
-                        continue;
-                    }
                     File[] subFiles = file.listFiles();
                     if (Objects.nonNull(subFiles)) {
                         for (File subFile : subFiles) {
                             FunctionUtils.setIfNotNull(dataList::add, readFile(subFile));
                         }
                     }
-                } else {
+                } else if (file.isFile()) {
                     FunctionUtils.setIfNotNull(dataList::add, readFile(file));
                 }
             }

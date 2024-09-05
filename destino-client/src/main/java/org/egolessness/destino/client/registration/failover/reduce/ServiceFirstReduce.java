@@ -46,7 +46,7 @@ public class ServiceFirstReduce implements ServiceReduce {
         }
 
         Service mergeService = serviceSupplier.get();
-        if (Objects.isNull(service)) {
+        if (Objects.nonNull(mergeService)) {
             this.service = mergeService;
         }
         return this;

@@ -27,7 +27,7 @@ import java.util.function.Supplier;
  */
 public class ServiceOnlyReduce implements ServiceReduce {
 
-    private Service service;
+    private final Service service;
 
     public ServiceOnlyReduce(final Service service) {
         this.service = service;

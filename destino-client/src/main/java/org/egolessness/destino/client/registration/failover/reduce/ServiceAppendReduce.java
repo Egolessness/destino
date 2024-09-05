@@ -32,7 +32,7 @@ import java.util.function.Supplier;
  */
 public class ServiceAppendReduce implements ServiceReduce {
 
-    private Service service;
+    private final Service service;
 
     public ServiceAppendReduce(final Service service) {
         this.service = service;
