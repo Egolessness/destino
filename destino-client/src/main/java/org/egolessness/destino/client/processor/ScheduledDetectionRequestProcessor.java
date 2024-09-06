@@ -42,7 +42,7 @@ public class ScheduledDetectionRequestProcessor implements ServerRequestProcesso
 
     @Override
     public Response apply(Request request) throws Exception {
-        byte[] res = handle(RequestSupport.getDateBytes(request));
+        byte[] res = handle(RequestSupport.getDataBytes(request));
         return ResponseSupport.success(res);
     }
 

@@ -128,14 +128,14 @@ public class RequestSupport {
         return headers;
     }
 
-    public static byte[] getDateBytes(Request request) {
+    public static byte[] getDataBytes(Request request) {
         ByteString byteString = request.getData().getValue();
         return ByteUtils.decompress(byteString.toByteArray());
     }
 
     public static <T> T deserializeData(Request request, Class<T> requestClass) {
         try {
-            return JsonUtils.toObj(getDateBytes(request), requestClass);
+            return JsonUtils.toObj(getDataBytes(request), requestClass);
         } catch (Exception ignore) {
             return null;
         }

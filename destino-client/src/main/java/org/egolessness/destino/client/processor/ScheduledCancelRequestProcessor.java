@@ -42,7 +42,7 @@ public class ScheduledCancelRequestProcessor implements ServerRequestProcessor {
 
     @Override
     public Response apply(Request request) throws Exception {
-        handle(RequestSupport.getDateBytes(request));
+        handle(RequestSupport.getDataBytes(request));
         return ResponseSupport.success();
     }
 
