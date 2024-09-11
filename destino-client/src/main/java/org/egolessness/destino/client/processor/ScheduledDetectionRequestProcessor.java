@@ -20,7 +20,7 @@ import org.egolessness.destino.client.scheduling.reactor.SchedulingReactor;
 import org.egolessness.destino.common.exception.RequestInvalidException;
 import org.egolessness.destino.common.model.message.Request;
 import org.egolessness.destino.common.model.message.Response;
-import org.egolessness.destino.common.model.request.ScheduledCancelRequest;
+import org.egolessness.destino.common.model.request.ScheduledDetectionRequest;
 import org.egolessness.destino.common.support.RequestSupport;
 import org.egolessness.destino.common.support.ResponseSupport;
 import org.egolessness.destino.common.utils.JsonUtils;
@@ -48,9 +48,9 @@ public class ScheduledDetectionRequestProcessor implements ServerRequestProcesso
 
     @Override
     public byte[] handle(byte[] input) throws Exception {
-        ScheduledCancelRequest cancelRequest = JsonUtils.toObj(input, ScheduledCancelRequest.class);
-        if (Objects.nonNull(cancelRequest)) {
-            int code = schedulingReactor.state(cancelRequest.getSchedulerId(), cancelRequest.getExecutionTime());
+        ScheduledDetectionRequest detectionRequest = JsonUtils.toObj(input, ScheduledDetectionRequest.class);
+        if (Objects.nonNull(detectionRequest)) {
+            int code = schedulingReactor.state(detectionRequest.getSchedulerId(), detectionRequest.getExecutionTime());
             return JsonUtils.toJsonBytes(code);
         }
         throw new RequestInvalidException();

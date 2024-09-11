@@ -47,9 +47,9 @@ public class GrpcStub {
 
         if (PredicateUtils.isEmpty(uri.getPath())) {
             RequestAdapterGrpc.RequestAdapterFutureStub futureStub = RequestAdapterGrpc.newFutureStub(channel);
-            this.requester = futureStub::request;
+            this.requester = futureStub::sendRequest;
         } else {
-            MethodDescriptor<Request, Response> requestMethod = RequestAdapterGrpc.getRequestMethod();
+            MethodDescriptor<Request, Response> requestMethod = RequestAdapterGrpc.getSendRequestMethod();
             MethodDescriptor<Request, Response> methodDescriptor = requestMethod.toBuilder()
                     .setFullMethodName(getContextPrefix() + requestMethod.getFullMethodName()).build();
             this.requester =  request ->
@@ -76,16 +76,16 @@ public class GrpcStub {
         return channel;
     }
 
-    public ListenableFuture<Response> request(Request request) {
+    public ListenableFuture<Response> sendRequest(Request request) {
         return requester.apply(request);
     }
 
     public StreamObserver<Any> bindStream(StreamObserver<Any> observer) {
         if (PredicateUtils.isEmpty(uri.getPath())) {
             RequestStreamAdapterGrpc.RequestStreamAdapterStub streamStub = RequestStreamAdapterGrpc.newStub(channel);
-            return streamStub.requestStream(observer);
+            return streamStub.bindStream(observer);
         }
-        MethodDescriptor<Any, Any> requestMethod = RequestStreamAdapterGrpc.getRequestStreamMethod();
+        MethodDescriptor<Any, Any> requestMethod = RequestStreamAdapterGrpc.getBindStreamMethod();
         MethodDescriptor<Any, Any> methodDescriptor = requestMethod.toBuilder()
                 .setFullMethodName(getContextPrefix() + requestMethod.getFullMethodName()).build();
         return ClientCalls.asyncBidiStreamingCall(channel.newCall(methodDescriptor, CallOptions.DEFAULT), observer);

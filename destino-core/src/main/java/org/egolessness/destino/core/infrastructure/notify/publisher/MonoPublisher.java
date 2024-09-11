@@ -52,6 +52,7 @@ public class MonoPublisher implements Publisher {
 
     private final Duration sleepDuration = Duration.ofMillis(200);
     
+    @SuppressWarnings("unchecked")
     public MonoPublisher(long bufferSize) {
         WaitStrategy waitStrategy = new LiteTimeoutBlockingWaitStrategy(10, TimeUnit.SECONDS);
         SimpleThreadFactory threadFactory = new SimpleThreadFactory("Notifier-Dispatch-Executor");

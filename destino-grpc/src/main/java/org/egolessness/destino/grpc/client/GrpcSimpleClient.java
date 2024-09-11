@@ -64,7 +64,7 @@ public class GrpcSimpleClient extends RequestSimpleClient {
         Objects.requireNonNull(request, "Only non-null request are permitted");
         try {
             Request grpcRequest = RequestSupport.build(request, headers);
-            ListenableFuture<Response> listenableFuture = futureStub.request(grpcRequest);
+            ListenableFuture<Response> listenableFuture = futureStub.sendRequest(grpcRequest);
             return listenableFuture.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
             throw e;
@@ -76,13 +76,13 @@ public class GrpcSimpleClient extends RequestSimpleClient {
     @Override
     public ListenableFuture<Response> request(Serializable request, Map<String, String> headers) {
         Request grpcRequest = RequestSupport.build(request, headers);
-        return futureStub.request(grpcRequest);
+        return futureStub.sendRequest(grpcRequest);
     }
 
     @Override
     public void request(Serializable request, Map<String, String> headers, final Callback<Response> callback) {
         Request grpcRequest = RequestSupport.build(request, headers);
-        ListenableFuture<Response> requestFuture = futureStub.request(grpcRequest);
+        ListenableFuture<Response> requestFuture = futureStub.sendRequest(grpcRequest);
 
         requestFuture = Futures.withTimeout(requestFuture, callback.getTimeoutMillis(), TimeUnit.MILLISECONDS,
                 GrpcExecutors.TIMEOUT_SCHEDULER);

@@ -154,6 +154,7 @@ public class ExecutionPool implements Runnable {
                 ProducerType.MULTI, waitStrategy);
     }
 
+    @SuppressWarnings("unchecked")
     public void initFastChannel() {
         this.FAST_CHANNEL.handleEventsWith(buildFastChannelHandler());
         this.FAST_CHANNEL.handleExceptionsFor((event, sequence, endOfBatch) -> asyncHandleFastChannelEvent(event));

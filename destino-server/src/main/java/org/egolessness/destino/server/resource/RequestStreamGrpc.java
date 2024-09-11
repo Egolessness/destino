@@ -65,7 +65,7 @@ public class RequestStreamGrpc extends RequestStreamAdapterGrpc.RequestStreamAda
     }
 
     @Override
-    public StreamObserver<Any> requestStream(StreamObserver<Any> responseObserver) {
+    public StreamObserver<Any> bindStream(StreamObserver<Any> responseObserver) {
 
         return new StreamObserver<Any>() {
 

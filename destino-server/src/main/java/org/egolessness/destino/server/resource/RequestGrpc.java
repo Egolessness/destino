@@ -35,7 +35,7 @@ public class RequestGrpc extends RequestAdapterGrpc.RequestAdapterImplBase {
     }
 
     @Override
-    public void request(Request request, StreamObserver<Response> responseObserver) {
+    public void sendRequest(Request request, StreamObserver<Response> responseObserver) {
         setResponse(responseObserver, resourceRegistry.process(request));
     }
 
