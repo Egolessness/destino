@@ -83,7 +83,7 @@ public class ProtocolRequestSupport {
     public static WriteRequest buildWriteRequest(final Cosmos cosmos, List<Entity> entities, @Nullable WriteMode writeMode) {
         long timestamp = System.currentTimeMillis();
         String keysJoin = entities.stream().map(Entity::getKey).map(ByteString::toStringUtf8)
-                .sorted().collect(Collectors.joining());
+                .collect(Collectors.joining());
         String token = SecuritySupport.createServerToken(timestamp, cosmos.toString(), SecurityUtils.md5Hex(keysJoin));
         WriteRequest.Builder builder = WriteRequest.newBuilder()
                 .setToken(token)

@@ -283,7 +283,7 @@ public class HealthChecker implements Lucermaire, DomainLinker {
     }
 
     public void check(final HealthCheckContext context) {
-        if (undertaker.isCurrent(context.getRegistrationKey())) {
+        if (undertaker.isCurrent(context.getRegistrationKey().toString())) {
             Callback<Long> callback = new Callback<Long>() {
                 @Override
                 public void onResponse(Long delayMillis) {
