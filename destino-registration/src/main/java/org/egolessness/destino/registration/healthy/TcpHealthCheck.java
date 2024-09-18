@@ -85,6 +85,11 @@ public class TcpHealthCheck implements HealthCheck, Runnable {
     }
 
     @Override
+    public boolean predicate(HealthCheckContext context) {
+        return undertaker.isCurrent(context.getRegistrationKey());
+    }
+
+    @Override
     public void check(final HealthCheckContext context, Callback<Long> callback) {
         long nextHeartbeatTimeoutDelay = getNextHeartbeatTimeoutDelay(context);
         if (nextHeartbeatTimeoutDelay > 0) {

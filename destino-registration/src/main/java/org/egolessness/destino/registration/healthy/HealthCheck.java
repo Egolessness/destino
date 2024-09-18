@@ -25,6 +25,8 @@ import org.egolessness.destino.common.fixedness.Callback;
  */
 public interface HealthCheck {
 
+    boolean predicate(HealthCheckContext context);
+
     void check(HealthCheckContext context, Callback<Long> callback);
 
     void cancel(HealthCheckContext context);

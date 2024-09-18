@@ -39,7 +39,6 @@ import org.egolessness.destino.core.event.MembersChangedEvent;
 import org.egolessness.destino.core.fixedness.DomainLinker;
 import org.egolessness.destino.core.infrastructure.notify.Notifier;
 import org.egolessness.destino.core.infrastructure.notify.subscriber.Subscriber;
-import org.egolessness.destino.core.infrastructure.undertake.Undertaker;
 import org.egolessness.destino.core.message.ConsistencyDomain;
 import org.egolessness.destino.core.model.Connection;
 import org.egolessness.destino.registration.message.RegistrationKey;
@@ -71,13 +70,10 @@ public class HealthChecker implements Lucermaire, DomainLinker {
 
     private final HealthCheckHandler                                                healthCheckHandler;
 
-    private final Undertaker                                                        undertaker;
-
     private final Notifier                                                          notifier;
 
     @Inject
-    public HealthChecker(final Injector injector, final Undertaker undertaker,
-                         final Notifier notifier, final ContainerFactory containerFactory,
+    public HealthChecker(final Injector injector, final Notifier notifier, final ContainerFactory containerFactory,
                          final HealthCheckHandler healthCheckHandler) {
         this.contexts = new ConcurrentHashMap<>(64);
         this.coldContexts = new ConcurrentHashSet<>();
@@ -86,14 +82,13 @@ public class HealthChecker implements Lucermaire, DomainLinker {
                 200, TimeUnit.MILLISECONDS, 2048);
         this.connectionContainer = containerFactory.getContainer(ConnectionContainer.class);
         this.healthCheckHandler = healthCheckHandler;
-        this.undertaker = undertaker;
         this.notifier = notifier;
         this.subscribeMembersChanged();
         this.subscribeHealthCheckChanged();
     }
 
     private void subscribeMembersChanged() {
-        notifier.subscribe((Subscriber<MembersChangedEvent>) event -> refreshColdSet());
+        notifier.subscribe((Subscriber<MembersChangedEvent>) event -> refreshColdContexts());
     }
 
     private void subscribeHealthCheckChanged() {
@@ -162,14 +157,13 @@ public class HealthChecker implements Lucermaire, DomainLinker {
     }
 
     public void addRpcCheckTask(final HealthCheckContext context) {
-        RegistrationKey registrationKey = context.getRegistrationKey();
-        Registration registration = context.getRegistration();
-
-        if (!RequestSupport.isSupportConnectionListenable(registration.getChannel())) {
+        if (!RequestSupport.isSupportConnectionListenable(context.getRequestChannel())) {
             return;
         }
 
-        if (registration.getSource() == undertaker.currentId()) {
+        RegistrationKey registrationKey = context.getRegistrationKey();
+        HealthCheck healthCheck = checkGetter.apply(context.getRequestChannel());
+        if (healthCheck.predicate(context)) {
             Optional<Connection> connectionOptional = connectionContainer.getConnectionByIndex(registrationKey);
             if (connectionOptional.isPresent()) {
                 connectionOptional.get().addCloseListener(connection -> healthCheckHandler.onFail(context, true));
@@ -183,18 +177,20 @@ public class HealthChecker implements Lucermaire, DomainLinker {
         }
     }
 
-    public void addTcpCheckTask(final HealthCheckContext context) {
+    public boolean addTcpCheckTask(final HealthCheckContext context) {
         if (RequestSupport.isSupportConnectionListenable(context.getRequestChannel())) {
-            return;
+            return false;
         }
         synchronized (this) {
-            RegistrationKey registrationKey = context.getRegistrationKey();
-            if (undertaker.isCurrent(registrationKey.toString())) {
+            HealthCheck healthCheck = checkGetter.apply(context.getRequestChannel());
+            if (healthCheck.predicate(context)) {
                 coldContexts.remove(context);
                 addContext(context);
+                return true;
             } else {
                 coldContexts.add(context);
                 removeContext(context);
+                return false;
             }
         }
     }
@@ -243,16 +239,22 @@ public class HealthChecker implements Lucermaire, DomainLinker {
         }
     }
 
-    public synchronized void refreshColdSet() {
+    public synchronized void refreshColdContexts() {
         Iterator<HealthCheckContext> iterator = coldContexts.iterator();
         while (iterator.hasNext()) {
             HealthCheckContext context = iterator.next();
             context.setCancel(false);
-            if (undertaker.isCurrent(context.getRegistrationKey().toString())) {
-                addTcpCheckTask(context);
+            if (addTcpCheckTask(context)) {
                 iterator.remove();
             }
         }
+    }
+
+    private synchronized void addColdContext(HealthCheckContext context) {
+        if (RequestSupport.isSupportConnectionListenable(context.getRequestChannel())) {
+            return;
+        }
+        coldContexts.add(context);
     }
 
     public void reloadContext(HealthCheckContext context) {
@@ -283,7 +285,8 @@ public class HealthChecker implements Lucermaire, DomainLinker {
     }
 
     public void check(final HealthCheckContext context) {
-        if (undertaker.isCurrent(context.getRegistrationKey().toString())) {
+        HealthCheck healthCheck = checkGetter.apply(context.getRequestChannel());
+        if (healthCheck.predicate(context)) {
             Callback<Long> callback = new Callback<Long>() {
                 @Override
                 public void onResponse(Long delayMillis) {
@@ -301,10 +304,10 @@ public class HealthChecker implements Lucermaire, DomainLinker {
                     delayCheck(context, getInitDelayMillis(context.getRegistration()));
                 }
             };
-            checkGetter.apply(context.getRequestChannel()).check(context, callback);
+            healthCheck.check(context, callback);
         } else {
             removeCheckTask(context.getCluster(), context.getRegistrationKey());
-            coldContexts.add(context);
+            addColdContext(context);
         }
     }
 

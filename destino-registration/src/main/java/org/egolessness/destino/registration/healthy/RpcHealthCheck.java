@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.registration.healthy;
 
+import org.egolessness.destino.core.infrastructure.undertake.Undertaker;
 import org.egolessness.destino.registration.setting.ClientSetting;
 import com.google.inject.Inject;
 import org.egolessness.destino.common.fixedness.Callback;
@@ -43,11 +44,20 @@ public class RpcHealthCheck implements HealthCheck {
 
     private final ClientSetting clientSetting;
 
+    private final Undertaker undertaker;
+
     @Inject
-    public RpcHealthCheck(ContainerFactory containerFactory, HealthCheckHandler checkHandler, ClientSetting clientSetting) {
+    public RpcHealthCheck(ContainerFactory containerFactory, HealthCheckHandler checkHandler,
+                          ClientSetting clientSetting, Undertaker undertaker) {
         this.connectionContainer = containerFactory.getContainer(ConnectionContainer.class);
         this.checkHandler = checkHandler;
         this.clientSetting = clientSetting;
+        this.undertaker = undertaker;
+    }
+
+    @Override
+    public boolean predicate(HealthCheckContext context) {
+        return context.getRegistration().getSource() == undertaker.currentId();
     }
 
     @Override
