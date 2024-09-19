@@ -35,9 +35,12 @@ import io.grpc.ManagedChannel;
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.*;
+
+import static org.egolessness.destino.common.constant.CommonConstants.HEADER_CONNECTION_ID;
 
 /**
  * grpc simple request client.
@@ -46,25 +49,23 @@ import java.util.concurrent.*;
  */
 public class GrpcSimpleClient extends RequestSimpleClient {
 
-    private GrpcStub futureStub;
+    private GrpcStub stub;
 
     protected GrpcSimpleClient() {
     }
 
-    public GrpcSimpleClient(GrpcStub futureStub) {
-        this.futureStub = futureStub;
+    public GrpcSimpleClient(GrpcStub stub) {
+        this.stub = stub;
     }
 
-    public void setFutureStub(GrpcStub futureStub) {
-        this.futureStub = futureStub;
+    public void setStub(GrpcStub stub) {
+        this.stub = stub;
     }
 
     @Override
     public Response request(Serializable request, Map<String, String> headers, Duration timeout) throws DestinoException, TimeoutException {
-        Objects.requireNonNull(request, "Only non-null request are permitted");
         try {
-            Request grpcRequest = RequestSupport.build(request, headers);
-            ListenableFuture<Response> listenableFuture = futureStub.sendRequest(grpcRequest);
+            ListenableFuture<Response> listenableFuture = request(request, headers);
             return listenableFuture.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
             throw e;
@@ -75,14 +76,16 @@ public class GrpcSimpleClient extends RequestSimpleClient {
 
     @Override
     public ListenableFuture<Response> request(Serializable request, Map<String, String> headers) {
+        Objects.requireNonNull(request, "Only non-null request are permitted");
+        headers = new HashMap<>(headers);
+        headers.put(HEADER_CONNECTION_ID, stub.getConnectionId());
         Request grpcRequest = RequestSupport.build(request, headers);
-        return futureStub.sendRequest(grpcRequest);
+        return stub.sendRequest(grpcRequest);
     }
 
     @Override
     public void request(Serializable request, Map<String, String> headers, final Callback<Response> callback) {
-        Request grpcRequest = RequestSupport.build(request, headers);
-        ListenableFuture<Response> requestFuture = futureStub.sendRequest(grpcRequest);
+        ListenableFuture<Response> requestFuture = request(request, headers);
 
         requestFuture = Futures.withTimeout(requestFuture, callback.getTimeoutMillis(), TimeUnit.MILLISECONDS,
                 GrpcExecutors.TIMEOUT_SCHEDULER);
@@ -112,7 +115,7 @@ public class GrpcSimpleClient extends RequestSimpleClient {
     private void closeChannel() {
 
         try {
-            ManagedChannel channel = futureStub.getChannel();
+            ManagedChannel channel = stub.getChannel();
             if (!channel.isShutdown()) {
                 channel.shutdownNow();
             }

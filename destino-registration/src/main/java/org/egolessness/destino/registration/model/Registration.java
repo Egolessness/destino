@@ -33,16 +33,19 @@ public class Registration extends Meta {
 
     private RequestChannel channel;
 
+    private String connectionId;
+
     public Registration() {}
 
     public Registration(long source, long version) {
         super(source, version);
     }
 
-    public Registration(ServiceInstance instance, long sourceId, RequestChannel channel) {
+    public Registration(ServiceInstance instance, long sourceId, RequestChannel channel, String connectionId) {
         super(sourceId, System.currentTimeMillis());
         this.instance = instance;
         this.channel = channel;
+        this.connectionId = connectionId;
     }
 
     public Registration(ServiceInstance instance) {
@@ -66,4 +69,11 @@ public class Registration extends Meta {
         this.channel = channel;
     }
 
+    public String getConnectionId() {
+        return connectionId;
+    }
+
+    public void setConnectionId(String connectionId) {
+        this.connectionId = connectionId;
+    }
 }

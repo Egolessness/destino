@@ -32,3 +32,13 @@ message InstanceKey {
   string cluster = 3;
   optional InstanceMode mode = 4;
 }
+
+message PushRequest {
+  string connectionId = 1;
+  Request requestContent = 2;
+  int64 timeout = 3;
+}
+
+service RegistrationRequestAdapter {
+  rpc pushToClient(PushRequest) returns (Response) {};
+}

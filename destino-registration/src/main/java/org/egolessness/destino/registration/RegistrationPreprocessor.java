@@ -17,7 +17,10 @@
 package org.egolessness.destino.registration;
 
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.inject.Singleton;
+import org.egolessness.destino.core.DestinoServer;
+import org.egolessness.destino.core.enumration.ServerMode;
 import org.egolessness.destino.core.spi.Preprocessor;
 
 /**
@@ -28,16 +31,23 @@ import org.egolessness.destino.core.spi.Preprocessor;
 @Singleton
 public class RegistrationPreprocessor implements Preprocessor {
 
-    private final RegistrationManager registrationManager;
+    private final Injector injector;
 
     @Inject
-    public RegistrationPreprocessor(final RegistrationManager registrationManager) {
-        this.registrationManager = registrationManager;
+    public RegistrationPreprocessor(Injector injector) {
+        this.injector = injector;
     }
 
     @Override
     public void process() {
-        this.registrationManager.start();
+        RegistrationManager registrationManager = injector.getInstance(RegistrationManager.class);
+        registrationManager.start();
+
+        ServerMode mode = injector.getInstance(ServerMode.class);
+        if (mode.isDistributed()) {
+            DestinoServer destinoServer = injector.getInstance(DestinoServer.class);
+            destinoServer.addGrpcService(injector.getInstance(RegistrationGrpcService.class));
+        }
     }
 
 }

@@ -17,10 +17,11 @@
 package org.egolessness.destino.scheduler.log;
 
 import org.egolessness.destino.registration.support.RegistrationSupport;
-import org.egolessness.destino.registration.message.RegistrationKey;
 import org.egolessness.destino.scheduler.message.Process;
+import org.egolessness.destino.scheduler.model.InstancePacking;
 
 import java.text.MessageFormat;
+import java.util.Objects;
 
 /**
  * log parser for cancel reached execution.
@@ -33,12 +34,15 @@ public class CancellingForReachedLogParser implements LogParser {
 
     private final String message;
 
-    public CancellingForReachedLogParser(RegistrationKey registrationKey) {
-        this.message = buildMessage(registrationKey);
+    public CancellingForReachedLogParser(InstancePacking packing) {
+        this.message = buildMessage(packing);
     }
 
-    private String buildMessage(RegistrationKey registrationKey) {
-        return MessageFormat.format(MSG_TEMPLATE, RegistrationSupport.getInstanceInfo(registrationKey.getInstanceKey()));
+    private String buildMessage(InstancePacking packing) {
+        if (Objects.isNull(packing)) {
+            return MessageFormat.format(MSG_TEMPLATE, "unknown");
+        }
+        return MessageFormat.format(MSG_TEMPLATE, RegistrationSupport.getInstanceInfo(packing.getRegistrationKey().getInstanceKey()));
     }
 
     @Override

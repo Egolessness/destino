@@ -40,6 +40,7 @@ import com.google.inject.Singleton;
 import org.egolessness.destino.registration.model.event.ServiceChangedEvent;
 import org.egolessness.destino.registration.publisher.ServicePublisher;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -117,12 +118,12 @@ public class RegistrationManager implements Starter {
             case ADD:
             case UPDATE:
                 healthChecker.addCheckTask(event.getCluster(), registrationKey, registration);
-                getReceiver(registrationKey, registration).ifPresent(receiver ->
+                getReceiver(registration).ifPresent(receiver ->
                         servicePublisher.updateSubscriberPushable(receiver, registration.getInstance().isHealthy()));
                 break;
             case REMOVE:
                 healthChecker.removeCheckTask(event.getCluster(), registrationKey);
-                getReceiver(registrationKey, registration).ifPresent(servicePublisher::removeSubscriber);
+                getReceiver(registration).ifPresent(servicePublisher::removeSubscriber);
                 break;
         }
     }
@@ -135,7 +136,7 @@ public class RegistrationManager implements Starter {
         serviceOptional.ifPresent(servicePublisher::acceptService);
     }
 
-    private Optional<Receiver> getReceiver(RegistrationKey registrationKey, Registration registration) {
+    private Optional<Receiver> getReceiver(Registration registration) {
         if (registration.getChannel() == null) {
             return Optional.empty();
         }
@@ -144,9 +145,9 @@ public class RegistrationManager implements Starter {
 
         switch (registration.getChannel()) {
             case GRPC:
-                Optional<Connection> connectionOptional = connectionContainer.getConnectionByIndex(registrationKey);
-                if (connectionOptional.isPresent()) {
-                    Receiver receiver = ServiceSubscriber.ofRpc(instance.getIp(), instance.getPort(), connectionOptional.get().getId());
+                Connection connection = connectionContainer.getConnection(registration.getConnectionId());
+                if (Objects.nonNull(connection)) {
+                    Receiver receiver = ServiceSubscriber.ofRpc(instance.getIp(), instance.getPort(), connection.getId());
                     return Optional.of(receiver);
                 }
             case HTTP:

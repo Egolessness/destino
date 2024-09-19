@@ -18,6 +18,7 @@ package org.egolessness.destino.core.support;
 
 import com.linecorp.armeria.internal.server.DefaultServiceRequestContext;
 import com.linecorp.armeria.server.ServiceRequestContext;
+import org.egolessness.destino.common.enumeration.Mark;
 import org.egolessness.destino.core.Loggers;
 import io.netty.channel.Channel;
 
@@ -43,17 +44,21 @@ public class ConnectionSupport {
         }
     }
 
-    public static String getConnectionId() {
+    public static String getConnectionId(long serverId) {
         ServiceRequestContext serviceRequestContext = ServiceRequestContext.currentOrNull();
         if (serviceRequestContext == null) {
             return null;
         }
-        return getConnectionId(serviceRequestContext);
+        return getConnectionId(serviceRequestContext, serverId);
     }
 
-    public static String getConnectionId(@Nonnull ServiceRequestContext serviceRequestContext) {
+    public static String getConnectionId(@Nonnull ServiceRequestContext serviceRequestContext, long serverId) {
         Channel channel = getChannel(serviceRequestContext);
-        return channel != null ? channel.id().asShortText() : null;
+        return getConnectionId(channel, serverId);
+    }
+
+    public static String getConnectionId(Channel channel, long serverId) {
+        return channel != null ? Mark.UNDERLINE.join(serverId, channel.id().asShortText()) : null;
     }
 
     public static Channel getChannel() {

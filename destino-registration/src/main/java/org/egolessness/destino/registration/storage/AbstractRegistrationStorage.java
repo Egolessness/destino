@@ -18,10 +18,10 @@ package org.egolessness.destino.registration.storage;
 
 import org.egolessness.destino.common.utils.ByteUtils;
 import org.egolessness.destino.registration.container.RegistrationContainer;
+import org.egolessness.destino.registration.model.InstanceWrapper;
 import org.egolessness.destino.registration.storage.specifier.RegistrationKeySpecifier;
 import org.egolessness.destino.registration.support.RegistrationSupport;
 import org.egolessness.destino.common.enumeration.RequestChannel;
-import org.egolessness.destino.common.model.ServiceInstance;
 import org.egolessness.destino.common.support.BeanValidator;
 import org.egolessness.destino.core.enumration.Errors;
 import org.egolessness.destino.core.container.ContainerFactory;
@@ -145,7 +145,8 @@ public abstract class AbstractRegistrationStorage implements DomainKvStorage<Reg
     @Override
     public byte[] serialize(Registration registration) {
         ByteBuffer byteBuffer = MetaSpecifier.INSTANCE.transfer(registration);
-        byte[] data = serializer.serialize(registration.getInstance());
+        InstanceWrapper wrapper = new InstanceWrapper(registration.getConnectionId(), registration.getInstance());
+        byte[] data = serializer.serialize(wrapper);
 
         ByteBuffer compaction = ByteBuffer.allocate(byteBuffer.capacity() + 4 + data.length);
         compaction.put(byteBuffer.array());
@@ -174,8 +175,9 @@ public abstract class AbstractRegistrationStorage implements DomainKvStorage<Reg
         byteBuffer.position(20);
         byteBuffer.get(data);
 
-        ServiceInstance instance = serializer.deserialize(data, ServiceInstance.class);
-        registration.setInstance(instance);
+        InstanceWrapper wrapper = serializer.deserialize(data, InstanceWrapper.class);
+        registration.setInstance(wrapper.getInstance());
+        registration.setConnectionId(wrapper.getConnectionId());
         return registration;
     }
 
@@ -183,5 +185,4 @@ public abstract class AbstractRegistrationStorage implements DomainKvStorage<Reg
     public Class<Registration> type() {
         return Registration.class;
     }
-
 }

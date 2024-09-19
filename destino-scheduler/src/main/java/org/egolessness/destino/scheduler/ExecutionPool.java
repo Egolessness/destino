@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.scheduler;
 
+import org.egolessness.destino.common.enumeration.Mark;
 import org.egolessness.destino.common.model.message.BlockedStrategy;
 import org.egolessness.destino.common.model.message.Response;
 import org.egolessness.destino.common.model.message.ScheduledTriggerReplies;
@@ -242,7 +243,7 @@ public class ExecutionPool implements Runnable {
             } else {
                 addressing = addressingFactory.create(AddressingStrategy.ROUND_ROBIN, schedulerInfo);
                 if (executionInfo.getLastDest() != null) {
-                    addressing.lastDest(executionInfo.getLastDest(), execution.getExecutionTime());
+                    addressing.lastDest(executionInfo.getLastDest().getRegistrationKey(), execution.getExecutionTime());
                 }
             }
 
@@ -335,7 +336,7 @@ public class ExecutionPool implements Runnable {
 
     private void execute(InstancePacking packing, List<ExecutionInfo> executionInfos) {
         for (ExecutionInfo executionInfo : executionInfos) {
-            executionInfo.setLastDest(packing.getRegistrationKey());
+            executionInfo.setLastDest(packing);
         }
 
         if (packing.isReachable(current.getId())) {
@@ -351,7 +352,8 @@ public class ExecutionPool implements Runnable {
             return;
         }
 
-        Optional<SchedulerClient> clientOptional = clientFactory.getClient(packing.getSourceId());
+        long serverId = Long.getLong(Mark.UNDERLINE.split(packing.getConnectionId())[0], -1);
+        Optional<SchedulerClient> clientOptional = clientFactory.getClient(serverId);
         if (clientOptional.isPresent()) {
             ExecutionCommand.Builder commandBuilder = ExecutionCommand.newBuilder()
                     .setRegistrationKey(packing.getRegistrationKey());
@@ -376,7 +378,7 @@ public class ExecutionPool implements Runnable {
             return;
         }
 
-        MemberMissingLogParser logParser = new MemberMissingLogParser(packing, packing.getSourceId());
+        MemberMissingLogParser logParser = new MemberMissingLogParser(packing, serverId);
         for (ExecutionInfo executionInfo : executionInfos) {
             connectFailed(executionInfo, logParser);
         }
@@ -412,38 +414,38 @@ public class ExecutionPool implements Runnable {
                         break;
                     case DUPLICATE:
                         logCollector.addLogLine(executionKey, new DuplicateLogParser(packing));
-                        executionInfo.terminate(packing.getRegistrationKey());
+                        executionInfo.terminate(packing);
                         publishCompletedEvent(executionKey);
                         break;
                     case EXPIRED:
                         logCollector.addLogLine(executionKey, new ExpiredLogParser(packing));
-                        executionInfo.terminate(packing.getRegistrationKey());
+                        executionInfo.terminate(packing);
                         executionInfo.addPushedCache();
                         publishCompletedEvent(executionKey);
                         break;
                     case DISCARDED:
                         logCollector.addLogLine(executionKey, new DiscardedLogParser(packing));
-                        executionInfo.terminate(packing.getRegistrationKey());
+                        executionInfo.terminate(packing);
                         executionInfo.addPushedCache();
                         publishCompletedEvent(executionKey);
                         break;
                     case BUSYING:
                         executionInfo.addPushedCache();
-                        executionInfo.setLastDest(packing.getRegistrationKey());
+                        executionInfo.setLastDest(packing);
                         triggerForward(executionInfo, new BusyingForwardLogParser(packing));
                         break;
                     case NOTFOUND:
                         executionInfo.addPushedCache();
-                        executionInfo.setLastDest(packing.getRegistrationKey());
+                        executionInfo.setLastDest(packing);
                         triggerFailover(packing, executionInfo, NotFoundLogParser::new, NotFoundAndFailoverLogParser::new);
                         break;
                     case INCOMPLETE:
-                        executionInfo.setLastDest(packing.getRegistrationKey());
+                        executionInfo.setLastDest(packing);
                         completeScriptContent(executionInfo);
                         break;
                     case NON_EXECUTABLE:
                         executionInfo.addPushedCache();
-                        executionInfo.setLastDest(packing.getRegistrationKey());
+                        executionInfo.setLastDest(packing);
                         triggerForward(executionInfo, new NonExecutableLogParser(packing, reply.getMsg()));
                         break;
                 }
@@ -592,7 +594,7 @@ public class ExecutionPool implements Runnable {
             triggerForward(executionInfo, failoverLogParserFunc.apply(packing));
         } else {
             logCollector.addLogLine(executionInfo.getKey(), terminatedLogParserFunc.apply(packing));
-            executionInfo.terminate(packing.getRegistrationKey());
+            executionInfo.terminate(packing);
             publishCompletedEvent(executionInfo.getKey());
         }
     }
@@ -828,22 +830,22 @@ public class ExecutionPool implements Runnable {
         if (terminateState == TerminateState.TERMINATED) {
             logCollector.addLogLine(executionKey, TerminatedLogParser.INSTANCE);
         } else if (terminateState == TerminateState.TIMEOUT) {
-            logCollector.addLogLine(executionInfo.getKey(), new TerminateTimeoutLogParser(computed.getLastDest()));
+            logCollector.addLogLine(executionInfo.getKey(), new TerminateTimeoutLogParser(computed.getLastDest().getRegistrationKey()));
         } else if (terminateState == TerminateState.ERROR) {
-            logCollector.addLogLine(executionInfo.getKey(), new TerminateErrorLogParser(computed.getLastDest()));
+            logCollector.addLogLine(executionInfo.getKey(), new TerminateErrorLogParser(computed.getLastDest().getRegistrationKey()));
         }
         return terminateState;
     }
 
     public void handleWhenReached(ExecutionInfo executionInfo, InstancePacking packing) {
-        if (executionInfo.reached(packing.getRegistrationKey())) {
+        if (executionInfo.reached(packing)) {
             logCollector.addLogLine(executionInfo.getKey(), new ReachedLogParser(packing));
             executionInfo.addPushedCache();
         } else if (executionInfo.isTerminated()) {
             terminateWhenReached(executionInfo, packing);
             publishCompletedEvent(executionInfo.getKey());
         } else if (executionInfo.isCancelled()) {
-            logCollector.addLogLine(executionInfo.getKey(), new CancellingForReachedLogParser(packing.getRegistrationKey()));
+            logCollector.addLogLine(executionInfo.getKey(), new CancellingForReachedLogParser(packing));
             pusher.cancel(executionInfo);
             publishCompletedEvent(executionInfo.getKey());
         }

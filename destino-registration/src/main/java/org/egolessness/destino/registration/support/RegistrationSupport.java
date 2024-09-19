@@ -17,6 +17,7 @@
 package org.egolessness.destino.registration.support;
 
 import org.egolessness.destino.common.model.request.InstanceHeartbeatRequest;
+import org.egolessness.destino.core.resource.HeaderHolder;
 import org.egolessness.destino.registration.message.InstanceMode;
 import org.egolessness.destino.registration.model.*;
 import com.linecorp.armeria.server.ServiceRequestContext;
@@ -40,6 +41,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.egolessness.destino.common.constant.CommonConstants.HEADER_CONNECTION_ID;
 
 /**
  * support for registration.
@@ -69,7 +72,8 @@ public class RegistrationSupport {
     }
 
     public static Registration buildRegistration(final ServiceInstance instance, Member current) {
-        return new Registration(instance, current.getId(), getChannel());
+        String connectionId = HeaderHolder.current().get(HEADER_CONNECTION_ID);
+        return new Registration(instance, current.getId(), getChannel(), connectionId);
     }
 
     public static ClientBeatInfo buildClientBeatInfo(InstanceHeartbeatRequest request) {

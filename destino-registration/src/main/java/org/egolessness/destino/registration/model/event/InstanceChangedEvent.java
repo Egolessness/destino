@@ -86,6 +86,10 @@ public class InstanceChangedEvent implements MonoEvent, ElementOperationEvent {
         return registration.getChannel();
     }
 
+    public String getConnectionId() {
+        return registration.getConnectionId();
+    }
+
     public ServiceCluster getCluster() {
         return cluster;
     }

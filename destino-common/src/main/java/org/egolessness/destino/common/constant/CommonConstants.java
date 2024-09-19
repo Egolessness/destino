@@ -34,6 +34,8 @@ public class CommonConstants {
 
     public static final String HEADER_LANGUAGE = "Language";
 
+    public static final String HEADER_CONNECTION_ID = "connection-id";
+
     public static final String PLATFORM_JAVA = "JAVA";
 
     public static final String TOKEN_PREFIX = "Bearer ";

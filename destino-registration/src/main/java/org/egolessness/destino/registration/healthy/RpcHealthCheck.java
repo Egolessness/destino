@@ -16,6 +16,8 @@
 
 package org.egolessness.destino.registration.healthy;
 
+import org.egolessness.destino.common.enumeration.Mark;
+import org.egolessness.destino.common.utils.PredicateUtils;
 import org.egolessness.destino.core.infrastructure.undertake.Undertaker;
 import org.egolessness.destino.registration.setting.ClientSetting;
 import com.google.inject.Inject;
@@ -28,7 +30,7 @@ import org.egolessness.destino.core.model.Connection;
 import org.egolessness.destino.registration.model.Registration;
 import org.apache.commons.lang.math.IntRange;
 
-import java.util.Optional;
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -57,21 +59,22 @@ public class RpcHealthCheck implements HealthCheck {
 
     @Override
     public boolean predicate(HealthCheckContext context) {
-        return context.getRegistration().getSource() == undertaker.currentId();
+        String connectionId = context.getConnectionId();
+        if (PredicateUtils.isEmpty(connectionId)) {
+            return false;
+        }
+        return connectionId.startsWith(undertaker.currentId() + Mark.UNDERLINE.getValue());
     }
 
     @Override
     public void check(HealthCheckContext context, Callback<Long> callback) {
-        Optional<Connection> connectionOptional = connectionContainer.getConnectionByIndex(context.getRegistrationKey());
+        Connection connection = connectionContainer.getConnection(context.getConnectionId());
 
-        if (connectionOptional.isPresent()) {
-            Connection connection = connectionOptional.get();
+        if (Objects.nonNull(connection)) {
             if (!connection.isClosed() && connection.isConnected()) {
                 checkHandler.onSuccess(context);
                 CallbackSupport.triggerResponse(callback, successDelayMillis(context.getRegistration()));
                 return;
-            } else {
-                connectionContainer.removeIndexWhenClosed(context.getRegistrationKey());
             }
         }
 

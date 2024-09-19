@@ -16,9 +16,11 @@
 
 package org.egolessness.destino.scheduler.model;
 
+import org.egolessness.destino.common.enumeration.Mark;
 import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.common.model.ServiceInstance;
 import org.egolessness.destino.common.support.RequestSupport;
+import org.egolessness.destino.common.utils.PredicateUtils;
 import org.egolessness.destino.registration.support.RegistrationSupport;
 import org.egolessness.destino.registration.message.RegistrationKey;
 import org.egolessness.destino.registration.model.event.InstanceChangedEvent;
@@ -44,6 +46,8 @@ public class InstancePacking implements Comparable<InstancePacking>, Serializabl
 
     private final long sourceId;
 
+    private final String connectionId;
+
     private final RequestChannel channel;
 
     private volatile boolean removed;
@@ -56,6 +60,7 @@ public class InstancePacking implements Comparable<InstancePacking>, Serializabl
         this.registerTime = event.getRegisterTime();
         this.sourceId = event.getSourceId();
         this.channel = event.getChannel();
+        this.connectionId = event.getConnectionId();
     }
 
     public ServiceInstance getInstance() {
@@ -102,8 +107,12 @@ public class InstancePacking implements Comparable<InstancePacking>, Serializabl
         return RegistrationSupport.validatePort(instance.getUdpPort());
     }
 
+    public String getConnectionId() {
+        return connectionId;
+    }
+
     public boolean isReachable(long memberId) {
-        if (sourceId < 0 || sourceId == memberId) {
+        if (PredicateUtils.isNotEmpty(connectionId) && connectionId.startsWith(memberId + Mark.UNDERLINE.getValue())) {
             return true;
         }
         return !RequestSupport.isSupportRequestStreamReceiver(channel) && udpAvailable();

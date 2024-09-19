@@ -93,7 +93,7 @@ public class GrpcHighLevelClient extends RequestHighLevelClient {
             closeChannel();
             this.stub = newStub;
             this.streamObserver = streamObserveNew;
-            ((GrpcSimpleClient) this.SIMPLE_CLIENT).setFutureStub(newStub);
+            ((GrpcSimpleClient) this.SIMPLE_CLIENT).setStub(newStub);
             stateChange(RUNNING);
             LOGGER.info("The GRPC client has successfully connected to server {}.", uri);
 

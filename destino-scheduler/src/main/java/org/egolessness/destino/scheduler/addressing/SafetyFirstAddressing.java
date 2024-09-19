@@ -60,7 +60,7 @@ public class SafetyFirstAddressing extends AbstractAddressing {
     public InstancePacking get() {
         InstancePacking packing;
         if (lastDest != null && (packing = map.get(lastDest)) != null &&
-                connectionContainer.hasIndex(packing.getRegistrationKey())) {
+                connectionContainer.contains(packing.getConnectionId())) {
             if (packing.isRemoved()) {
                 map.remove(packing.getRegistrationKey());
             } else if (packing.isConnectable()) {
@@ -69,7 +69,7 @@ public class SafetyFirstAddressing extends AbstractAddressing {
         }
 
         for (InstancePacking instancePacking : map.values()) {
-            if (connectionContainer.hasIndex(instancePacking.getRegistrationKey())) {
+            if (connectionContainer.contains(instancePacking.getConnectionId())) {
                 if (instancePacking.isRemoved()) {
                     map.remove(instancePacking.getRegistrationKey());
                 } else if (instancePacking.isConnectable()) {

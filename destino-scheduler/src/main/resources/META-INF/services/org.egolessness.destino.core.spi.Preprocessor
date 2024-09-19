@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-org.egolessness.destino.scheduler.SchedulerResourceLoader
+org.egolessness.destino.scheduler.SchedulerPreprocessor

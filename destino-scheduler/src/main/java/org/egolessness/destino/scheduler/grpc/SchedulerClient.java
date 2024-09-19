@@ -42,25 +42,25 @@ public class SchedulerClient implements Lucermaire {
 
     private final String contextPath;
 
-    private MethodDescriptor<ExecutionKey, Execution> getExecutionMethod;
+    private volatile MethodDescriptor<ExecutionKey, Execution> getExecutionMethod;
 
-    private MethodDescriptor<ExecutionKeys, Executions> multiGetExecutionMethod;
+    private volatile MethodDescriptor<ExecutionKeys, Executions> multiGetExecutionMethod;
 
-    private MethodDescriptor<Request, BoolValue> feedbackMethod;
+    private volatile MethodDescriptor<Request, BoolValue> feedbackMethod;
 
-    private MethodDescriptor<ExecutionCommand, Response> sendMethod;
+    private volatile MethodDescriptor<ExecutionCommand, Response> sendMethod;
 
-    private MethodDescriptor<LogLines, BoolValue> sendLogMethod;
+    private volatile MethodDescriptor<LogLines, BoolValue> sendLogMethod;
 
-    private MethodDescriptor<Execution, BoolValue> transmitMethod;
+    private volatile MethodDescriptor<Execution, BoolValue> transmitMethod;
 
-    private MethodDescriptor<Execution, Empty> cancelMethod;
+    private volatile MethodDescriptor<Execution, Empty> cancelMethod;
 
-    private MethodDescriptor<ExecutionKey, StringValue> terminateMethod;
+    private volatile MethodDescriptor<ExecutionKey, StringValue> terminateMethod;
 
-    private MethodDescriptor<Execution, Empty> updateMethod;
+    private volatile MethodDescriptor<Execution, Empty> updateMethod;
 
-    private MethodDescriptor<ExecutionKey, ExecutionLog> readLogMethod;
+    private volatile MethodDescriptor<ExecutionKey, ExecutionLog> readLogMethod;
 
     public SchedulerClient(final ManagedChannel channel, final String contextPath) {
         this.channel = channel;

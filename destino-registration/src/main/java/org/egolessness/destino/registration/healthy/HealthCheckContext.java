@@ -64,6 +64,10 @@ public class HealthCheckContext {
         return registration.getChannel();
     }
 
+    public String getConnectionId() {
+        return registration.getConnectionId();
+    }
+
     public BeatInfo getBeatInfo() {
         return beatInfo;
     }

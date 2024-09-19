@@ -123,7 +123,7 @@ public abstract class AbstractAddressing implements Addressing {
         ConnectionContainer container = containerFactory.getContainer(ConnectionContainer.class);
 
         for (InstancePacking packing : values) {
-            if (container.hasIndex(packing.getRegistrationKey()) && !packing.isRemoved() && packing.isConnectable()) {
+            if (container.contains(packing.getConnectionId()) && !packing.isRemoved() && packing.isConnectable()) {
                 return packing;
             }
         }

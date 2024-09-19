@@ -114,7 +114,8 @@ public class GrpcChannel {
         return new GrpcStub(uri, channelBuilder.usePlaintext().build());
     }
 
-    private StreamObserver<Any> buildResponseStream(Callback<Response> callback, RequestProcessorRegistry registry) {
+    private StreamObserver<Any> buildResponseStream(Callback<Response> callback, RequestProcessorRegistry registry,
+                                                    GrpcStub grpcStub) {
         return new StreamObserver<Any>() {
 
             @Override
@@ -140,11 +141,13 @@ public class GrpcChannel {
 
             @Override
             public void onError(Throwable throwable) {
+                grpcStub.setConnectionId(null);
                 CallbackSupport.triggerThrowable(callback, throwable);
             }
 
             @Override
             public void onCompleted() {
+                grpcStub.setConnectionId(null);
                 CallbackSupport.triggerThrowable(callback, new DestinoException(ErrorCode.REQUEST_DISCONNECT, "Client disconnect."));
             }
         };
@@ -152,7 +155,7 @@ public class GrpcChannel {
 
     public StreamObserver<Any> connectToServer(final GrpcStub grpcStub, final Callback<Response> callback,
                                                final RequestProcessorRegistry registry) throws DestinoException, TimeoutException {
-        StreamObserver<Any> responseStream = buildResponseStream(callback, registry);
+        StreamObserver<Any> responseStream = buildResponseStream(callback, registry, grpcStub);
         StreamObserver<Any> streamObserver = grpcStub.bindStream(responseStream);
 
         ConnectionRequest request = new ConnectionRequest();
@@ -172,6 +175,7 @@ public class GrpcChannel {
             if (ResponseSupport.isSuccess(response)) {
                 ConnectionResponse connectionResponse = ResponseSupport.dataDeserialize(response, ConnectionResponse.class);
                 if (Objects.nonNull(connectionResponse) && PredicateUtils.isNotBlank(connectionResponse.getConnectionId())) {
+                    grpcStub.setConnectionId(connectionResponse.getConnectionId());
                     return streamObserver;
                 }
             }

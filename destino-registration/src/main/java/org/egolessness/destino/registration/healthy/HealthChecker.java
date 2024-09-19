@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.registration.healthy;
 
+import org.egolessness.destino.common.utils.PredicateUtils;
 import org.egolessness.destino.registration.model.Registration;
 import org.egolessness.destino.registration.model.Service;
 import org.egolessness.destino.registration.model.ServiceCluster;
@@ -152,21 +153,26 @@ public class HealthChecker implements Lucermaire, DomainLinker {
 
     public void addCheckTask(ServiceCluster cluster, RegistrationKey registrationKey, Registration registration) {
         HealthCheckContext context = new HealthCheckContext(cluster, registrationKey, registration);
-        addRpcCheckTask(context);
-        addTcpCheckTask(context);
+        if (!addRpcCheckTask(context)) {
+            addTcpCheckTask(context);
+        }
     }
 
-    public void addRpcCheckTask(final HealthCheckContext context) {
+    public boolean addRpcCheckTask(final HealthCheckContext context) {
         if (!RequestSupport.isSupportConnectionListenable(context.getRequestChannel())) {
-            return;
+            return false;
         }
 
-        RegistrationKey registrationKey = context.getRegistrationKey();
+        String connectionId = context.getConnectionId();
+        if (PredicateUtils.isEmpty(connectionId)) {
+            return false;
+        }
+
         HealthCheck healthCheck = checkGetter.apply(context.getRequestChannel());
         if (healthCheck.predicate(context)) {
-            Optional<Connection> connectionOptional = connectionContainer.getConnectionByIndex(registrationKey);
-            if (connectionOptional.isPresent()) {
-                connectionOptional.get().addCloseListener(connection -> healthCheckHandler.onFail(context, true));
+            Connection connection = connectionContainer.getConnection(connectionId);
+            if (Objects.nonNull(connection)) {
+                connection.addCloseListener(conn -> healthCheckHandler.onFail(context, true));
             } else {
                 healthCheckHandler.onFail(context, true);
             }
@@ -175,6 +181,8 @@ public class HealthChecker implements Lucermaire, DomainLinker {
         } else {
             removeContext(context);
         }
+
+        return true;
     }
 
     public boolean addTcpCheckTask(final HealthCheckContext context) {

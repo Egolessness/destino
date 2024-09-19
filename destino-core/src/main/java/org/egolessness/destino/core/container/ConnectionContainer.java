@@ -16,6 +16,7 @@
 
 package org.egolessness.destino.core.container;
 
+import org.egolessness.destino.common.utils.PredicateUtils;
 import org.egolessness.destino.core.infrastructure.ConnectionRedirector;
 import com.google.inject.Inject;
 import org.egolessness.destino.common.exception.DestinoException;
@@ -27,7 +28,6 @@ import org.egolessness.destino.core.infrastructure.executors.RpcExecutors;
 import org.egolessness.destino.core.Loggers;
 import org.egolessness.destino.core.model.Connection;
 import org.egolessness.destino.core.setting.ConnectionSetting;
-import org.egolessness.destino.core.support.ConnectionSupport;
 
 import javax.annotation.PostConstruct;
 import java.time.Duration;
@@ -50,8 +50,6 @@ public class ConnectionContainer implements Container {
 
     private final Map<String, Connection> connections = new ConcurrentHashMap<>();
 
-    private final Map<Object, Connection> indexer = new ConcurrentHashMap<>();
-
     private final ConnectionSetting connectionSetting;
 
     private final ConnectionRedirector connectionRedirector;
@@ -67,6 +65,9 @@ public class ConnectionContainer implements Container {
     }
 
     public Connection getConnection(String connectionId) {
+        if (PredicateUtils.isEmpty(connectionId)) {
+            return null;
+        }
         return connections.get(connectionId);
     }
 
@@ -115,51 +116,6 @@ public class ConnectionContainer implements Container {
             Loggers.RPC.info("The connection has been removed, connectionId - {}.", connectionId);
         }
         return removed;
-    }
-
-    public void addIndex(Object index) {
-        String connectionId = ConnectionSupport.getConnectionId();
-        if (connectionId == null) {
-            return;
-        }
-
-        Connection connection = getConnection(connectionId);
-        if (connection == null || connection.isClosed()) {
-            return;
-        }
-
-        Connection oldConnection = indexer.put(index, connection);
-        if (oldConnection == null || !Objects.equals(oldConnection.getId(), connection.getId())) {
-            connection.addCloseListener(conn ->
-                    indexer.computeIfPresent(index, (k, v) -> {
-                        if (Objects.equals(v.getId(), conn.getId())) {
-                            return null;
-                        }
-                        return v;
-                    })
-            );
-        }
-    }
-
-    public Optional<Connection> getConnectionByIndex(Object index) {
-        return Optional.ofNullable(indexer.get(index));
-    }
-
-    public void removeIndex(Object index) {
-        indexer.remove(index);
-    }
-
-    public void removeIndexWhenClosed(Object index) {
-        indexer.computeIfPresent(index, (key, conn) -> {
-            if (conn.isClosed() && !conn.isConnected()) {
-                return null;
-            }
-            return conn;
-        });
-    }
-
-    public boolean hasIndex(Object index) {
-        return indexer.containsKey(index);
     }
 
     private synchronized boolean checkLimitAndCounter(Connection connection) {

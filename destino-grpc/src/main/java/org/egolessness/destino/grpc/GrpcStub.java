@@ -41,6 +41,8 @@ public class GrpcStub {
 
     private final Function<Request, ListenableFuture<Response>> requester;
 
+    private volatile String connectionId;
+
     public GrpcStub(URI uri, ManagedChannel channel) {
         this.uri = uri;
         this.channel = channel;
@@ -55,6 +57,14 @@ public class GrpcStub {
             this.requester =  request ->
                     ClientCalls.futureUnaryCall(channel.newCall(methodDescriptor, CallOptions.DEFAULT), request);
         }
+    }
+
+    public String getConnectionId() {
+        return connectionId;
+    }
+
+    public void setConnectionId(String connectionId) {
+        this.connectionId = connectionId;
     }
 
     public URI getUri() {

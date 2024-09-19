@@ -51,7 +51,7 @@ public class ExecutionInfo {
 
     private final ExecutionKey key;
 
-    private RegistrationKey lastDest;
+    private InstancePacking lastDest;
 
     private Script script;
 
@@ -143,11 +143,11 @@ public class ExecutionInfo {
         return forwardCount;
     }
 
-    public RegistrationKey getLastDest() {
+    public InstancePacking getLastDest() {
         return lastDest;
     }
 
-    public void setLastDest(RegistrationKey lastDest) {
+    public void setLastDest(InstancePacking lastDest) {
         this.lastDest = lastDest;
         refreshLastActiveTime();
     }
@@ -205,12 +205,12 @@ public class ExecutionInfo {
         if (schedulerContext != null) {
             reb = ExecutionSupport.buildRegistrationKey(schedulerContext.getSchedulerInfo());
         } else if (lastDest != null) {
-            reb = RegistrationKey.newBuilder().setNamespace(lastDest.getNamespace());
+            reb = RegistrationKey.newBuilder().setNamespace(lastDest.getRegistrationKey().getNamespace());
         } else {
             return builder.build();
         }
         if (lastDest != null) {
-            reb.setInstanceKey(lastDest.getInstanceKey());
+            reb.setInstanceKey(lastDest.getRegistrationKey().getInstanceKey());
         } else {
             reb.setInstanceKey(builder.getDest().getInstanceKey());
         }
@@ -229,11 +229,11 @@ public class ExecutionInfo {
         return false;
     }
 
-    public synchronized boolean reached(RegistrationKey registrationKey) {
+    public synchronized boolean reached(InstancePacking packing) {
         refreshLastActiveTime();
         if (process == Process.REACHING) {
             process = Process.REACHED;
-            lastDest = registrationKey;
+            lastDest = packing;
             return true;
         }
         return process.getNumber() == Process.REACHED_VALUE;
@@ -244,8 +244,8 @@ public class ExecutionInfo {
         refreshLastActiveTime();
     }
 
-    public synchronized void terminate(RegistrationKey registrationKey) {
-        lastDest = registrationKey;
+    public synchronized void terminate(InstancePacking packing) {
+        lastDest = packing;
         terminate();
     }
 
@@ -357,7 +357,7 @@ public class ExecutionInfo {
 
     public void addPushedCache() {
         if (execution.getModeValue() == ScheduledMode.SCRIPT_VALUE) {
-            schedulerContext.addScriptPushedCache(lastDest, execution.getScript().getVersion());
+            schedulerContext.addScriptPushedCache(lastDest.getRegistrationKey(), execution.getScript().getVersion());
         }
     }
 

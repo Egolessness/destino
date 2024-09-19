@@ -79,7 +79,6 @@ public class RegistrationProviderImpl implements RegistrationProvider {
         RegistrationKey registrationKey = RegistrationSupport.buildRegistrationKey(namespace, groupName, serviceName, instance);
         Registration registration = RegistrationSupport.buildRegistration(instance, current);
         try {
-            connectionContainer.addIndex(registrationKey);
             repositorySelector.select(instance.getMode()).set(specifier.transfer(registrationKey), registration, writeTimeout);
         } catch (TimeoutException e) {
             throw new DestinoException(Errors.WRITE_TIMEOUT, "Register timeout.");
@@ -90,7 +89,6 @@ public class RegistrationProviderImpl implements RegistrationProvider {
         RegistrationKey registrationKey = RegistrationSupport.buildRegistrationKey(namespace, groupName, serviceName, instance);
         try {
             repositorySelector.select(instance.getMode()).del(specifier.transfer(registrationKey), writeTimeout);
-            connectionContainer.removeIndex(registrationKey);
         } catch (TimeoutException e) {
             throw new DestinoException(Errors.WRITE_TIMEOUT, "Deregister timeout.");
         }

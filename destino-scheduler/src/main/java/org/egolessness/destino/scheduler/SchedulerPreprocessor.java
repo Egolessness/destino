@@ -23,12 +23,12 @@ import org.egolessness.destino.scheduler.grpc.SchedulerRequestService;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
-public class SchedulerResourceLoader implements Preprocessor {
+public class SchedulerPreprocessor implements Preprocessor {
 
     private final Injector injector;
 
     @Inject
-    public SchedulerResourceLoader(Injector injector) {
+    public SchedulerPreprocessor(Injector injector) {
         this.injector = injector;
     }
 

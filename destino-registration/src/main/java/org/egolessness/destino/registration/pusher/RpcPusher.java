@@ -18,7 +18,18 @@ package org.egolessness.destino.registration.pusher;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import io.grpc.CallOptions;
+import io.grpc.ClientCall;
+import io.grpc.ManagedChannel;
+import io.grpc.MethodDescriptor;
+import io.grpc.stub.ClientCalls;
+import org.egolessness.destino.common.enumeration.Mark;
 import org.egolessness.destino.common.exception.DestinoException;
+import org.egolessness.destino.common.model.message.Request;
+import org.egolessness.destino.common.support.CallbackSupport;
+import org.egolessness.destino.common.support.RequestSupport;
+import org.egolessness.destino.core.container.ChannelContainer;
+import org.egolessness.destino.core.container.MemberContainer;
 import org.egolessness.destino.core.enumration.Errors;
 import org.egolessness.destino.core.exception.ConnectionClosedException;
 import org.egolessness.destino.core.model.Connection;
@@ -28,11 +39,18 @@ import org.egolessness.destino.common.utils.PredicateUtils;
 import org.egolessness.destino.core.container.ConnectionContainer;
 import org.egolessness.destino.core.container.ContainerFactory;
 import org.egolessness.destino.core.enumration.PushType;
+import org.egolessness.destino.core.model.Member;
 import org.egolessness.destino.core.model.Receiver;
+import org.egolessness.destino.core.support.MemberSupport;
+import org.egolessness.destino.core.support.MessageSupport;
+import org.egolessness.destino.registration.message.PushRequest;
+import org.egolessness.destino.registration.message.RegistrationRequestAdapterGrpc;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * service rpc pusher
@@ -42,16 +60,21 @@ import java.util.Objects;
 @Singleton
 public class RpcPusher implements Pusher {
 
+    private final MemberContainer memberContainer;
+
+    private final ChannelContainer channelContainer;
+
     private final ConnectionContainer connectionContainer;
 
     @Inject
     public RpcPusher(ContainerFactory containerFactory) {
+        this.memberContainer = containerFactory.getContainer(MemberContainer.class);
+        this.channelContainer = containerFactory.getContainer(ChannelContainer.class);
         this.connectionContainer = containerFactory.getContainer(ConnectionContainer.class);
     }
 
     @Override
     public void push(final Receiver receiver, final Serializable pushData, final Callback<Response> callback) {
-
         if (PredicateUtils.isEmpty(receiver.id())) {
             callback.onThrowable(new DestinoException(Errors.PUSH_FAIL, "Receiver is invalid."));
             return;
@@ -59,17 +82,42 @@ public class RpcPusher implements Pusher {
 
         Connection connection = connectionContainer.getConnection(receiver.id());
 
-        if (Objects.isNull(connection)) {
+        Request request = RequestSupport.build(pushData);
+        if (Objects.nonNull(connection)) {
+            try {
+                connection.request(request, callback);
+            } catch (Exception e) {
+                callback.onThrowable(e);
+            }
+            return;
+        }
+
+        if (receiver.id().startsWith(memberContainer.getCurrent().getId() + Mark.UNDERLINE.getValue())) {
+            callback.onThrowable(new ConnectionClosedException());
+            return;
+        }
+
+        long memberId = Long.getLong(Mark.UNDERLINE.split(receiver.id())[0], -1);
+        Optional<Member> memberOptional = memberContainer.find(memberId);
+        if (!memberOptional.isPresent()) {
             callback.onThrowable(new ConnectionClosedException());
             return;
         }
 
         try {
-            connection.request(pushData, Collections.emptyMap(), callback);
-        }  catch (Exception e) {
-            callback.onThrowable(e);
+            Member member = memberOptional.get();
+            ManagedChannel channel = channelContainer.get(member.getAddress());
+            PushRequest pushRequest = PushRequest.newBuilder().setConnectionId(receiver.id())
+                    .setRequestContent(request).setTimeout(callback.getTimeoutMillis())
+                    .build();
+            ClientCall<PushRequest, Response> call = channel.newCall(this.getPushToClientMethod(member), CallOptions.DEFAULT);
+            Response response = ClientCalls.futureUnaryCall(call, pushRequest).get(callback.getTimeoutMillis(), TimeUnit.MILLISECONDS);
+            CallbackSupport.triggerResponse(callback, response);
+        } catch (ExecutionException e) {
+            CallbackSupport.triggerThrowable(callback, e.getCause());
+        } catch (Exception e) {
+            CallbackSupport.triggerThrowable(callback, e);
         }
-
     }
 
     @Override
@@ -77,5 +125,12 @@ public class RpcPusher implements Pusher {
         return PushType.RPC;
     }
 
+    public MethodDescriptor<PushRequest, Response> getPushToClientMethod(Member member) {
+        String contextPath = MemberSupport.getContextPath(member);
+        if (PredicateUtils.isBlank(contextPath)) {
+            return RegistrationRequestAdapterGrpc.getPushToClientMethod();
+        }
+        return MessageSupport.getMethodDescriptor(RegistrationRequestAdapterGrpc.getPushToClientMethod(), contextPath);
+    }
 
 }

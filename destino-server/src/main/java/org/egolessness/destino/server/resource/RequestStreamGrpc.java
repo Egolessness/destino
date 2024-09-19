@@ -27,6 +27,8 @@ import org.egolessness.destino.common.model.message.Response;
 import org.egolessness.destino.common.model.request.ConnectionRequest;
 import org.egolessness.destino.common.model.response.ConnectionResponse;
 import org.egolessness.destino.common.support.RequestSupport;
+import org.egolessness.destino.common.utils.PredicateUtils;
+import org.egolessness.destino.core.container.MemberContainer;
 import org.egolessness.destino.core.container.ResponseFutureContainer;
 import org.egolessness.destino.common.support.ResponseSupport;
 import org.egolessness.destino.core.model.Connection;
@@ -58,10 +60,13 @@ public class RequestStreamGrpc extends RequestStreamAdapterGrpc.RequestStreamAda
 
     private final ResponseFutureContainer futureContainer;
 
+    private final MemberContainer memberContainer;
+
     public RequestStreamGrpc(final RpcResourceRegistry resourceRegistry, ContainerFactory containerFactory) {
         this.resourceRegistry = resourceRegistry;
         this.connectionContainer = containerFactory.getContainer(ConnectionContainer.class);
         this.futureContainer = containerFactory.getContainer(ResponseFutureContainer.class);
+        this.memberContainer = containerFactory.getContainer(MemberContainer.class);
     }
 
     @Override
@@ -81,7 +86,8 @@ public class RequestStreamGrpc extends RequestStreamAdapterGrpc.RequestStreamAda
                             response = connect(request, responseObserver);
                         } else {
                             response = resourceRegistry.process(request);
-                            connectionContainer.refreshActiveTime(ConnectionSupport.getConnectionId());
+                            String connectionId = ConnectionSupport.getConnectionId(memberContainer.getCurrent().getId());
+                            connectionContainer.refreshActiveTime(connectionId);
                         }
 
                         response = ResponseSupport.setSessionId(response, sessionId);
@@ -90,12 +96,12 @@ public class RequestStreamGrpc extends RequestStreamAdapterGrpc.RequestStreamAda
                     }
 
                     if (data.is(Response.class)) {
-                        String connectionId = ConnectionSupport.getConnectionId();
-                        if (connectionId == null) {
+                        String connectionId = ConnectionSupport.getConnectionId(memberContainer.getCurrent().getId());
+                        if (PredicateUtils.isEmpty(connectionId)) {
                             return;
                         }
                         Connection connection = connectionContainer.getConnection(connectionId);
-                        if (connection == null) {
+                        if (null == connection) {
                             return;
                         }
                         connection.refreshActiveTime();
@@ -177,8 +183,9 @@ public class RequestStreamGrpc extends RequestStreamAdapterGrpc.RequestStreamAda
             return ResponseSupport.failed("Connect failed.");
         }
 
+        String connectionId = ConnectionSupport.getConnectionId(channel, memberContainer.getCurrent().getId());
         ConnectionInfo connectionInfo = ConnectionInfoBuilder.newBuilder()
-                .connectionId(channel.id().asShortText()).requestChannel(RequestChannel.GRPC)
+                .connectionId(connectionId).requestChannel(RequestChannel.GRPC)
                 .clientIp(remoteIp).remoteAddress(address).attributes(connectionRequest.getAttributes())
                 .namespace(connectionRequest.getNamespace()).serviceName(connectionRequest.getServiceName())
                 .groupName(connectionRequest.getGroupName()).version(connectionRequest.getVersion())
@@ -205,7 +212,7 @@ public class RequestStreamGrpc extends RequestStreamAdapterGrpc.RequestStreamAda
     }
 
     private void removeConnection(@Nullable Throwable t) {
-        String connectionId = ConnectionSupport.getConnectionId();
+        String connectionId = ConnectionSupport.getConnectionId(memberContainer.getCurrent().getId());
         if (connectionId == null) {
            return;
         }

@@ -74,13 +74,12 @@ public class ExecutionPusher {
     }
 
     public boolean execute(InstancePacking packing, ScheduledTriggers triggers, Callback<Response> callback) {
-
         if (RequestSupport.isSupportRequestStreamReceiver(packing.getChannel())) {
-            Optional<Connection> connectionOptional = connectionContainer.getConnectionByIndex(packing.getRegistrationKey());
-            if (connectionOptional.isPresent()) {
+            Connection connection = connectionContainer.getConnection(packing.getConnectionId());
+            if (Objects.nonNull(connection)) {
                 String focus = RequestSupport.getFocus(triggers);
                 Request request = RequestSupport.build(focus, Any.pack(triggers));
-                connectionOptional.get().request(request, callback);
+                connection.request(request, callback);
                 return true;
             }
         }
@@ -110,23 +109,20 @@ public class ExecutionPusher {
     }
 
     public boolean cancel(ExecutionInfo executionInfo) {
-
-        if (executionInfo.getLastDest() == null) {
+        InstancePacking packing = executionInfo.getLastDest();
+        if (Objects.isNull(packing)) {
             return true;
         }
 
-        Optional<Connection> connectionOptional = connectionContainer.getConnectionByIndex(executionInfo.getLastDest());
-        if (connectionOptional.isPresent()) {
-            Connection connection = connectionOptional.get();
+        String connectionId = packing.getConnectionId();
+        Connection connection = connectionContainer.getConnection(connectionId);
+        if (Objects.nonNull(connection)) {
             ScheduledCancelRequest cancelRequest = ScheduledSupport.buildCancelRequest(executionInfo.getExecution());
             connection.request(cancelRequest, Collections.emptyMap(), CallbackSupport.build(Duration.ofSeconds(5)));
             return true;
         }
 
-        String jobName = executionInfo.getExecution().getJobName();
-        Optional<InstancePacking> packingOptional = packingContainer.getPacking(executionInfo.getLastDest(), jobName);
-        if (packingOptional.isPresent() && packingOptional.get().udpAvailable()) {
-            InstancePacking packing = packingOptional.get();
+        if (packing.udpAvailable()) {
             ScheduledCancelRequest cancelRequest = ScheduledSupport.buildCancelRequest(executionInfo.getExecution());
             udpPusherProvider.get().push(buildUdpReceiver(packing), cancelRequest, CallbackSupport.build(Duration.ofSeconds(5)));
             return true;
@@ -136,23 +132,20 @@ public class ExecutionPusher {
     }
 
     public boolean terminate(ExecutionInfo executionInfo) throws DestinoException, TimeoutException {
-
-        if (executionInfo.getLastDest() == null) {
+        InstancePacking packing = executionInfo.getLastDest();
+        if (Objects.isNull(packing)) {
             return true;
         }
 
-        Optional<Connection> connectionOptional = connectionContainer.getConnectionByIndex(executionInfo.getLastDest());
-        if (connectionOptional.isPresent()) {
-            Connection connection = connectionOptional.get();
+        String connectionId = packing.getConnectionId();
+        Connection connection = connectionContainer.getConnection(connectionId);
+        if (Objects.nonNull(connection)) {
             ScheduledTerminateRequest terminateRequest = ScheduledSupport.buildTerminateRequest(executionInfo.getExecution());
             Response response = connection.request(terminateRequest, Collections.emptyMap(), Duration.ofSeconds(5));
             return ResponseSupport.isSuccess(response);
         }
 
-        String jobName = executionInfo.getExecution().getJobName();
-        Optional<InstancePacking> packingOptional = packingContainer.getPacking(executionInfo.getLastDest(), jobName);
-        if (packingOptional.isPresent() && packingOptional.get().udpAvailable()) {
-            InstancePacking packing = packingOptional.get();
+        if (packing.udpAvailable()) {
             ScheduledTerminateRequest terminateRequest = ScheduledSupport.buildTerminateRequest(executionInfo.getExecution());
             CompletableFuture<Response> future = new CompletableFuture<>();
             Duration timeout = Duration.ofSeconds(5);
@@ -172,23 +165,20 @@ public class ExecutionPusher {
     }
 
     public boolean terminate(ExecutionInfo executionInfo, Callback<Response> callback) {
-
-        if (executionInfo.getLastDest() == null) {
+        InstancePacking packing = executionInfo.getLastDest();
+        if (Objects.isNull(packing)) {
             return true;
         }
 
-        Optional<Connection> connectionOptional = connectionContainer.getConnectionByIndex(executionInfo.getLastDest());
-        if (connectionOptional.isPresent()) {
-            Connection connection = connectionOptional.get();
+        String connectionId = packing.getConnectionId();
+        Connection connection = connectionContainer.getConnection(connectionId);
+        if (Objects.nonNull(connection)) {
             ScheduledTerminateRequest terminateRequest = ScheduledSupport.buildTerminateRequest(executionInfo.getExecution());
             connection.request(terminateRequest, Collections.emptyMap(), callback);
             return true;
         }
 
-        String jobName = executionInfo.getExecution().getJobName();
-        Optional<InstancePacking> packingOptional = packingContainer.getPacking(executionInfo.getLastDest(), jobName);
-        if (packingOptional.isPresent() && packingOptional.get().udpAvailable()) {
-            InstancePacking packing = packingOptional.get();
+        if (packing.udpAvailable()) {
             ScheduledTerminateRequest terminateRequest = ScheduledSupport.buildTerminateRequest(executionInfo.getExecution());
             udpPusherProvider.get().push(buildUdpReceiver(packing), terminateRequest, callback);
             return true;
@@ -198,23 +188,21 @@ public class ExecutionPusher {
     }
 
     public void state(ExecutionInfo executionInfo, Callback<Response> callback) {
-
-        if (executionInfo.getLastDest() == null) {
+        InstancePacking packing = executionInfo.getLastDest();
+        if (Objects.isNull(packing)) {
             CallbackSupport.triggerThrowable(callback, new NotFoundException("Dest not fount."));
             return;
         }
 
-        Optional<Connection> connectionOptional = connectionContainer.getConnectionByIndex(executionInfo.getLastDest());
-        if (connectionOptional.isPresent()) {
-            Connection connection = connectionOptional.get();
+        String connectionId = packing.getConnectionId();
+        Connection connection = connectionContainer.getConnection(connectionId);
+        if (Objects.nonNull(connection)) {
             ScheduledDetectionRequest detectionRequest = ScheduledSupport.buildDetectionRequest(executionInfo.getExecution());
             connection.request(detectionRequest, Collections.emptyMap(), callback);
             return;
         }
 
-        Optional<InstancePacking> packingOptional = packingContainer.getPacking(executionInfo.getLastDest(), executionInfo.getExecution().getJobName());
-        if (packingOptional.isPresent() && packingOptional.get().udpAvailable()) {
-            InstancePacking packing = packingOptional.get();
+        if (packing.udpAvailable()) {
             udpPusherProvider.get().push(buildUdpReceiver(packing), ScheduledSupport.buildDetectionRequest(executionInfo.getExecution()), callback);
             return;
         }

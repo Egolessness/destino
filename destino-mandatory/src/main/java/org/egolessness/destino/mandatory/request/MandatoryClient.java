@@ -38,11 +38,11 @@ public class MandatoryClient implements Lucermaire {
 
     private final String contextPath;
 
-    private MethodDescriptor<MandatoryWriteRequest, Response> writeMethod;
+    private volatile MethodDescriptor<MandatoryWriteRequest, Response> writeMethod;
 
-    private MethodDescriptor<MandatoryLoadRequest, Response> loadMethod;
+    private volatile MethodDescriptor<MandatoryLoadRequest, Response> loadMethod;
 
-    private MethodDescriptor<MandatorySyncRequest, Response> syncMethod;
+    private volatile MethodDescriptor<MandatorySyncRequest, Response> syncMethod;
 
     public MandatoryClient(final ManagedChannel channel, final String contextPath) {
         this.channel = channel;
