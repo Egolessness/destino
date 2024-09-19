@@ -20,10 +20,12 @@ import com.linecorp.armeria.server.ServiceRequestContext;
 import org.egolessness.destino.common.exception.DestinoRuntimeException;
 import org.egolessness.destino.common.model.request.ServiceSubscriptionRequest;
 import org.egolessness.destino.core.enumration.Errors;
-import org.egolessness.destino.core.support.ConnectionSupport;
+import org.egolessness.destino.core.resource.HeaderHolder;
 import org.egolessness.destino.registration.model.ServiceSubscriber;
 
 import java.net.InetSocketAddress;
+
+import static org.egolessness.destino.common.constant.CommonConstants.HEADER_CONNECTION_ID;
 
 public class SubscriptionSupport {
 
@@ -33,15 +35,12 @@ public class SubscriptionSupport {
         String ip = remoteAddress.getHostName();
         int port = remoteAddress.getPort();
         int udpPort = request.getUdpPort();
-
-        if (context.rpcRequest() != null) {
-            String connectionId = ConnectionSupport.getConnectionId(context);
-            if (connectionId != null) {
-                if (RegistrationSupport.validatePort(udpPort)) {
-                    return ServiceSubscriber.ofMixed(ip, port, connectionId, udpPort);
-                }
-                return ServiceSubscriber.ofRpc(remoteAddress.getHostName(), remoteAddress.getPort(), connectionId);
+        String connectionId = HeaderHolder.current().get(HEADER_CONNECTION_ID);
+        if (connectionId != null) {
+            if (RegistrationSupport.validatePort(udpPort)) {
+                return ServiceSubscriber.ofMixed(ip, port, connectionId, udpPort);
             }
+            return ServiceSubscriber.ofRpc(remoteAddress.getHostName(), remoteAddress.getPort(), connectionId);
         }
 
         if (RegistrationSupport.validatePort(udpPort)) {

@@ -24,6 +24,7 @@ import org.egolessness.destino.common.model.request.ScheduledTerminateRequest;
 import org.egolessness.destino.common.utils.PredicateUtils;
 import org.egolessness.destino.scheduler.message.Execution;
 import org.egolessness.destino.scheduler.model.ExecutionInfo;
+import org.egolessness.destino.scheduler.model.InstancePacking;
 import org.egolessness.destino.scheduler.model.SchedulerContext;
 
 import java.util.Collection;
@@ -99,7 +100,9 @@ public class ScheduledSupport {
                     executionInfo.cancel();
                     return null;
                 }
-                boolean pushed = schedulerContext.isPushedForScript(executionInfo.getLastDest(), script.getVersion());
+
+                InstancePacking lastDest = executionInfo.getLastDest();
+                boolean pushed = schedulerContext.isPushedForScript(lastDest.getRegistrationKey(), script.getVersion());
                 if (!pushed) {
                     triggerBuilder.setScript(buildScripting(script));
                 }

@@ -29,10 +29,8 @@ import org.egolessness.destino.core.infrastructure.alarm.Alarm;
 import org.egolessness.destino.registration.support.RegistrationSupport;
 import org.egolessness.destino.registration.message.RegistrationKey;
 import org.egolessness.destino.scheduler.SchedulerMessages;
-import org.egolessness.destino.scheduler.model.Contact;
-import org.egolessness.destino.scheduler.model.ExecutionInfo;
-import org.egolessness.destino.scheduler.model.SchedulerContext;
-import org.egolessness.destino.scheduler.model.SchedulerInfo;
+import org.egolessness.destino.scheduler.model.*;
+
 import static org.egolessness.destino.registration.RegistrationMessages.*;
 import static org.egolessness.destino.scheduler.SchedulerMessages.*;
 
@@ -116,11 +114,12 @@ public class ExecutionAlarm {
 
     private String getContent(ExecutionInfo executionInfo, SchedulerContext context, String reason) {
         Execution execution = executionInfo.getExecution();
-        RegistrationKey registrationKey = executionInfo.getLastDest();
+        InstancePacking packing = executionInfo.getLastDest();
         SchedulerInfo schedulerInfo = context.getSchedulerInfo();
 
         String namespace, groupName, serviceName, instanceInfo;
-        if (null != registrationKey) {
+        if (null != packing) {
+            RegistrationKey registrationKey = packing.getRegistrationKey();
             namespace = registrationKey.getNamespace();
             groupName = registrationKey.getGroupName();
             serviceName = registrationKey.getServiceName();
