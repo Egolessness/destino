@@ -68,6 +68,10 @@ public class HealthCheckContext {
         return registration.getConnectionId();
     }
 
+    public long getVersion() {
+        return registration.getVersion();
+    }
+
     public BeatInfo getBeatInfo() {
         return beatInfo;
     }
@@ -85,11 +89,12 @@ public class HealthCheckContext {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         HealthCheckContext that = (HealthCheckContext) o;
-        return Objects.equals(registrationKey, that.registrationKey);
+        return Objects.equals(registrationKey, that.registrationKey) &&
+                registration.getVersion() == that.registration.getVersion();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(registrationKey);
+        return Objects.hash(registrationKey, registration.getVersion());
     }
 }

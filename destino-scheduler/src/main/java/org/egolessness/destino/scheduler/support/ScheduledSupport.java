@@ -102,7 +102,7 @@ public class ScheduledSupport {
                 }
 
                 InstancePacking lastDest = executionInfo.getLastDest();
-                boolean pushed = schedulerContext.isPushedForScript(lastDest.getRegistrationKey(), script.getVersion());
+                boolean pushed = schedulerContext.isPushedForScript(lastDest, script.getVersion());
                 if (!pushed) {
                     triggerBuilder.setScript(buildScripting(script));
                 }

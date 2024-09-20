@@ -16,6 +16,9 @@
 
 package org.egolessness.destino.registration.pusher;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.grpc.CallOptions;
@@ -25,6 +28,7 @@ import io.grpc.MethodDescriptor;
 import io.grpc.stub.ClientCalls;
 import org.egolessness.destino.common.enumeration.Mark;
 import org.egolessness.destino.common.exception.DestinoException;
+import org.egolessness.destino.common.executor.DestinoExecutors;
 import org.egolessness.destino.common.model.message.Request;
 import org.egolessness.destino.common.support.CallbackSupport;
 import org.egolessness.destino.common.support.RequestSupport;
@@ -46,11 +50,11 @@ import org.egolessness.destino.core.support.MessageSupport;
 import org.egolessness.destino.registration.message.PushRequest;
 import org.egolessness.destino.registration.message.RegistrationRequestAdapterGrpc;
 
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executor;
 
 /**
  * service rpc pusher
@@ -111,10 +115,23 @@ public class RpcPusher implements Pusher {
                     .setRequestContent(request).setTimeout(callback.getTimeoutMillis())
                     .build();
             ClientCall<PushRequest, Response> call = channel.newCall(this.getPushToClientMethod(member), CallOptions.DEFAULT);
-            Response response = ClientCalls.futureUnaryCall(call, pushRequest).get(callback.getTimeoutMillis(), TimeUnit.MILLISECONDS);
-            CallbackSupport.triggerResponse(callback, response);
-        } catch (ExecutionException e) {
-            CallbackSupport.triggerThrowable(callback, e.getCause());
+            ListenableFuture<Response> future = ClientCalls.futureUnaryCall(call, pushRequest);
+
+            Executor executor = callback.getExecutor();
+            if (Objects.isNull(executor)) {
+                executor = DestinoExecutors.CALLBACK;
+            }
+
+            Futures.addCallback(future, new FutureCallback<Response>() {
+                @Override
+                public void onSuccess(Response response) {
+                    CallbackSupport.triggerResponse(callback, response);
+                }
+                @Override
+                public void onFailure(@Nullable Throwable throwable) {
+                    CallbackSupport.triggerThrowable(callback, throwable);
+                }
+            }, executor);
         } catch (Exception e) {
             CallbackSupport.triggerThrowable(callback, e);
         }

@@ -157,17 +157,12 @@ public class ConnectionInfo {
     public String toString() {
         return "ConnectionInfo{" +
                 "connectionId='" + connectionId + '\'' +
-                ", requestChannel=" + requestChannel +
-                ", namespace='" + namespace + '\'' +
-                ", serviceName='" + serviceName + '\'' +
-                ", groupName='" + groupName + '\'' +
                 ", clientIp='" + clientIp + '\'' +
                 ", remoteAddress=" + remoteAddress +
                 ", attributes=" + attributes +
                 ", version='" + version + '\'' +
                 ", source=" + source +
                 ", platform='" + platform + '\'' +
-                ", createTime=" + createTime +
                 '}';
     }
 }

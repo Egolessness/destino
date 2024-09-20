@@ -189,6 +189,11 @@ public class HealthChecker implements Lucermaire, DomainLinker {
         if (RequestSupport.isSupportConnectionListenable(context.getRequestChannel())) {
             return false;
         }
+
+        if (PredicateUtils.isNotEmpty(context.getConnectionId())) {
+            return false;
+        }
+
         synchronized (this) {
             HealthCheck healthCheck = checkGetter.apply(context.getRequestChannel());
             if (healthCheck.predicate(context)) {
@@ -329,11 +334,19 @@ public class HealthChecker implements Lucermaire, DomainLinker {
 
     private void addContext(final HealthCheckContext context) {
         contexts.computeIfAbsent(context.getCluster(), cluster -> new ConcurrentHashMap<>())
-                .computeIfAbsent(context.getRegistrationKey(), key -> {
-                    delayCheck(context, getInitDelayMillis(context.getRegistration()));
-                    return context;
-                })
-                .getBeatInfo().refreshBeat();
+                .compute(context.getRegistrationKey(), (key, value) -> {
+                    if (null == value) {
+                        delayCheck(context, getInitDelayMillis(context.getRegistration()));
+                        context.getBeatInfo().refreshBeat();
+                        return context;
+                    } else if (context.getVersion() > value.getVersion()) {
+                        value.setCancel(false);
+                        delayCheck(context, getInitDelayMillis(context.getRegistration()));
+                        context.getBeatInfo().refreshBeat();
+                        return context;
+                    }
+                    return value;
+                });
     }
 
     private void removeContext(final HealthCheckContext context) {

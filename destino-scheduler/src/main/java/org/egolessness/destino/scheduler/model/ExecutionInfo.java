@@ -357,7 +357,7 @@ public class ExecutionInfo {
 
     public void addPushedCache() {
         if (execution.getModeValue() == ScheduledMode.SCRIPT_VALUE) {
-            schedulerContext.addScriptPushedCache(lastDest.getRegistrationKey(), execution.getScript().getVersion());
+            schedulerContext.addScriptPushedCache(lastDest, execution.getScript().getVersion());
         }
     }
 

@@ -151,7 +151,7 @@ public class SchedulerContext {
             if (schedulerInfo.getScript() == null) {
                 return false;
             }
-            return execution.getScript().getType() == schedulerInfo.getScript().getType() &&
+            return execution.getScript().getType().equals(schedulerInfo.getScript().getType()) &&
                     execution.getScript().getVersion() == schedulerInfo.getScript().getVersion();
         }
 
@@ -206,28 +206,31 @@ public class SchedulerContext {
         return false;
     }
 
-    public void addScriptPushedCache(RegistrationKey registrationKey, long version) {
-        if (scriptPushCache == null) {
+    public void addScriptPushedCache(InstancePacking packing, long version) {
+        if (Objects.isNull(packing)) {
+            return;
+        }
+        if (Objects.isNull(scriptPushCache)) {
             synchronized (this) {
-                if (scriptPushCache == null) {
+                if (Objects.isNull(scriptPushCache)) {
                     scriptPushCache = new FifoCache<>(32);
                 }
             }
         }
-        scriptPushCache.compute(registrationKey, (key, value) -> {
-            if (value == null || value < version) {
+        scriptPushCache.compute(packing.getRegistrationKey(), (key, value) -> {
+            if (Objects.isNull(value) || value < version) {
                 return version;
             }
             return value;
         });
     }
 
-    public boolean isPushedForScript(RegistrationKey registrationKey, long version) {
-        if (scriptPushCache == null) {
+    public boolean isPushedForScript(InstancePacking packing, long version) {
+        if (Objects.isNull(scriptPushCache) || Objects.isNull(packing)) {
             return false;
         }
-        Long pushedVersion = scriptPushCache.get(registrationKey);
-        if (pushedVersion == null) {
+        Long pushedVersion = scriptPushCache.get(packing.getRegistrationKey());
+        if (Objects.isNull(pushedVersion)) {
             return false;
         }
         return pushedVersion >= version;

@@ -158,7 +158,7 @@ public class ProtocolRequestSupport {
                                                    final Collection<Long> ids, @Nullable final DeleteMode deleteMode) {
         List<ByteString> keyByteStrings = ids.stream().map(LongSpecifier.INSTANCE::transfer).map(ByteString::copyFrom)
                 .collect(Collectors.toList());
-        String keysJoin = Mark.EMPTY.join(ids);
+        String keysJoin = keyByteStrings.stream().map(ByteString::toStringUtf8).collect(Collectors.joining());
         DeleteRequest.Builder builder = getDeleteRequestBuilder(cosmos, timestamp, keysJoin).addAllKey(keyByteStrings);
         if (deleteMode != null) {
             builder.setMode(deleteMode);

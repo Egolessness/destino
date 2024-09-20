@@ -830,9 +830,9 @@ public class ExecutionPool implements Runnable {
         if (terminateState == TerminateState.TERMINATED) {
             logCollector.addLogLine(executionKey, TerminatedLogParser.INSTANCE);
         } else if (terminateState == TerminateState.TIMEOUT) {
-            logCollector.addLogLine(executionInfo.getKey(), new TerminateTimeoutLogParser(computed.getLastDest().getRegistrationKey()));
+            logCollector.addLogLine(executionInfo.getKey(), new TerminateTimeoutLogParser(computed.getLastDest()));
         } else if (terminateState == TerminateState.ERROR) {
-            logCollector.addLogLine(executionInfo.getKey(), new TerminateErrorLogParser(computed.getLastDest().getRegistrationKey()));
+            logCollector.addLogLine(executionInfo.getKey(), new TerminateErrorLogParser(computed.getLastDest()));
         }
         return terminateState;
     }
@@ -865,9 +865,9 @@ public class ExecutionPool implements Runnable {
             @Override
             public void onThrowable(Throwable e) {
                 if (e instanceof TimeoutException) {
-                    logCollector.addLogLine(executionInfo.getKey(), new TerminateTimeoutLogParser(packing.getRegistrationKey()));
+                    logCollector.addLogLine(executionInfo.getKey(), new TerminateTimeoutLogParser(packing));
                 } else {
-                    logCollector.addLogLine(executionInfo.getKey(), new TerminateErrorLogParser(packing.getRegistrationKey()));
+                    logCollector.addLogLine(executionInfo.getKey(), new TerminateErrorLogParser(packing));
                 }
             }
             @Override

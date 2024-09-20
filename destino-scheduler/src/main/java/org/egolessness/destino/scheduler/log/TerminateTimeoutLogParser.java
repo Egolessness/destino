@@ -16,10 +16,11 @@
 
 package org.egolessness.destino.scheduler.log;
 
-import org.egolessness.destino.registration.message.RegistrationKey;
 import org.egolessness.destino.registration.support.RegistrationSupport;
+import org.egolessness.destino.scheduler.model.InstancePacking;
 
 import java.text.MessageFormat;
+import java.util.Objects;
 
 /**
  * log parser for terminate timed out.
@@ -32,12 +33,14 @@ public class TerminateTimeoutLogParser implements LogParser {
 
     private final String message;
 
-    public TerminateTimeoutLogParser(RegistrationKey registrationKey) {
-        this.message = buildMessage(registrationKey);
+    public TerminateTimeoutLogParser(InstancePacking packing) {
+        this.message = buildMessage(packing);
     }
 
-    private String buildMessage(RegistrationKey registrationKey) {
-        return MessageFormat.format(MSG_TEMPLATE, RegistrationSupport.getInstanceInfo(registrationKey.getInstanceKey()));
+    private String buildMessage(InstancePacking packing) {
+        String info = Objects.nonNull(packing) ?
+                RegistrationSupport.getInstanceInfo(packing.getRegistrationKey().getInstanceKey()) : "unknown";
+        return MessageFormat.format(MSG_TEMPLATE, info);
     }
 
     @Override

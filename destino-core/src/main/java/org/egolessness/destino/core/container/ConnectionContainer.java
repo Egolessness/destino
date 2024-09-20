@@ -91,7 +91,7 @@ public class ConnectionContainer implements Container {
             if (traced(connection.getInfo().getClientIp())) {
                 connection.setTraced(true);
             }
-            Loggers.RPC.info("A new connection has been registered, connection info: {}", connection.getInfo());
+            Loggers.RPC.info("A new connection has been registered, {}", connection.getInfo());
             return true;
         }
 
