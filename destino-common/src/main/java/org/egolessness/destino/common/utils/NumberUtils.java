@@ -42,4 +42,12 @@ public class NumberUtils {
         }
     }
 
+    public static long parseLong(String value, long def) {
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            return def;
+        }
+    }
+
 }

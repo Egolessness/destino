@@ -352,8 +352,8 @@ public class ExecutionPool implements Runnable {
             return;
         }
 
-        long serverId = Long.getLong(Mark.UNDERLINE.split(packing.getConnectionId())[0], -1);
-        Optional<SchedulerClient> clientOptional = clientFactory.getClient(serverId);
+
+        Optional<SchedulerClient> clientOptional = clientFactory.getClient(packing.getConnectedServerId());
         if (clientOptional.isPresent()) {
             ExecutionCommand.Builder commandBuilder = ExecutionCommand.newBuilder()
                     .setRegistrationKey(packing.getRegistrationKey());
@@ -378,7 +378,7 @@ public class ExecutionPool implements Runnable {
             return;
         }
 
-        MemberMissingLogParser logParser = new MemberMissingLogParser(packing, serverId);
+        MemberMissingLogParser logParser = new MemberMissingLogParser(packing, packing.getConnectedServerId());
         for (ExecutionInfo executionInfo : executionInfos) {
             connectFailed(executionInfo, logParser);
         }
@@ -541,14 +541,11 @@ public class ExecutionPool implements Runnable {
         if (logParser != null) {
             logCollector.addLogLine(executionInfo.getKey(), logParser);
         }
-        if (executionInfo.getSendFailedCount() > 3) {
-            long timeDiff = System.currentTimeMillis() - executionInfo.getExecution().getExecutionTime();
-            if (timeDiff > 60000) {
-                logCollector.addLogLine(executionInfo.getKey(), AddressingTimeoutLogParser.INSTANCE);
-                executionInfo.terminate();
-                publishCompletedEvent(executionInfo.getKey());
-                return;
-            }
+        if (executionInfo.getSendFailedCount() > 5) {
+            logCollector.addLogLine(executionInfo.getKey(), AddressingTimeoutLogParser.INSTANCE);
+            executionInfo.terminate();
+            publishCompletedEvent(executionInfo.getKey());
+            return;
         }
         executionInfo.sendFailed();
         addFastChannel(executionInfo);

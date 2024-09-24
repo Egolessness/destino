@@ -32,6 +32,7 @@ import org.egolessness.destino.common.executor.DestinoExecutors;
 import org.egolessness.destino.common.model.message.Request;
 import org.egolessness.destino.common.support.CallbackSupport;
 import org.egolessness.destino.common.support.RequestSupport;
+import org.egolessness.destino.common.utils.NumberUtils;
 import org.egolessness.destino.core.container.ChannelContainer;
 import org.egolessness.destino.core.container.MemberContainer;
 import org.egolessness.destino.core.enumration.Errors;
@@ -101,7 +102,7 @@ public class RpcPusher implements Pusher {
             return;
         }
 
-        long memberId = Long.getLong(Mark.UNDERLINE.split(receiver.id())[0], -1);
+        long memberId = NumberUtils.parseLong(Mark.UNDERLINE.split(receiver.id())[0], -1);
         Optional<Member> memberOptional = memberContainer.find(memberId);
         if (!memberOptional.isPresent()) {
             callback.onThrowable(new ConnectionClosedException());

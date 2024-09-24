@@ -43,6 +43,7 @@ import java.time.Period;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * execution log collector
@@ -142,6 +143,11 @@ public class ExecutionLogCollector implements Runnable, Lucermaire, Cleanable {
 
             ExecutionLog.Builder logBuilder = openLogBuilder(executionKey, logLines);
             logBuilder.addAllLine(logLines);
+            if (logBuilder.getLineCount() > 1000) {
+                List<LogLine> limited = logBuilder.getLineList().stream().limit(1000).collect(Collectors.toList());
+                logBuilder.clearLine();
+                logBuilder.addAllLine(limited);
+            }
 
             storage.set(executionKey, logBuilder.build().toByteArray());
         } catch (StorageException ignored) {

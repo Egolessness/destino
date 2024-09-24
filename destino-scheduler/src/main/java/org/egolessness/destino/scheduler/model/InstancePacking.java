@@ -20,6 +20,7 @@ import org.egolessness.destino.common.enumeration.Mark;
 import org.egolessness.destino.common.enumeration.RequestChannel;
 import org.egolessness.destino.common.model.ServiceInstance;
 import org.egolessness.destino.common.support.RequestSupport;
+import org.egolessness.destino.common.utils.NumberUtils;
 import org.egolessness.destino.common.utils.PredicateUtils;
 import org.egolessness.destino.registration.support.RegistrationSupport;
 import org.egolessness.destino.registration.message.RegistrationKey;
@@ -109,6 +110,13 @@ public class InstancePacking implements Comparable<InstancePacking>, Serializabl
 
     public String getConnectionId() {
         return connectionId;
+    }
+
+    public long getConnectedServerId() {
+        if (PredicateUtils.isEmpty(connectionId)) {
+            return -1;
+        }
+        return NumberUtils.parseLong(Mark.UNDERLINE.split(connectionId)[0], -1);
     }
 
     public boolean isReachable(long memberId) {
