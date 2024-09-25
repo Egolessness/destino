@@ -110,7 +110,7 @@ public class SchedulerClient implements Lucermaire {
     public MethodDescriptor<ExecutionKey, Execution> getGetExecutionMethod() {
         if (getExecutionMethod == null) {
             if (PredicateUtils.isBlank(contextPath)) {
-                return SchedulerRequestAdapterGrpc.getGetExecutionMethod();
+                return getExecutionMethod = SchedulerRequestAdapterGrpc.getGetExecutionMethod();
             }
             synchronized (this) {
                 if (getExecutionMethod == null) {
@@ -125,7 +125,7 @@ public class SchedulerClient implements Lucermaire {
     public MethodDescriptor<ExecutionKeys, Executions> getMultiGetExecutionMethod() {
         if (multiGetExecutionMethod == null) {
             if (PredicateUtils.isBlank(contextPath)) {
-                return SchedulerRequestAdapterGrpc.getMultiGetExecutionMethod();
+                return multiGetExecutionMethod = SchedulerRequestAdapterGrpc.getMultiGetExecutionMethod();
             }
             synchronized (this) {
                 if (multiGetExecutionMethod == null) {
@@ -140,7 +140,7 @@ public class SchedulerClient implements Lucermaire {
     public MethodDescriptor<Request, BoolValue> getFeedbackMethod() {
         if (feedbackMethod == null) {
             if (PredicateUtils.isBlank(contextPath)) {
-                return SchedulerRequestAdapterGrpc.getFeedbackMethod();
+                return feedbackMethod = SchedulerRequestAdapterGrpc.getFeedbackMethod();
             }
             synchronized (this) {
                 if (feedbackMethod == null) {
@@ -155,7 +155,7 @@ public class SchedulerClient implements Lucermaire {
     public MethodDescriptor<LogLines, BoolValue> getSendLogMethod() {
         if (sendLogMethod == null) {
             if (PredicateUtils.isBlank(contextPath)) {
-                return SchedulerRequestAdapterGrpc.getSendLogMethod();
+                return sendLogMethod = SchedulerRequestAdapterGrpc.getSendLogMethod();
             }
             synchronized (this) {
                 if (sendLogMethod == null) {
@@ -170,7 +170,7 @@ public class SchedulerClient implements Lucermaire {
     public MethodDescriptor<ExecutionCommand, Response> getSendMethod() {
         if (sendMethod == null) {
             if (PredicateUtils.isBlank(contextPath)) {
-                return SchedulerRequestAdapterGrpc.getSendMethod();
+                return sendMethod = SchedulerRequestAdapterGrpc.getSendMethod();
             }
             synchronized (this) {
                 if (sendMethod == null) {
@@ -185,7 +185,7 @@ public class SchedulerClient implements Lucermaire {
     public MethodDescriptor<Execution, BoolValue> getTransmitMethod() {
         if (transmitMethod == null) {
             if (PredicateUtils.isBlank(contextPath)) {
-                return SchedulerRequestAdapterGrpc.getTransmitMethod();
+                return transmitMethod = SchedulerRequestAdapterGrpc.getTransmitMethod();
             }
             synchronized (this) {
                 if (transmitMethod == null) {
@@ -200,7 +200,7 @@ public class SchedulerClient implements Lucermaire {
     public MethodDescriptor<Execution, Empty> getCancelMethod() {
         if (cancelMethod == null) {
             if (PredicateUtils.isBlank(contextPath)) {
-                return SchedulerRequestAdapterGrpc.getCancelMethod();
+                return cancelMethod = SchedulerRequestAdapterGrpc.getCancelMethod();
             }
             synchronized (this) {
                 if (cancelMethod == null) {
@@ -215,7 +215,7 @@ public class SchedulerClient implements Lucermaire {
     public MethodDescriptor<ExecutionKey, StringValue> getTerminateMethod() {
         if (terminateMethod == null) {
             if (PredicateUtils.isBlank(contextPath)) {
-                return SchedulerRequestAdapterGrpc.getTerminateMethod();
+                return terminateMethod = SchedulerRequestAdapterGrpc.getTerminateMethod();
             }
             synchronized (this) {
                 if (terminateMethod == null) {
@@ -230,7 +230,7 @@ public class SchedulerClient implements Lucermaire {
     public MethodDescriptor<Execution, Empty> getUpdateMethod() {
         if (updateMethod == null) {
             if (PredicateUtils.isBlank(contextPath)) {
-                return SchedulerRequestAdapterGrpc.getUpdateMethod();
+                return updateMethod = SchedulerRequestAdapterGrpc.getUpdateMethod();
             }
             synchronized (this) {
                 if (updateMethod == null) {
@@ -245,7 +245,7 @@ public class SchedulerClient implements Lucermaire {
     public MethodDescriptor<ExecutionKey, ExecutionLog> getReadLogMethod() {
         if (readLogMethod == null) {
             if (PredicateUtils.isBlank(contextPath)) {
-                return SchedulerRequestAdapterGrpc.getReadLogMethod();
+                return readLogMethod = SchedulerRequestAdapterGrpc.getReadLogMethod();
             }
             synchronized (this) {
                 if (readLogMethod == null) {

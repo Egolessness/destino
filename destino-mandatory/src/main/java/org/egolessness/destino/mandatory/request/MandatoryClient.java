@@ -64,7 +64,7 @@ public class MandatoryClient implements Lucermaire {
     public MethodDescriptor<MandatoryWriteRequest, Response> getWriteMethod() {
         if (writeMethod == null) {
             if (PredicateUtils.isBlank(contextPath)) {
-                return MandatoryRequestAdapterGrpc.getWriteMethod();
+                return writeMethod = MandatoryRequestAdapterGrpc.getWriteMethod();
             }
             synchronized (this) {
                 if (writeMethod == null) {
@@ -79,7 +79,7 @@ public class MandatoryClient implements Lucermaire {
     public MethodDescriptor<MandatoryLoadRequest, Response> getLoadMethod() {
         if (loadMethod == null) {
             if (PredicateUtils.isBlank(contextPath)) {
-                return MandatoryRequestAdapterGrpc.getLoadMethod();
+                return loadMethod = MandatoryRequestAdapterGrpc.getLoadMethod();
             }
             synchronized (this) {
                 if (loadMethod == null) {
@@ -94,7 +94,7 @@ public class MandatoryClient implements Lucermaire {
     public MethodDescriptor<MandatorySyncRequest, Response> getSyncMethod() {
         if (syncMethod == null) {
             if (PredicateUtils.isBlank(contextPath)) {
-                return MandatoryRequestAdapterGrpc.getSyncMethod();
+                return syncMethod = MandatoryRequestAdapterGrpc.getSyncMethod();
             }
             synchronized (this) {
                 if (syncMethod == null) {
