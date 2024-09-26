@@ -38,7 +38,7 @@ if [ -z "$JAVA_HOME" ]; then
   fi
 fi
 
-export VERSION="1.0.2"
+export VERSION="1.0.3"
 export MODE="cluster"
 export SERVER="destino-server-${VERSION}"
 export CLUSTER_MEMBERS=""
@@ -61,13 +61,14 @@ do
     esac
 done
 
-export JVM_OPTS="-server -jar ${BASE_DIR}/target/${SERVER}.jar -Xms4g -Xmx4g -Xmn2g -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=320m -XX:-OmitStackTraceInFastThrow -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${BASE_DIR}/logs/java_heapdump.hprof -XX:-UseLargePages"
+export JVM_OPTS="-server -jar ${BASE_DIR}/target/${SERVER}.jar -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=320m -XX:-OmitStackTraceInFastThrow -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${BASE_DIR}/logs/java_heapdump.hprof -XX:-UseLargePages"
 export DESTINO_OPTS="-Ddestino.home=${BASE_DIR} -Dserver.mode=${MODE} -Ddestino.cluster.nodes=${CLUSTER_MEMBERS}"
 
 if [[ "${MODE}" == "standalone" ]] || [[ "${MODE}" == "monolithic" ]] || [[ "${MODE}" == "mono" ]] ; then
-  JVM_OPTS="-Xms512m -Xmx512m -Xmn256m"
+  JVM_OPTS="${JVM_OPTS} -Xms512m -Xmx512m -Xmn256m"
   echo "destino is starting in ${MODE} mode"
 else
+  JVM_OPTS="${JVM_OPTS} -Xms4g -Xmx4g -Xmn2g"
   echo "destino is starting in cluster mode"
 fi
 

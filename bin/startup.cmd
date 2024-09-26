@@ -9,7 +9,7 @@ set BASE_DIR=%~dp0
 set BASE_DIR="%BASE_DIR:~0,-5%"
 set CONFIG_LOCATION=%BASE_DIR%/conf
 set MODE="cluster"
-set VERSION="1.0.2"
+set VERSION="1.0.3"
 set SERVER=destino-server-%VERSION%
 set DESTINO_OPTS=-jar -Ddestino.home=%BASE_DIR%
 set MODE_INDEX=-1
@@ -31,18 +31,6 @@ for %%a in (%*) do (
 
 set "DESTINO_OPTS=%DESTINO_OPTS% -Dserver.mode=%MODE%"
 set "JVM_OPTS=-server -Xms4g -Xmx4g -Xmn2g -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=320m -XX:-OmitStackTraceInFastThrow -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=%BASE_DIR%\logs\java_heapdump.hprof -XX:-UseLargePages"
-
-if %MODE% == standalone (
-    set "JVM_OPTS=-Xms512m -Xmx512m -Xmn256m"
-)
-
-if %MODE% == monolithic (
-    set "JVM_OPTS=-Xms512m -Xmx512m -Xmn256m"
-)
-
-if %MODE% == mono (
-    set "JVM_OPTS=-Xms512m -Xmx512m -Xmn256m"
-)
 
 set "DESTINO_OPTS=%DESTINO_OPTS% %BASE_DIR%/target/%SERVER%.jar "
 set "DESTINO_OPTS=%DESTINO_OPTS% -Ddestino.config.location=%CONFIG_LOCATION%"
