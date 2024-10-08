@@ -70,7 +70,11 @@ public class ServerAddressesReader {
         }
         if (started.compareAndSet(false, true)) {
             executor = ExecutorCreator.createServerAddressesReaderExecutor();
-            executor.execute(this::read);
+            if (PredicateUtils.isEmpty(requestClient.getAddresses())) {
+                this.read();
+            } else {
+                executor.execute(this::read);
+            }
         }
     }
 

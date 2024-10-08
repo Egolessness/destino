@@ -76,7 +76,7 @@ public class DestinoConfiguration implements Lucermaire {
         return properties;
     }
 
-    public LocalSchedulingService getLocalScheduledService() {
+    public LocalSchedulingService getLocalSchedulingService() {
         return localSchedulingService;
     }
 

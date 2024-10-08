@@ -133,6 +133,10 @@ public class Requester implements Lucermaire {
         return requestClient.serverCheck();
     }
 
+    public boolean hasAvailableServer() {
+        return PredicateUtils.isNotEmpty(requestClient.getAddresses());
+    }
+
     public HeartbeatProperties getHeartbeatProperties() {
         return heartbeatProperties;
     }
