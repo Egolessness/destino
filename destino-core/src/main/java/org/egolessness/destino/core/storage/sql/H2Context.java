@@ -110,7 +110,8 @@ public class H2Context {
         JdbcDataSource dataSource = new JdbcDataSource();
         dataSource.setUser(username);
         dataSource.setPassword(password);
-        dataSource.setUrl("jdbc:h2:" + Paths.get(dbDir, getDatabaseName()));
+        long cacheSize = Runtime.getRuntime().maxMemory() / 20;
+        dataSource.setUrl("jdbc:h2:" + Paths.get(dbDir, getDatabaseName()) + ";CACHE_SIZE=" + cacheSize);
         dataSource.setLoginTimeout(5);
         return dataSource;
     }
